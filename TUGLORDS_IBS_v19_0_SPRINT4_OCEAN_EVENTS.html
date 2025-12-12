@@ -85,15 +85,35 @@
             display: flex;
             gap: 1rem;
             align-items: center;
-            font-size: 0.875rem;
+            font-size: 0.75rem;
         }
 
-        /* Main Game Board */
+        /* Main Game Board - ALINHADO INFERIOR */
         .game-board-wrapper {
             flex: 1;
-            padding: 1rem;
+            padding: 0.3rem;
             overflow-y: auto;
             overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end; /* ALINHAR NA PARTE INFERIOR */
+        }
+
+        .board-container {
+            background: rgba(255,255,255,0.05);
+            border-radius: 0.5rem;
+            padding: 0.3rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end; /* ALINHAR TABULEIRO NA LINHA INFERIOR */
+            overflow-y: auto;
+            min-height: auto;
+            width: 100%;
+            max-width: 100%;
+            gap: 0.5rem; /* ESPAÇAMENTO REDUZIDO */
         }
 
         /* Bottom Navigation - Mobile */
@@ -172,6 +192,7 @@
             padding: 0 1.5rem 1.5rem;
             overflow-y: auto;
             max-height: calc(85vh - 100px);
+            scroll-behavior: smooth;
         }
 
         .panel-header {
@@ -225,22 +246,22 @@
             pointer-events: all;
         }
 
-        /* Touch-Friendly Buttons */
+        /* Touch-Friendly Buttons - REDUZIDOS */
         .btn-primary {
             background: var(--accent-gold);
             color: #1a2942;
             border: none;
-            padding: 0.875rem 1.5rem;
-            border-radius: 0.75rem;
+            padding: 0.6rem 1rem;
+            border-radius: 0.5rem;
             font-weight: 700;
-            font-size: 1rem;
+            font-size: 0.875rem;
             cursor: pointer;
             transition: all 0.2s;
-            min-height: 44px; /* iOS minimum touch target */
+            min-height: 36px; /* Reduzido de 44px */
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
+            gap: 0.25rem;
         }
 
         .btn-primary:active {
@@ -303,7 +324,7 @@
             gap: 0.5rem;
             margin-bottom: 1rem;
             overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
         }
 
         .tab-btn {
@@ -652,43 +673,46 @@
 
         /* ===== BOARD STYLES ===== */
         .board-game {
-            aspect-ratio: 1;
-            max-width: 600px;
-            margin: 0 auto 2rem;
+            width: 100%;
+            max-width: 100%;
+            aspect-ratio: 9 / 7;
+            margin: 0 auto;
             background: rgba(255,255,255,0.05);
-            border-radius: 1rem;
-            padding: 0.5rem;
+            border-radius: 0.3rem;
+            padding: 0.3rem;
             position: relative;
             display: grid;
-            grid-template-columns: 1fr 6fr 1fr;
-            grid-template-rows: 1fr 6fr 1fr;
-            gap: 0.25rem;
+            grid-template-columns: repeat(9, 1fr);
+            grid-template-rows: repeat(7, 1fr);
+            gap: 0.2rem; /* AUMENTADO PARA MELHOR DISTRIBUIÇÃO GEOMÉTRICA */
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            align-self: center; /* CENTRALIZAR NO CONTAINER */
+            margin-bottom: 0.25rem; /* PEQUENO ESPAÇO ANTES DOS CONTROLES */
         }
 
         .board-corner {
             background: linear-gradient(135deg, var(--accent-gold), #f59e0b);
-            border-radius: 0.5rem;
+            border-radius: 0.2rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
+            font-size: 1.2rem;
             font-weight: 900;
             color: #1a2942;
             position: relative;
+            padding: 0.2rem;
+            min-height: auto;
+            aspect-ratio: 1;
+            flex-direction: column;
         }
 
         .board-corner-label {
-            position: absolute;
-            bottom: 0.25rem;
-            font-size: 0.625rem;
-            font-weight: 700;
-            text-align: center;
-            width: 100%;
+            display: none;
         }
 
         .board-side {
             display: flex;
-            gap: 0.25rem;
+            gap: 0.3rem;
         }
 
         .board-side.top,
@@ -704,17 +728,19 @@
         .board-house {
             flex: 1;
             background: rgba(255,255,255,0.1);
-            border-radius: 0.5rem;
-            padding: 0.5rem;
+            border-radius: 0.2rem;
+            padding: 0.25rem;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: space-between;
-            gap: 0.25rem;
+            justify-content: center;
+            gap: 0.1rem;
             position: relative;
             cursor: pointer;
             transition: all 0.2s;
-            border: 2px solid transparent;
+            border: 1px solid transparent;
+            min-height: auto;
+            overflow: hidden;
         }
 
         .board-house:hover {
@@ -735,21 +761,16 @@
         }
 
         .house-icon {
-            font-size: 1.5rem;
+            font-size: 1rem;
+            flex-shrink: 0;
         }
 
         .house-name {
-            font-size: 0.625rem;
-            font-weight: 600;
-            text-align: center;
-            line-height: 1.2;
-            color: #e0e0e0;
+            display: none;
         }
 
         .house-price {
-            font-size: 0.5rem;
-            color: var(--accent-gold);
-            font-weight: 700;
+            display: none;
         }
 
         .house-players {
@@ -762,61 +783,324 @@
         }
 
         .player-pawn {
-            width: 12px;
-            height: 12px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            border: 1px solid rgba(255,255,255,0.5);
-            font-size: 0.5rem;
+            border: 0.5px solid rgba(255,255,255,0.6);
+            font-size: 0.3rem;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
 
         .board-center {
             background: rgba(0,0,0,0.3);
-            border-radius: 0.5rem;
+            border-radius: 0.2rem;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 1rem;
-            grid-column: 2;
-            grid-row: 2;
+            text-align: center;
+            padding: 0.4rem;
+            grid-column: 3 / 8;
+            grid-row: 4 / 6; /* CORRIGIDO PARA 4/6 */
+            gap: 0.2rem;
         }
 
         .board-center h3 {
-            font-size: 1.5rem;
+            font-size: 0.8rem;
             font-weight: 900;
-            margin: 0 0 0.5rem 0;
+            margin: 0;
             color: var(--accent-gold);
+            line-height: 1;
         }
 
         .board-center-icon {
-            font-size: 3rem;
-            margin-bottom: 0.5rem;
+            font-size: 1.4rem;
+            margin: 0;
+        }
+
+        /* Board corners positioning */
+        .board-corner[style*="grid-column: 3"][style*="grid-row: 3"] {
+            grid-column: 8;
+            grid-row: 8;
+        }
+
+        .board-corner[style*="grid-column: 1"][style*="grid-row: 3"] {
+            grid-column: 1;
+            grid-row: 8;
+        }
+
+        .board-corner[style*="grid-column: 1"][style*="grid-row: 1"] {
+            grid-column: 1;
+            grid-row: 1;
+        }
+
+        .board-corner[style*="grid-column: 3"][style*="grid-row: 1"] {
+            grid-column: 8;
+            grid-row: 1;
+        }
+
+        @media (min-width: 480px) {
+            .board-game {
+                max-width: 100%;
+                padding: 0.6rem;
+                gap: 0.2rem;
+            }
+
+            .board-corner {
+                font-size: 1.4rem;
+            }
+
+            .board-corner-label {
+                display: block;
+                font-size: 0.5rem;
+            }
+
+            .house-icon {
+                font-size: 1.2rem;
+            }
+
+            .house-name {
+                display: block;
+                font-size: 0.5rem;
+                font-weight: 600;
+                text-align: center;
+                line-height: 1;
+                color: #e0e0e0;
+                word-break: break-word;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                line-clamp: 2;
+                -webkit-box-orient: vertical;
+            }
+
+            .house-price {
+                display: block;
+                font-size: 0.4rem;
+                color: var(--accent-gold);
+                font-weight: 700;
+                line-height: 1;
+            }
+
+            .player-pawn {
+                width: 10px;
+                height: 10px;
+            }
+
+            .board-center h3 {
+                font-size: 1.2rem;
+            }
+
+            .board-center-icon {
+                font-size: 2.2rem;
+            }
         }
 
         @media (min-width: 768px) {
             .board-game {
-                max-width: 700px;
+                max-width: 100%;
+                padding: 0.8rem;
+                gap: 0.25rem;
+            }
+
+            .board-corner {
+                font-size: 1.6rem;
+            }
+
+            .board-corner-label {
+                font-size: 0.55rem;
+            }
+
+            .board-house {
+                padding: 0.3rem;
             }
 
             .house-icon {
-                font-size: 2rem;
+                font-size: 1.5rem;
             }
 
             .house-name {
-                font-size: 0.75rem;
+                font-size: 0.6rem;
             }
 
             .house-price {
-                font-size: 0.625rem;
+                font-size: 0.5rem;
             }
 
             .player-pawn {
-                width: 16px;
-                height: 16px;
-                font-size: 0.625rem;
+                width: 11px;
+                height: 11px;
+                font-size: 0.4rem;
+            }
+
+            .board-center {
+                padding: 0.5rem;
+            }
+
+            .board-center h3 {
+                font-size: 1.4rem;
+            }
+
+            .board-center-icon {
+                font-size: 2.6rem;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .board-game {
+                max-width: 750px;
+                padding: 1rem;
+                gap: 0.35rem;
+            }
+
+            .board-corner {
+                font-size: 1.8rem;
+            }
+
+            .board-corner-label {
+                font-size: 0.6rem;
+            }
+
+            .board-house {
+                padding: 0.4rem;
+            }
+
+            .house-icon {
+                font-size: 1.75rem;
+            }
+
+            .house-name {
+                font-size: 0.65rem;
+            }
+
+            .house-price {
+                font-size: 0.55rem;
+            }
+
+            .player-pawn {
+                width: 13px;
+                height: 13px;
+                font-size: 0.45rem;
+            }
+
+            .board-center {
+                padding: 0.8rem;
+                gap: 0.3rem;
+            }
+
+            .board-center h3 {
+                font-size: 1.6rem;
+            }
+
+            .board-center-icon {
+                font-size: 3rem;
+            }
+        }
+
+        /* ===== TABLET & DESKTOP RESPONSIVENESS ===== */
+        @media (min-width: 768px) {
+            .game-container {
+                padding-bottom: 0;
+            }
+
+            .game-board-wrapper {
+                padding: 1.5rem;
+            }
+
+            .board-container {
+                padding: 1rem;
+            }
+
+            .mobile-header {
+                padding: 1rem 2rem;
+            }
+
+            .mobile-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .bottom-nav {
+                position: relative;
+                grid-template-columns: repeat(4, 1fr);
+                max-width: 600px;
+                margin: 0 auto;
+                border-radius: 1rem;
+                bottom: auto;
+                padding: 1rem;
+            }
+
+            .sliding-panel {
+                max-width: 480px;
+                left: auto;
+                right: 0;
+                max-height: 100vh;
+                border-radius: 1rem 0 0 1rem;
+            }
+
+            .panel-content {
+                max-height: calc(100vh - 140px);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .game-container {
+                display: grid;
+                grid-template-columns: 360px 1fr 360px;
+                gap: 1.5rem;
+                padding: 1.5rem;
+                max-width: 1800px;
+                margin: 0 auto;
+                min-height: 100vh;
+            }
+
+            .mobile-header {
+                display: none;
+            }
+
+            .bottom-nav {
+                display: none;
+            }
+
+            .game-board-wrapper {
+                order: 2;
+                padding: 0;
+            }
+
+            .sliding-panel {
+                position: relative;
+                transform: translateY(0) !important;
+                max-height: calc(100vh - 3rem);
+                border-radius: 1rem;
+                max-width: none;
+                right: auto;
+            }
+
+            .sliding-panel.panel-left {
+                order: 1;
+            }
+
+            .sliding-panel.panel-right {
+                order: 3;
+            }
+
+            .panel-handle {
+                display: none;
+            }
+
+            .panel-overlay {
+                display: none;
+            }
+
+            .panel-close {
+                display: none;
+            }
+
+            .board-container {
+                padding: 0;
             }
         }
     </style>
@@ -883,44 +1167,44 @@
             <!-- Center - Game Board -->
             <div class="game-board-wrapper">
                 <div class="board-container">
-                    <!-- Visual Board -->
-                    <div id="visualBoard"></div>
+                    <!-- Visual Board - CENTRALIZADO -->
+                    <div id="visualBoard" style="width: 100%; display: flex; justify-content: center;"></div>
 
-                    <!-- Game Controls -->
-                    <div style="text-align: center; padding: 1rem;">
-                        <h2 style="font-size: 1.5rem; font-weight: 900; margin-bottom: 1rem;">
+                    <!-- Game Controls - COMPACTO -->
+                    <div style="text-align: center; padding: 0.5rem; width: 100%; margin-top: 0;">
+                        <h2 style="font-size: 1.25rem; font-weight: 900; margin-bottom: 0.5rem; text-align: center;">
                             🎲 Turno de <span id="currentTurnPlayer">Jogador</span>
                         </h2>
                         
-                        <!-- Dice Display -->
-                        <div id="diceDisplay" style="font-size: 3rem; margin: 1rem 0;">
+                        <!-- Dice Display - CENTRALIZADO -->
+                        <div id="diceDisplay" style="font-size: 2.5rem; margin: 0.5rem 0; display: flex; justify-content: center; align-items: center; gap: 0.5rem;">
                             ⚀ ⚀
                         </div>
 
-                        <!-- Dice Button -->
-                        <div style="margin-bottom: 1.5rem;">
-                            <button id="rollDiceBtn" class="btn-primary" onclick="rollDice()" style="font-size: 1.125rem;">
+                        <!-- Dice Button - CENTRALIZADO HORIZONTALMENTE -->
+                        <div style="margin-bottom: 0.75rem; display: flex; justify-content: center; align-items: center;">
+                            <button id="rollDiceBtn" class="btn-primary" onclick="rollDice()" style="font-size: 0.875rem; margin: 0 auto;">
                                 🎲 Jogar Dados
                             </button>
                         </div>
 
-                        <!-- Current Position Info -->
-                        <div id="positionInfo" style="background: rgba(255,255,255,0.1); border-radius: 0.75rem; padding: 1rem; margin-bottom: 1rem;">
-                            <p id="currentHouseName" style="font-size: 1.25rem; color: var(--accent-gold); margin: 0; font-weight: 700;">
+                        <!-- Current Position Info - REDUZIDO -->
+                        <div id="positionInfo" style="background: rgba(255,255,255,0.1); border-radius: 0.5rem; padding: 0.75rem; margin-bottom: 0.75rem;">
+                            <p id="currentHouseName" style="font-size: 1rem; color: var(--accent-gold); margin: 0; font-weight: 700;">
                                 Casa Inicial
                             </p>
                         </div>
 
-                        <!-- Contextual Actions (aparecem baseado na casa) -->
-                        <div id="contextualActions" style="display: none;">
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem;">
+                        <!-- Contextual Actions (aparecem baseado na casa) - CENTRALIZADO -->
+                        <div id="contextualActions" style="display: none; justify-content: center;">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; max-width: 400px;">
                                 <!-- Botões serão adicionados dinamicamente -->
                             </div>
                         </div>
 
-                        <!-- End Turn Button -->
-                        <div style="margin-top: 1.5rem;">
-                            <button id="endTurnBtn" class="btn-secondary" onclick="endTurn()" style="width: 100%; max-width: 300px;">
+                        <!-- End Turn Button - CENTRALIZADO -->
+                        <div style="margin-top: 0.5rem; display: flex; justify-content: center;">
+                            <button id="endTurnBtn" class="btn-secondary" onclick="endTurn()" style="max-width: 220px; font-size: 0.875rem;">
                                 ➡️ Finalizar Turno
                             </button>
                         </div>
@@ -1461,101 +1745,73 @@
             // Update gameState houses with full board
             gameState.houses = boardLayout;
 
-            // Create board HTML - LAYOUT HORÁRIO CORRETO (36 casas = 4 corners + 8 por lado)
+            // Create board HTML - LAYOUT RETANGULAR MONOPOLY
             let boardHTML = '<div class="board-game">';
             
             // Canto inferior direito (PARTIDA - posição 0)
-            boardHTML += '<div class="board-corner" style="grid-column: 3; grid-row: 3;">';
-            boardHTML += '<span>🏁</span>';
-            boardHTML += '<div class="board-corner-label">PARTIDA</div>';
-            boardHTML += '</div>';
+            boardHTML += '<div class="board-corner" style="grid-column: 9; grid-row: 7;"><span>🏁</span></div>';
             
-            // Lado INFERIOR (posições 1-8) - da DIREITA para ESQUERDA (horário)
-            boardHTML += '<div class="board-side bottom" style="grid-column: 2; grid-row: 3;">';
-            for (let i = 8; i >= 1; i--) { // Invertido para mostrar da direita pra esquerda
+            // Canto inferior direito (PARTIDA - posição 0)
+            boardHTML += '<div class="board-corner" style="grid-column: 9; grid-row: 7;"><span>🏁</span></div>';
+            
+            // Lado INFERIOR (posições 1-8) - grid-row: 7, colunas 1-8
+            for (let i = 8; i >= 1; i--) {
                 const house = boardLayout[i];
-                boardHTML += `<div class="board-house" data-position="${house.pos}" onclick="selectHouse(${house.pos})">`;
+                const col = 9 - i; // Colunas 1, 2, 3, 4, 5, 6, 7, 8
+                boardHTML += `<div class="board-house" data-position="${house.pos}" style="grid-column: ${col}; grid-row: 7;" onclick="selectHouse(${house.pos})">`;
                 boardHTML += `<div class="house-icon">${house.icon}</div>`;
                 boardHTML += `<div class="house-name">${house.name}</div>`;
-                if (house.price) {
-                    boardHTML += `<div class="house-price">R$ ${house.price}</div>`;
-                }
-                boardHTML += '<div class="house-players"></div>';
-                boardHTML += '</div>';
+                if (house.price) boardHTML += `<div class="house-price">R$ ${house.price}</div>`;
+                boardHTML += '<div class="house-players"></div></div>';
             }
-            boardHTML += '</div>';
             
-            // Canto inferior esquerdo (SORTE - posição 9) - Casa normal, não corner visual
-            boardHTML += '<div class="board-corner" style="grid-column: 1; grid-row: 3;">';
-            boardHTML += '<span>🍀</span>';
-            boardHTML += '<div class="board-corner-label">SORTE</div>';
-            boardHTML += '<div class="house-players" style="position: absolute; bottom: 0.25rem; display: flex; gap: 0.125rem; flex-wrap: wrap; justify-content: center;"></div>';
-            boardHTML += '</div>';
+            // Canto inferior esquerdo (SORTE - posição 9)
+            boardHTML += '<div class="board-corner" style="grid-column: 1; grid-row: 7;"><span>🍀</span></div>';
             
-            // Lado ESQUERDO (posições 10-17) - de BAIXO para CIMA (horário)
-            boardHTML += '<div class="board-side left" style="grid-column: 1; grid-row: 2;">';
-            for (let i = 17; i >= 10; i--) { // Invertido para mostrar de baixo pra cima
+            // Lado ESQUERDO (posições 10-17) - grid-column: 1, linhas 7-2
+            for (let i = 10; i <= 16; i++) { // Apenas posições 10-16 (pula 17 que tem grid-row: 0)
                 const house = boardLayout[i];
-                boardHTML += `<div class="board-house" data-position="${house.pos}" onclick="selectHouse(${house.pos})">`;
+                const row = 8 - (i - 9); // Linhas 7, 6, 5, 4, 3, 2, 1
+                boardHTML += `<div class="board-house" data-position="${house.pos}" style="grid-column: 1; grid-row: ${row};" onclick="selectHouse(${house.pos})">`;
                 boardHTML += `<div class="house-icon">${house.icon}</div>`;
                 boardHTML += `<div class="house-name">${house.name}</div>`;
-                if (house.price) {
-                    boardHTML += `<div class="house-price">R$ ${house.price}</div>`;
-                }
-                boardHTML += '<div class="house-players"></div>';
-                boardHTML += '</div>';
+                if (house.price) boardHTML += `<div class="house-price">R$ ${house.price}</div>`;
+                boardHTML += '<div class="house-players"></div></div>';
             }
-            boardHTML += '</div>';
             
             // Canto superior esquerdo (CERTIFICADO TUGLORD - posição 18)
-            boardHTML += '<div class="board-corner" style="grid-column: 1; grid-row: 1;">';
-            boardHTML += '<span>🎖️</span>';
-            boardHTML += '<div class="board-corner-label">TUGLORD</div>';
-            boardHTML += '<div class="house-players" style="position: absolute; bottom: 0.25rem; display: flex; gap: 0.125rem; flex-wrap: wrap; justify-content: center;"></div>';
-            boardHTML += '</div>';
+            boardHTML += '<div class="board-corner" style="grid-column: 1; grid-row: 1;"><span>🎖️</span></div>';
             
-            // Lado SUPERIOR (posições 19-26) - da ESQUERDA para DIREITA (horário)
-            boardHTML += '<div class="board-side top" style="grid-column: 2; grid-row: 1;">';
-            for (let i = 19; i <= 26; i++) { // Normal, da esquerda pra direita
+            // Lado SUPERIOR (posições 19-26) - grid-row: 1, colunas 2-8
+            for (let i = 19; i <= 26; i++) {
                 const house = boardLayout[i];
-                boardHTML += `<div class="board-house" data-position="${house.pos}" onclick="selectHouse(${house.pos})">`;
+                const col = i - 17; // Colunas 2, 3, 4, 5, 6, 7, 8, 9
+                boardHTML += `<div class="board-house" data-position="${house.pos}" style="grid-column: ${col}; grid-row: 1;" onclick="selectHouse(${house.pos})">`;
                 boardHTML += `<div class="house-icon">${house.icon}</div>`;
                 boardHTML += `<div class="house-name">${house.name}</div>`;
-                if (house.price) {
-                    boardHTML += `<div class="house-price">R$ ${house.price}</div>`;
-                }
-                boardHTML += '<div class="house-players"></div>';
-                boardHTML += '</div>';
+                if (house.price) boardHTML += `<div class="house-price">R$ ${house.price}</div>`;
+                boardHTML += '<div class="house-players"></div></div>';
             }
-            boardHTML += '</div>';
             
-            // Canto superior direito (BANCO - posição 27) - Casa especial, não corner visual tradicional
-            boardHTML += '<div class="board-corner" style="grid-column: 3; grid-row: 1;">';
-            boardHTML += '<span>🏛️</span>';
-            boardHTML += '<div class="board-corner-label">BANCO</div>';
-            boardHTML += '<div class="house-players" style="position: absolute; bottom: 0.25rem; display: flex; gap: 0.125rem; flex-wrap: wrap; justify-content: center;"></div>';
-            boardHTML += '</div>';
+            // Canto superior direito (BANCO - posição 27)
+            boardHTML += '<div class="board-corner" style="grid-column: 9; grid-row: 1;"><span>🏛️</span></div>';
             
-            // Lado DIREITO (posições 28-35) - de CIMA para BAIXO (horário)
-            boardHTML += '<div class="board-side right" style="grid-column: 3; grid-row: 2;">';
-            for (let i = 28; i <= 35; i++) { // Normal, de cima pra baixo
+            // Lado DIREITO (posições 28-35) - grid-column: 9, linhas 2-8
+            for (let i = 28; i <= 35; i++) {
                 const house = boardLayout[i];
-                boardHTML += `<div class="board-house" data-position="${house.pos}" onclick="selectHouse(${house.pos})">`;
+                const row = i - 26; // Linhas 2, 3, 4, 5, 6, 7, 8
+                boardHTML += `<div class="board-house" data-position="${house.pos}" style="grid-column: 9; grid-row: ${row};" onclick="selectHouse(${house.pos})">`;
                 boardHTML += `<div class="house-icon">${house.icon}</div>`;
                 boardHTML += `<div class="house-name">${house.name}</div>`;
-                if (house.price) {
-                    boardHTML += `<div class="house-price">R$ ${house.price}</div>`;
-                }
-                boardHTML += '<div class="house-players"></div>';
-                boardHTML += '</div>';
+                if (house.price) boardHTML += `<div class="house-price">R$ ${house.price}</div>`;
+                boardHTML += '<div class="house-players"></div></div>';
             }
-            boardHTML += '</div>';
             
-            // Centro
-            boardHTML += '<div class="board-center">';
+            // Centro - Branding (CORREÇÃO: grid-row 4/6)
+            boardHTML += '<div class="board-center" style="grid-column: 3 / 8; grid-row: 4 / 6;">';
             boardHTML += '<div class="board-center-icon">⚓</div>';
             boardHTML += '<h3>TUGLORDS</h3>';
-            boardHTML += '<p style="font-size: 0.75rem; color: #94a3b8; margin: 0;">Domínio Portuário</p>';
+            boardHTML += '<p style="font-size: 0.7rem; color: #94a3b8; margin: 0.5rem 0 0 0;">Domínio Portuário</p>';
             boardHTML += '</div>';
             
             boardHTML += '</div>';
