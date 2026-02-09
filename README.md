@@ -9,7 +9,9 @@
  * Autor: Jossian Brito
  * Empresa: TugLife Systems
  * 
- * Modificações Implementadas (v19.0):
+ * Modificações Implementadas (v19.5 - Modular Refactoring):
+ * - MODULAR ARCHITECTURE: Refatoração completa para ES6 Modules (State, UI, Logic, Main)
+ * - SEPARATION OF CONCERNS: HTML, CSS e JS desacoplados para melhor manutenibilidade
  * - MOBILE FIRST: Redesign completo com layout otimizado para dispositivos móveis
  * - OCEAN EVENTS: Sistema de eventos oceânicos aleatórios implementado
  * - RESPONSIVE DESIGN: Grid adaptativo que se expande de mobile para desktop
@@ -114,20 +116,21 @@ const techStack = {
 ```
 TUGLORDS/
 │
-├── index.html                                    # Landing page do projeto
-├── TUGLORDS_IBS_v19_0_SPRINT4_OCEAN_EVENTS.html # Aplicação principal do jogo (v19.0)
-├── TUGLORDS_MANUAL_DO_JOGO.html                 # Manual completo e interativo
-├── README.md                                     # Este arquivo
+├── index.html                                    # Entry Point (Modular)
+├── server.js                                     # Servidor local para desenvolvimento
+├── src/
+│   ├── css/
+│   │   └── styles.css                            # Estilos globais e componentes
+│   └── js/
+│       ├── main.js                               # Bootstrap e configuração global
+│       └── modules/
+│           ├── state.js                          # Gestão de Estado (Store)
+│           ├── logic.js                          # Regras de Negócio
+│           └── ui.js                             # Manipulação de DOM
 │
-├── assets/ (futuro)                              # Diretório planejado para assets
-│   ├── images/                                   # Imagens e ícones
-│   ├── sounds/                                   # Efeitos sonoros e música
-│   └── data/                                     # Dados JSON do jogo
-│
-└── docs/ (futuro)                                # Documentação técnica
-    ├── GAME_DESIGN_DOCUMENT.md                   # GDD completo
-    ├── API_REFERENCE.md                          # Referência de funções
-    └── CONTRIBUTING.md                           # Guia de contribuição
+├── TUGLORDS_IBS_v19_0_SPRINT4_OCEAN_EVENTS.html # Backup (Monolito Original)
+├── TUGLORDS_MANUAL_DO_JOGO.html                 # Manual completo
+└── README.md                                     # Documentação do Projeto
 ```
 
 ### 🗺️ Arquitetura da Aplicação Principal
@@ -141,36 +144,31 @@ TUGLORDS/
  * monitoramento), nossa aplicação segue o mesmo princípio:
  */
 
-// index.html (803 linhas)
-// └── Landing Page - Interface de marketing e apresentação
+/**
+ * Arquitetura Modular (ES6) - v19.5
+ * 
+ * O sistema foi desacoplado em módulos independentes para facilitar
+ * a manutenção e escalabilidade, seguindo o padrão Separation of Concerns:
+ */
 
-// TUGLORDS_IBS_v19_0_SPRINT4_OCEAN_EVENTS.html (4009 linhas)
-// ├── Global State Management (linhas 1-200)
-// ├── UI Components System (linhas 201-800)
-// │   ├── Mobile Header
-// │   ├── Game Board
-// │   ├── Bottom Navigation
-// │   └── Sliding Panels
-// ├── Game Logic Engine (linhas 801-2000)
-// │   ├── Turn System
-// │   ├── Dice Mechanics
-// │   ├── Property Management
-// │   ├── Fleet Management
-// │   └── Financial System
-// ├── Event System (linhas 2001-2800)
-// │   ├── Ocean Events
-// │   ├── Luck Cards
-// │   ├── Bank Operations
-// │   └── Stock Market
-// ├── Audio System (linhas 2801-3200)
-// │   ├── Sound Effects (Tone.js)
-// │   └── Background Music
-// └── Persistence Layer (linhas 3201-4009)
-//     ├── Save/Load System
-//     └── LocalStorage Management
+// index.html
+// └── Estrutura semântica e containers vazios (Single Page App feel)
 
-// TUGLORDS_MANUAL_DO_JOGO.html (1787 linhas)
-// └── Interactive Manual - Documentação completa do jogo
+// src/js/main.js
+// └── Entry point: Inicializa o jogo e expõe funções globais para o HTML
+
+// src/js/modules/state.js
+// └── Single Source of Truth: Armazena todo o estado da partida (players, board, phase)
+
+// src/js/modules/logic.js
+// └── Game Engine: Regras de negócio, cálculos de movimento, economia e eventos
+
+// src/js/modules/ui.js
+// └── Render Engine: Manipulação do DOM, atualizações visuais e feedback ao usuário
+
+// src/css/styles.css
+// └── Design System: Variáveis CSS, componentes e utilitários responsivos
+
 ```
 
 ---
@@ -179,10 +177,18 @@ TUGLORDS/
 
 ### 🚀 Iniciando uma Partida
 
-1. **Acesse o Jogo**: Abra `TUGLORDS_IBS_v19_0_SPRINT4_OCEAN_EVENTS.html` em seu navegador
-2. **Configure a Partida**: Escolha o número de jogadores (2-6)
-3. **Insira os Nomes**: Personalize o nome de cada jogador
-4. **Inicie**: Clique em "Iniciar Jogo" e prepare-se para navegar!
+### 🚀 Iniciando uma Partida (Local Server)
+
+Devido ao uso de Módulos ES6, o jogo precisa ser executado através de um servidor HTTP local para evitar erros de CORS (cross-origin resource sharing).
+
+1.  **Pré-requisitos**: Certifique-se de ter o [Node.js](https://nodejs.org/) instalado.
+2.  **Abra o terminal** na pasta do projeto.
+3.  **Inicie o servidor**:
+    ```bash
+    node server.js
+    ```
+4.  **Acesse o jogo**: Abra seu navegador em `http://localhost:8080`
+5.  **Configure**: Insira os nomes e inicie a partida!
 
 ### 🎲 Mecânicas Básicas
 
