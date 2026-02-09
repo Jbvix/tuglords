@@ -46,16 +46,11 @@ window.closePanel = UI.closePanel;
 window.closeAllPanels = UI.closeAllPanels;
 
 // Initialize
-document.addEventListener('DOMContentLoaded', () => {
-    // Initial Render
-    Logic.addPlayer(); // Add player 1
-    Logic.addPlayer(); // Add player 2 by default as in original? 
-    // Original code had: addPlayer(); addPlayer(); in <script> at end of file?
-    // Let's check original initialization.
-    // It called `addPlayer(); addPlayer();` then `renderBoard();`.
-
-    UI.renderBoard();
-});
+// Initialize
+// Initial Render
+Logic.addPlayer(); // Add player 1
+Logic.addPlayer(); // Add player 2 by default
+UI.renderBoard();
 
 // Expose gameState for debugging if needed
 window.gameState = gameState;
