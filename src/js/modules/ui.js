@@ -316,9 +316,55 @@ export function updatePlayerPositions() {
 
 export function selectHouse(position) {
     const house = gameState.houses[position];
-    if (house) {
-        showNotification(`📍 ${house.name}`);
+    if (!house) return;
+
+    const owner = house.owner ? gameState.players.find(p => p.id === house.owner) : null;
+
+    // Calculate current rent if it's a property
+    let rentInfo = '';
+    if (house.type === 'property' && house.rent) {
+        rentInfo = `<div style="margin-top: 0.5rem; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 0.5rem;">
+            <p style="margin: 0; color: #94a3b8; font-size: 0.85rem;">Aluguel Base: R$${house.rent[0]}</p>
+        </div>`;
     }
+
+    const modalBody = `
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">${house.icon}</div>
+            <h2 style="color: var(--accent-gold); margin: 0 0 0.5rem 0;">${house.name}</h2>
+            ${house.price ? `<p style="font-size: 1.25rem; font-weight: 700; color: #e0e0e0;">R$ ${house.price}</p>` : ''}
+            <p style="color: #94a3b8; font-style: italic;">${getHouseTypeLabel(house.type)}</p>
+        </div>
+
+        ${owner ? `
+            <div style="background: ${owner.color}20; padding: 1rem; border-radius: 0.5rem; border-left: 4px solid ${owner.color}; margin-bottom: 1rem;">
+                <p style="margin: 0; font-weight: 600; color: #e0e0e0;">Proprietário: ${owner.icon} ${owner.name}</p>
+            </div>
+        ` : ''}
+
+        ${rentInfo}
+    `;
+
+    showModal('Detalhes', modalBody, [{ text: 'Fechar', onClick: 'closeModal()' }], true);
+}
+
+function getHouseTypeLabel(type) {
+    const types = {
+        'start': 'Início',
+        'port': 'Porto Comercial',
+        'event': 'Evento Oceânico',
+        'fuel': 'Posto de Combustível',
+        'bank': 'Banco',
+        'surprise': 'Surpresa',
+        'workshop': 'Oficina/Estaleiro',
+        'corner': 'Canto',
+        'luck': 'Sorte ou Azar',
+        'stock': 'Bolsa de Valores',
+        'training': 'Centro de Treinamento',
+        'tax': 'Taxa',
+        'tuglord': 'Certificação TugLord'
+    };
+    return types[type] || 'Local';
 }
 
 export function renderPlayersPanel() {
