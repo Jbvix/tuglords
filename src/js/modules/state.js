@@ -14,12 +14,12 @@ export const gameState = {
         { name: 'Banco', type: 'bank', icon: '🏦', actions: ['loan'] },
         { name: 'Porto do Rio', type: 'port', price: 8000, icon: '🏗️', actions: ['buy'] },
         { name: 'Carta Surpresa', type: 'surprise', icon: '🎁', actions: [] },
-        { name: 'Oficina Naval', type: 'workshop', price: 4000, icon: '🛠️', actions: ['buy'] },
+        { name: 'SCHOTTEL', type: 'workshop', price: 4000, icon: '🛠️', actions: ['buy'] },
         { name: 'Canto Sorte', type: 'corner', icon: '🍀', actions: [] }, // Index 9 (Visual Corner)
         // Side 2 (Left) 10-17
         { name: 'Porto de Salvador', type: 'port', price: 6000, icon: '⛵', actions: ['buy'] },
         { name: 'Evento Oceânico', type: 'event', icon: '🌊', actions: [] },
-        { name: 'Estaleiro Atlântico', type: 'workshop', price: 5000, icon: '🏭', actions: ['buy'] },
+        { name: 'CAT', type: 'workshop', price: 5000, icon: '🏭', actions: ['buy'] },
         { name: 'Porto de Vitória', type: 'port', price: 5500, icon: '🚤', actions: ['buy'] },
         { name: 'Posto de Abastecimento', type: 'fuel', price: 3500, icon: '⛽', actions: ['buy'] },
         { name: 'Porto de Macaé', type: 'port', price: 7500, icon: '⛴️', actions: ['buy'] },
@@ -30,7 +30,7 @@ export const gameState = {
         // Side 3 (Top) 19-26
         { name: 'Porto de Itajaí', type: 'port', price: 6500, icon: '🛥️', actions: ['buy'] },
         { name: 'Evento Oceânico', type: 'event', icon: '🌊', actions: [] },
-        { name: 'Oficina de Reparos', type: 'workshop', price: 4500, icon: '🔧', actions: ['buy'] },
+        { name: 'MTU', type: 'workshop', price: 4500, icon: '🔧', actions: ['buy'] },
         { name: 'Porto de Rio Grande', type: 'port', price: 6000, icon: '🚤', actions: ['buy'] },
         { name: 'Bolsa de Valores', type: 'stock', icon: '📈', actions: ['invest'] },
         { name: 'Porto de Paranaguá', type: 'port', price: 7000, icon: '⛴️', actions: ['buy'] },
