@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
+
     <!-- 
         Autor: Jossian Brito
         Refactored Version: 19.0
@@ -16,9 +17,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
-    
+
     <link rel="stylesheet" href="src/css/styles.css">
 </head>
+
 <body>
     <!-- ========== TELA INICIAL - SELEÇÃO DE ORDEM ========== -->
     <div id="setupScreen" class="setup-screen">
@@ -63,7 +65,7 @@
 
         <!-- Main Container -->
         <div class="game-container">
-            
+
             <!-- Left Panel - Players -->
             <div class="sliding-panel panel-left" id="panelPlayers">
                 <div class="panel-handle"></div>
@@ -89,36 +91,43 @@
                         <h2 style="font-size: 1.25rem; font-weight: 900; margin-bottom: 0.5rem; text-align: center;">
                             🎲 Turno de <span id="currentTurnPlayer">Jogador</span>
                         </h2>
-                        
+
                         <!-- Dice Display - CENTRALIZADO -->
-                        <div id="diceDisplay" style="font-size: 2.5rem; margin: 0.5rem 0; display: flex; justify-content: center; align-items: center; gap: 0.5rem;">
+                        <div id="diceDisplay"
+                            style="font-size: 2.5rem; margin: 0.5rem 0; display: flex; justify-content: center; align-items: center; gap: 0.5rem;">
                             ⚀ ⚀
                         </div>
 
                         <!-- Dice Button - CENTRALIZADO HORIZONTALMENTE -->
-                        <div style="margin-bottom: 0.75rem; display: flex; justify-content: center; align-items: center;">
-                            <button id="rollDiceBtn" class="btn-primary" onclick="rollDice()" style="font-size: 0.875rem; margin: 0 auto;">
+                        <div
+                            style="margin-bottom: 0.75rem; display: flex; justify-content: center; align-items: center;">
+                            <button id="rollDiceBtn" class="btn-primary" onclick="rollDice()"
+                                style="font-size: 0.875rem; margin: 0 auto;">
                                 🎲 Jogar Dados
                             </button>
                         </div>
 
                         <!-- Current Position Info - REDUZIDO -->
-                        <div id="positionInfo" style="background: rgba(255,255,255,0.1); border-radius: 0.5rem; padding: 0.75rem; margin-bottom: 0.75rem;">
-                            <p id="currentHouseName" style="font-size: 1rem; color: var(--accent-gold); margin: 0; font-weight: 700;">
+                        <div id="positionInfo"
+                            style="background: rgba(255,255,255,0.1); border-radius: 0.5rem; padding: 0.75rem; margin-bottom: 0.75rem;">
+                            <p id="currentHouseName"
+                                style="font-size: 1rem; color: var(--accent-gold); margin: 0; font-weight: 700;">
                                 Casa Inicial
                             </p>
                         </div>
 
                         <!-- Contextual Actions (aparecem baseado na casa) - CENTRALIZADO -->
                         <div id="contextualActions" style="display: none; justify-content: center;">
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; max-width: 400px;">
+                            <div
+                                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; max-width: 400px;">
                                 <!-- Botões serão adicionados dinamicamente -->
                             </div>
                         </div>
 
                         <!-- End Turn Button - CENTRALIZADO -->
                         <div style="margin-top: 0.5rem; display: flex; justify-content: center;">
-                            <button id="endTurnBtn" class="btn-secondary" onclick="endTurn()" style="max-width: 220px; font-size: 0.875rem;">
+                            <button id="endTurnBtn" class="btn-secondary" onclick="endTurn()"
+                                style="max-width: 220px; font-size: 0.875rem;">
                                 ➡️ Finalizar Turno
                             </button>
                         </div>
@@ -134,32 +143,39 @@
                     <button class="panel-close" onclick="closePanel('panelBank')">✕</button>
                 </div>
                 <div class="panel-content">
-                    <div style="background: rgba(255,255,255,0.05); border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 1rem;">
+                    <div
+                        style="background: rgba(255,255,255,0.05); border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 1rem;">
                         <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem;">💳 Empréstimos</h3>
                         <div style="display: grid; gap: 0.75rem;">
-                            <button class="btn-secondary" style="justify-content: space-between;">
+                            <button class="btn-secondary" style="justify-content: space-between;"
+                                onclick="takeLoan(5000)">
                                 <span>R$ 5.000</span>
                                 <span style="font-size: 0.875rem; opacity: 0.7;">Juros: 10%</span>
                             </button>
-                            <button class="btn-secondary" style="justify-content: space-between;">
+                            <button class="btn-secondary" style="justify-content: space-between;"
+                                onclick="takeLoan(10000)">
                                 <span>R$ 10.000</span>
                                 <span style="font-size: 0.875rem; opacity: 0.7;">Juros: 15%</span>
                             </button>
-                            <button class="btn-secondary" style="justify-content: space-between;">
+                            <button class="btn-secondary" style="justify-content: space-between;"
+                                onclick="takeLoan(20000)">
                                 <span>R$ 20.000</span>
                                 <span style="font-size: 0.875rem; opacity: 0.7;">Juros: 20%</span>
                             </button>
                         </div>
                     </div>
 
-                    <div style="background: rgba(255,255,255,0.05); border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 1rem;">
+                    <div
+                        style="background: rgba(255,255,255,0.05); border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 1rem;">
                         <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem;">📊 Mercado de Ações</h3>
                         <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                            <div style="display: flex; justify-content: space-between; padding: 0.75rem; background: rgba(16, 185, 129, 0.1); border-radius: 0.5rem;">
+                            <div
+                                style="display: flex; justify-content: space-between; padding: 0.75rem; background: rgba(16, 185, 129, 0.1); border-radius: 0.5rem;">
                                 <span>TUGLIFE</span>
                                 <span style="color: #10b981;">+5.2%</span>
                             </div>
-                            <div style="display: flex; justify-content: space-between; padding: 0.75rem; background: rgba(239, 68, 68, 0.1); border-radius: 0.5rem;">
+                            <div
+                                style="display: flex; justify-content: space-between; padding: 0.75rem; background: rgba(239, 68, 68, 0.1); border-radius: 0.5rem;">
                                 <span>OCEANIC</span>
                                 <span style="color: #ef4444;">-2.8%</span>
                             </div>
@@ -168,7 +184,8 @@
 
                     <div style="background: rgba(255,255,255,0.05); border-radius: 0.75rem; padding: 1.5rem;">
                         <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem;">📜 Regras Rápidas</h3>
-                        <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.875rem; line-height: 1.6; color: #94a3b8;">
+                        <ul
+                            style="list-style: none; padding: 0; margin: 0; font-size: 0.875rem; line-height: 1.6; color: #94a3b8;">
                             <li style="margin-bottom: 0.5rem;">🎯 Objetivo: Dominar o mercado de rebocadores</li>
                             <li style="margin-bottom: 0.5rem;">🎲 Role os dados para mover</li>
                             <li style="margin-bottom: 0.5rem;">⚓ Compre portos e rebocadores</li>
@@ -227,4 +244,5 @@
     <!-- MAIN APP SCRIPT -->
     <script type="module" src="src/js/main.js"></script>
 </body>
+
 </html>
