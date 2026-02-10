@@ -1,3 +1,6 @@
+import * as Logic from './modules/logic.js';
+import * as UI from './modules/ui.js';
+import { gameState } from './modules/state.js';
 import { Audio } from './modules/audio.js';
 
 // Attach Logic functions to window for HTML onclick handlers
