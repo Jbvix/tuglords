@@ -1,8 +1,18 @@
-import * as Logic from './modules/logic.js';
-import * as UI from './modules/ui.js';
-import { gameState } from './modules/state.js';
+import { Audio } from './modules/audio.js';
 
 // Attach Logic functions to window for HTML onclick handlers
+window.addPlayer = Logic.addPlayer;
+// ... (rest of imports)
+
+// Initialize Audio on first interaction
+document.body.addEventListener('click', () => {
+    Audio.init();
+}, { once: true });
+
+// Initial Render
+Logic.addPlayer(); // Add player 1
+Logic.addPlayer(); // Add player 2 by default
+UI.renderBoard();
 window.addPlayer = Logic.addPlayer;
 window.updatePlayerName = Logic.updatePlayerName;
 window.removePlayer = Logic.removePlayer;

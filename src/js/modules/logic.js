@@ -1,5 +1,6 @@
 import { gameState, TRAINING_QUESTIONS, OCEAN_EVENTS, playerColors, playerIcons } from './state.js';
 import * as UI from './ui.js';
+import { Audio } from './audio.js';
 
 // ========== EXPORTED LOGIC FUNCTIONS ==========
 
@@ -15,7 +16,7 @@ export function addPlayer() {
         name: `Jogador ${playerNum}`,
         icon: playerIcons[playerNum - 1],
         color: playerColors[playerNum - 1],
-        money: 1500, // R$1.500 inicial
+        money: 30000, // R$30.000 inicial (High Stakes)
         position: 0,
         properties: [],
         rolled: false,
@@ -143,6 +144,7 @@ export function rollDice() {
         const rand1 = Math.floor(Math.random() * 6);
         const rand2 = Math.floor(Math.random() * 6);
         if (diceDisplay) diceDisplay.innerHTML = `${dice[rand1]} ${dice[rand2]}`;
+        Audio.playDice();
         rolls++;
 
         if (rolls > 12) {
@@ -209,13 +211,14 @@ export function movePlayer(spaces) {
 
         currentStep++;
         currentPlayer.position = (startPosition + currentStep) % gameState.houses.length;
+        Audio.playMove();
 
         const stepHouse = gameState.houses[currentPlayer.position];
 
         // Passagem pela partida
         if (currentPlayer.position === 0 && currentStep < spaces) {
-            currentPlayer.money += 200;
-            UI.showNotification(`🏁 ${currentPlayer.name} passou pela Partida! +R$200`);
+            currentPlayer.money += 4000;
+            UI.showNotification(`🏁 ${currentPlayer.name} passou pela Partida! +R$4000`);
             UI.renderPlayersPanel();
         }
 
@@ -360,6 +363,7 @@ export function buyProperty(space) {
     const currentPlayer = gameState.players[gameState.currentPlayerIndex];
     if (currentPlayer.money < space.price) {
         UI.showNotification('❌ Saldo insuficiente!');
+        Audio.playError();
         return;
     }
 
@@ -368,6 +372,7 @@ export function buyProperty(space) {
     currentPlayer.properties.push(space.name);
 
     UI.showNotification(`✅ ${space.name} adquirido!`);
+    Audio.playSuccess();
     UI.renderPlayersPanel();
 
     const actionsDiv = document.getElementById('contextualActions');
@@ -406,6 +411,7 @@ export function handleMandatoryPayment(player, amount, reason, recipient = null)
         player.money -= amount;
         if (recipient) recipient.money += amount;
         UI.showNotification(`💸 ${player.name} pagou R$${amount} (${reason})`);
+        Audio.playMoney();
         UI.renderPlayersPanel();
         return true;
     } else {
