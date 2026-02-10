@@ -15,8 +15,39 @@ export const gameState = {
         { name: 'Porto do Rio', type: 'port', price: 8000, actions: ['buy'] },
         { name: 'Carta Surpresa', type: 'surprise', actions: [] },
         { name: 'Oficina Naval', type: 'workshop', price: 4000, actions: ['buy'] },
-        { name: 'Porto de Salvador', type: 'port', price: 6000, actions: ['buy'] }
-    ]
+        { name: 'Canto Sorte', type: 'corner', actions: [] }, // Index 9 (Visual Corner)
+        // Side 2 (Left) 10-17
+        { name: 'Porto de Salvador', type: 'port', price: 6000, actions: ['buy'] },
+        { name: 'Evento Oceânico', type: 'event', actions: [] },
+        { name: 'Estaleiro Atlântico', type: 'workshop', price: 5000, actions: ['buy'] },
+        { name: 'Porto de Vitória', type: 'port', price: 5500, actions: ['buy'] },
+        { name: 'Posto de Abastecimento', type: 'fuel', price: 3500, actions: ['buy'] },
+        { name: 'Porto de Macaé', type: 'port', price: 7500, actions: ['buy'] },
+        { name: 'Carta Sorte', type: 'luck', actions: [] },
+        { name: 'Porto do Açu', type: 'port', price: 8000, actions: ['buy'] },
+        // Corner 18 (TugLord)
+        { name: 'Certificação TugLord', type: 'corner', actions: [] },
+        // Side 3 (Top) 19-26
+        { name: 'Porto de Itajaí', type: 'port', price: 6500, actions: ['buy'] },
+        { name: 'Evento Oceânico', type: 'event', actions: [] },
+        { name: 'Oficina de Reparos', type: 'workshop', price: 4500, actions: ['buy'] },
+        { name: 'Porto de Rio Grande', type: 'port', price: 6000, actions: ['buy'] },
+        { name: 'Bolsa de Valores', type: 'stock', actions: ['invest'] },
+        { name: 'Porto de Paranaguá', type: 'port', price: 7000, actions: ['buy'] },
+        { name: 'Treinamento', type: 'training', price: 2000, actions: ['buy'] },
+        { name: 'Porto de Suape', type: 'port', price: 7500, actions: ['buy'] },
+        // Corner 27 (Bank)
+        { name: 'Banco Central', type: 'corner', actions: [] },
+        // Side 4 (Right) 28-35
+        { name: 'Porto de Manaus', type: 'port', price: 5000, actions: ['buy'] },
+        { name: 'Carta Azar', type: 'luck', actions: [] },
+        { name: 'Estaleiro Naval', type: 'workshop', price: 5500, actions: ['buy'] },
+        { name: 'Porto de Belém', type: 'port', price: 5500, actions: ['buy'] },
+        { name: 'Evento Oceânico', type: 'event', actions: [] },
+        { name: 'Porto de São Luís', type: 'port', price: 6000, actions: ['buy'] },
+        { name: 'Taxa Portuária', type: 'tax', price: 1000, actions: ['pay'] },
+        { name: 'Porto de Vila do Conde', type: 'port', price: 6500, actions: ['buy'] }
+    ].map((h, i) => ({ ...h, pos: i }))
 };
 
 export const TRAINING_QUESTIONS = {
@@ -148,7 +179,7 @@ export const OCEAN_EVENTS = [
         type: 'money',
         amount: 500
     },
-    
+
     // EVENTOS NEGATIVOS (3)
     {
         id: 5,
@@ -175,7 +206,7 @@ export const OCEAN_EVENTS = [
         effect: 'Perca o próximo turno',
         type: 'skip_turn'
     },
-    
+
     // EVENTOS NEUTROS/MISTOS (3)
     {
         id: 8,
