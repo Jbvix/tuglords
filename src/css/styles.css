@@ -1,5 +1,5 @@
-:root{ 
-    --dice-roll-ms: 1200ms; 
+:root {
+    --dice-roll-ms: 1200ms;
     --notif-trans-ms: 500ms;
     --primary-blue: #1e3c72;
     --secondary-blue: #2a5298;
@@ -13,9 +13,9 @@
     touch-action: manipulation;
 }
 
-body { 
-    font-family: 'Inter', sans-serif; 
-    background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue)); 
+body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
     margin: 0;
     padding: 0;
     overflow-x: hidden;
@@ -31,7 +31,8 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    padding-bottom: 70px; /* Espaço para bottom nav */
+    padding-bottom: 70px;
+    /* Espaço para bottom nav */
 }
 
 /* Header Mobile */
@@ -41,7 +42,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     position: sticky;
     top: 0;
     z-index: 50;
@@ -70,23 +71,26 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-end; /* ALINHAR NA PARTE INFERIOR */
+    justify-content: flex-end;
+    /* ALINHAR NA PARTE INFERIOR */
 }
 
 .board-container {
-    background: rgba(255,255,255,0.05);
+    background: rgba(255, 255, 255, 0.05);
     border-radius: 0.5rem;
     padding: 0.3rem;
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-end; /* ALINHAR TABULEIRO NA LINHA INFERIOR */
+    justify-content: flex-end;
+    /* ALINHAR TABULEIRO NA LINHA INFERIOR */
     overflow-y: auto;
     min-height: auto;
     width: 100%;
     max-width: 100%;
-    gap: 0.5rem; /* ESPAÇAMENTO REDUZIDO */
+    gap: 0.5rem;
+    /* ESPAÇAMENTO REDUZIDO */
 }
 
 /* Bottom Navigation - Mobile */
@@ -100,7 +104,7 @@ body {
     grid-template-columns: repeat(4, 1fr);
     gap: 0;
     padding: 0.5rem 0.5rem calc(0.5rem + env(safe-area-inset-bottom));
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
     z-index: 100;
 }
 
@@ -121,7 +125,7 @@ body {
 
 .nav-btn:active {
     transform: scale(0.95);
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .nav-btn.active {
@@ -146,7 +150,7 @@ body {
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 200;
     overflow: hidden;
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
 }
 
 .sliding-panel.active {
@@ -156,7 +160,7 @@ body {
 .panel-handle {
     width: 40px;
     height: 4px;
-    background: rgba(255,255,255,0.3);
+    background: rgba(255, 255, 255, 0.3);
     border-radius: 2px;
     margin: 0.75rem auto;
 }
@@ -170,7 +174,7 @@ body {
 
 .panel-header {
     padding: 1rem 1.5rem;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -187,7 +191,7 @@ body {
 }
 
 .panel-close {
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
     border: none;
     color: #e0e0e0;
     width: 32px;
@@ -207,7 +211,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0, 0, 0, 0.5);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s;
@@ -230,7 +234,8 @@ body {
     font-size: 0.875rem;
     cursor: pointer;
     transition: all 0.2s;
-    min-height: 36px; /* Reduzido de 44px */
+    min-height: 36px;
+    /* Reduzido de 44px */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -243,9 +248,9 @@ body {
 }
 
 .btn-secondary {
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
     color: #e0e0e0;
-    border: 1px solid rgba(255,255,255,0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     padding: 0.875rem 1.5rem;
     border-radius: 0.75rem;
     font-weight: 600;
@@ -255,12 +260,12 @@ body {
 }
 
 .btn-secondary:active {
-    background: rgba(255,255,255,0.2);
+    background: rgba(255, 255, 255, 0.2);
 }
 
 /* Player Cards - Mobile Optimized */
 .player-card {
-    background: rgba(255,255,255,0.05);
+    background: rgba(255, 255, 255, 0.05);
     border-radius: 1rem;
     padding: 1rem;
     margin-bottom: 1rem;
@@ -302,8 +307,8 @@ body {
 
 .tab-btn {
     padding: 0.5rem 1rem;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 0.5rem;
     color: #94a3b8;
     font-size: 0.875rem;
@@ -330,7 +335,7 @@ body {
 
 /* Board Styles - Responsive */
 .board-container {
-    background: rgba(255,255,255,0.05);
+    background: rgba(255, 255, 255, 0.05);
     border-radius: 1rem;
     padding: 1rem;
     min-height: 400px;
@@ -436,7 +441,7 @@ body {
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 2rem;
     font-size: 0.875rem;
     font-weight: 600;
@@ -452,7 +457,7 @@ body {
 /* Progress Indicators */
 .progress-bar {
     height: 8px;
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 4px;
     overflow: hidden;
     margin-top: 0.5rem;
@@ -471,16 +476,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-    background: rgba(255,255,255,0.05);
+    background: rgba(255, 255, 255, 0.05);
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.2);
+    background: rgba(255, 255, 255, 0.2);
     border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255,255,255,0.3);
+    background: rgba(255, 255, 255, 0.3);
 }
 
 /* ===== SETUP SCREEN STYLES ===== */
@@ -498,7 +503,7 @@ body {
     padding: 2rem;
     max-width: 600px;
     width: 100%;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
 }
 
 .setup-header {
@@ -526,7 +531,7 @@ body {
 }
 
 .player-setup-card {
-    background: rgba(255,255,255,0.05);
+    background: rgba(255, 255, 255, 0.05);
     border-radius: 0.75rem;
     padding: 1rem;
     display: flex;
@@ -537,12 +542,12 @@ body {
 }
 
 .player-setup-card:hover {
-    background: rgba(255,255,255,0.08);
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .player-name-input {
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 0.5rem;
     padding: 0.5rem 0.75rem;
     color: #e0e0e0;
@@ -556,7 +561,7 @@ body {
 .player-name-input:focus {
     outline: none;
     border-color: var(--accent-gold);
-    background: rgba(255,255,255,0.15);
+    background: rgba(255, 255, 255, 0.15);
 }
 
 .player-roll-result {
@@ -598,7 +603,7 @@ body {
 }
 
 .order-results {
-    background: rgba(255,255,255,0.05);
+    background: rgba(255, 255, 255, 0.05);
     border-radius: 0.75rem;
     padding: 1.5rem;
     margin-top: 1.5rem;
@@ -612,7 +617,7 @@ body {
 }
 
 .order-item {
-    background: rgba(255,255,255,0.05);
+    background: rgba(255, 255, 255, 0.05);
     border-radius: 0.5rem;
     padding: 1rem;
     margin-bottom: 0.75rem;
@@ -648,127 +653,25 @@ body {
 .board-game {
     width: 100%;
     max-width: 100%;
-    aspect-ratio: 9 / 7;
+    aspect-ratio: 1;
     margin: 0 auto;
-    background: rgba(255,255,255,0.05);
+    background: rgba(255, 255, 255, 0.05);
     border-radius: 0.3rem;
     padding: 0.3rem;
     position: relative;
     display: grid;
-    grid-template-columns: repeat(9, 1fr);
-    grid-template-rows: repeat(7, 1fr);
-    gap: 0.2rem; /* AUMENTADO PARA MELHOR DISTRIBUIÇÃO GEOMÉTRICA */
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-    align-self: center; /* CENTRALIZAR NO CONTAINER */
-    margin-bottom: 0.25rem; /* PEQUENO ESPAÇO ANTES DOS CONTROLES */
+    grid-template-columns: repeat(10, 1fr);
+    grid-template-rows: repeat(10, 1fr);
+    gap: 0.2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    align-self: center;
+    margin-bottom: 0.25rem;
 }
 
-.board-corner {
-    background: linear-gradient(135deg, var(--accent-gold), #f59e0b);
-    border-radius: 0.2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    font-weight: 900;
-    color: #1a2942;
-    position: relative;
-    padding: 0.2rem;
-    min-height: auto;
-    aspect-ratio: 1;
-    flex-direction: column;
-}
-
-.board-corner-label {
-    display: none;
-}
-
-.board-side {
-    display: flex;
-    gap: 0.3rem;
-}
-
-.board-side.top,
-.board-side.bottom {
-    flex-direction: row;
-}
-
-.board-side.left,
-.board-side.right {
-    flex-direction: column;
-}
-
-.board-house {
-    flex: 1;
-    background: rgba(255,255,255,0.1);
-    border-radius: 0.2rem;
-    padding: 0.25rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.1rem;
-    position: relative;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: 1px solid transparent;
-    min-height: auto;
-    overflow: hidden;
-}
-
-.board-house:hover {
-    background: rgba(255,255,255,0.15);
-    border-color: rgba(251, 191, 36, 0.3);
-}
-
-.board-house.active {
-    background: rgba(251, 191, 36, 0.2);
-    border-color: var(--accent-gold);
-    box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
-    animation: pulseHouse 0.5s ease-in-out;
-}
-
-@keyframes pulseHouse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-}
-
-.house-icon {
-    font-size: 1rem;
-    flex-shrink: 0;
-}
-
-.house-name {
-    display: none;
-}
-
-.house-price {
-    display: none;
-}
-
-.house-players {
-    display: flex;
-    gap: 0.125rem;
-    flex-wrap: wrap;
-    justify-content: center;
-    position: absolute;
-    bottom: 0.25rem;
-}
-
-.player-pawn {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    border: 0.5px solid rgba(255,255,255,0.6);
-    font-size: 0.3rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
+/* ... existing code ... */
 
 .board-center {
-    background: rgba(0,0,0,0.3);
+    background: rgba(0, 0, 0, 0.3);
     border-radius: 0.2rem;
     display: flex;
     flex-direction: column;
@@ -776,8 +679,8 @@ body {
     justify-content: center;
     text-align: center;
     padding: 0.4rem;
-    grid-column: 3 / 8;
-    grid-row: 4 / 6; /* CORRIGIDO PARA 4/6 */
+    grid-column: 3 / 9;
+    grid-row: 3 / 9;
     gap: 0.2rem;
 }
 

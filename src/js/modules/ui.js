@@ -152,13 +152,13 @@ export function renderBoard() {
     let boardHTML = '<div class="board-game">';
 
     // Canto inferior direito (PARTIDA - posição 0)
-    boardHTML += '<div class="board-corner" style="grid-column: 9; grid-row: 7;"><span>🏁</span></div>';
+    boardHTML += '<div class="board-corner" style="grid-column: 10; grid-row: 10;"><span>🏁</span></div>';
 
-    // Lado INFERIOR (posições 1-8) - grid-row: 7, colunas 1-8
-    for (let i = 8; i >= 1; i--) {
+    // Lado INFERIOR (posições 1-8) - grid-row: 10, colunas 9-2
+    for (let i = 1; i <= 8; i++) {
         const house = boardLayout[i];
-        const col = 9 - i; // Colunas 1, 2, 3, 4, 5, 6, 7, 8
-        boardHTML += `<div class="board-house" data-position="${house.pos}" style="grid-column: ${col}; grid-row: 7;" onclick="selectHouse(${house.pos})">`;
+        const col = 10 - i; // Colunas 9, 8, 7, 6, 5, 4, 3, 2
+        boardHTML += `<div class="board-house" data-position="${house.pos}" style="grid-column: ${col}; grid-row: 10;" onclick="selectHouse(${house.pos})">`;
         boardHTML += `<div class="house-icon">${house.icon}</div>`;
         boardHTML += `<div class="house-name">${house.name}</div>`;
         if (house.price) boardHTML += `<div class="house-price">R$ ${house.price}</div>`;
@@ -166,12 +166,12 @@ export function renderBoard() {
     }
 
     // Canto inferior esquerdo (SORTE - posição 9)
-    boardHTML += '<div class="board-corner" style="grid-column: 1; grid-row: 7;"><span>🍀</span></div>';
+    boardHTML += '<div class="board-corner" style="grid-column: 1; grid-row: 10;"><span>🍀</span></div>';
 
-    // Lado ESQUERDO (posições 10-17) - grid-column: 1, linhas 7-2
-    for (let i = 10; i <= 16; i++) {
+    // Lado ESQUERDO (posições 10-17) - grid-column: 1, linhas 9-2
+    for (let i = 10; i <= 17; i++) {
         const house = boardLayout[i];
-        const row = 8 - (i - 9); // Linhas 7, 6, 5, 4, 3, 2, 1
+        const row = 10 - (i - 9); // Linhas 9, 8, 7, 6, 5, 4, 3, 2
         boardHTML += `<div class="board-house" data-position="${house.pos}" style="grid-column: 1; grid-row: ${row};" onclick="selectHouse(${house.pos})">`;
         boardHTML += `<div class="house-icon">${house.icon}</div>`;
         boardHTML += `<div class="house-name">${house.name}</div>`;
@@ -182,10 +182,10 @@ export function renderBoard() {
     // Canto superior esquerdo (CERTIFICADO TUGLORD - posição 18)
     boardHTML += '<div class="board-corner" style="grid-column: 1; grid-row: 1;"><span>🎖️</span></div>';
 
-    // Lado SUPERIOR (posições 19-26) - grid-row: 1, colunas 2-8
+    // Lado SUPERIOR (posições 19-26) - grid-row: 1, colunas 2-9
     for (let i = 19; i <= 26; i++) {
         const house = boardLayout[i];
-        const col = i - 17; // Colunas 2, 3, 4, 5, 6, 7, 8, 9
+        const col = (i - 18) + 1; // Colunas 2, 3, 4, 5, 6, 7, 8, 9
         boardHTML += `<div class="board-house" data-position="${house.pos}" style="grid-column: ${col}; grid-row: 1;" onclick="selectHouse(${house.pos})">`;
         boardHTML += `<div class="house-icon">${house.icon}</div>`;
         boardHTML += `<div class="house-name">${house.name}</div>`;
@@ -194,13 +194,13 @@ export function renderBoard() {
     }
 
     // Canto superior direito (BANCO - posição 27)
-    boardHTML += '<div class="board-corner" style="grid-column: 9; grid-row: 1;"><span>🏛️</span></div>';
+    boardHTML += '<div class="board-corner" style="grid-column: 10; grid-row: 1;"><span>🏛️</span></div>';
 
-    // Lado DIREITO (posições 28-35) - grid-column: 9, linhas 2-8
+    // Lado DIREITO (posições 28-35) - grid-column: 10, linhas 2-9
     for (let i = 28; i <= 35; i++) {
         const house = boardLayout[i];
-        const row = i - 26; // Linhas 2, 3, 4, 5, 6, 7, 8
-        boardHTML += `<div class="board-house" data-position="${house.pos}" style="grid-column: 9; grid-row: ${row};" onclick="selectHouse(${house.pos})">`;
+        const row = (i - 27) + 1; // Linhas 2, 3, 4, 5, 6, 7, 8, 9
+        boardHTML += `<div class="board-house" data-position="${house.pos}" style="grid-column: 10; grid-row: ${row};" onclick="selectHouse(${house.pos})">`;
         boardHTML += `<div class="house-icon">${house.icon}</div>`;
         boardHTML += `<div class="house-name">${house.name}</div>`;
         if (house.price) boardHTML += `<div class="house-price">R$ ${house.price}</div>`;
@@ -208,7 +208,7 @@ export function renderBoard() {
     }
 
     // Centro - Branding
-    boardHTML += '<div class="board-center" style="grid-column: 3 / 8; grid-row: 4 / 6;">';
+    boardHTML += '<div class="board-center">';
     boardHTML += '<div class="board-center-icon">⚓</div>';
     boardHTML += '<h3>TUGLORDS</h3>';
     boardHTML += '<p style="font-size: 0.7rem; color: #94a3b8; margin: 0.5rem 0 0 0;">Domínio Portuário</p>';
@@ -273,9 +273,10 @@ export function updatePlayerPositions() {
                     const gridCol = parent.style.gridColumn;
                     const gridRow = parent.style.gridRow;
 
-                    if (gridCol === '1' && gridRow === '3' && player.position === 9) houseEl = el;
+                    if (gridCol === '10' && gridRow === '10' && player.position === 0) houseEl = el;
+                    if (gridCol === '1' && gridRow === '10' && player.position === 9) houseEl = el;
                     if (gridCol === '1' && gridRow === '1' && player.position === 18) houseEl = el;
-                    if (gridCol === '3' && gridRow === '1' && player.position === 27) houseEl = el;
+                    if (gridCol === '10' && gridRow === '1' && player.position === 27) houseEl = el;
                 }
             });
         }
@@ -299,11 +300,14 @@ export function updatePlayerPositions() {
                 allCorners.forEach(corner => {
                     const gridCol = corner.style.gridColumn;
                     const gridRow = corner.style.gridRow;
-                    if ((gridCol === '1' && gridRow === '3' && player.position === 9) ||
-                        (gridCol === '1' && gridRow === '1' && player.position === 18) ||
-                        (gridCol === '3' && gridRow === '1' && player.position === 27)) {
-                        corner.classList.add('active');
-                    }
+                    // Corner 0 (Start): Col 10, Row 10
+                    if (gridCol === '10' && gridRow === '10' && player.position === 0) corner.classList.add('active');
+                    // Corner 18 (TugLord): Col 1, Row 1
+                    if (gridCol === '1' && gridRow === '1' && player.position === 18) corner.classList.add('active');
+                    // Corner 9 (Luck): Col 1, Row 10
+                    if (gridCol === '1' && gridRow === '10' && player.position === 9) corner.classList.add('active');
+                    // Corner 27 (Bank): Col 10, Row 1
+                    if (gridCol === '10' && gridRow === '1' && player.position === 27) corner.classList.add('active');
                 });
             }
         }
