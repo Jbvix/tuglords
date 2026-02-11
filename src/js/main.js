@@ -51,6 +51,7 @@ window.hideManual = UI.hideManual;
 window.goToSetup = UI.goToSetup;
 
 // Attach UI functions to window if needed (some close buttons might use them)
+window.UI = UI; // Critical for inline onclicks like "UI.closeModal()"
 window.closeModal = UI.closeModal;
 window.switchTab = UI.switchTab;
 window.toggleBoard = UI.toggleBoard;
