@@ -44,6 +44,9 @@ window.takeLoan = Logic.takeLoan;
 window.payLoan = Logic.payLoan;
 window.liquidateAsset = Logic.liquidateAsset;
 window.drawCard = Logic.drawCard;
+window.handleMandatoryPayment = Logic.handleMandatoryPayment;
+window.initiateArrest = Logic.initiateArrest;
+window.checkTugLordCertificate = Logic.checkTugLordCertificate; // Ensure this is definitely here
 
 // Navigation
 window.showManual = UI.showManual;
