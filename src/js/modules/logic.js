@@ -1252,8 +1252,4 @@ export function showContextualActions(house) {
         UI.showModal(title, body, buttons, false);
     }
 }
-actionsDiv.style.display = 'block';
-    } else {
-    actionsDiv.style.display = 'none';
-}
-}
+
