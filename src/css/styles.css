@@ -545,6 +545,15 @@ body {
     background: rgba(255, 255, 255, 0.08);
 }
 
+.player-setup-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+    min-width: 0;
+    /* Critical for text overflow in flex */
+}
+
 .player-name-input {
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -556,6 +565,9 @@ body {
     font-family: 'Inter', sans-serif;
     flex: 1;
     min-height: 40px;
+    width: 100%;
+    min-width: 0;
+    /* Allow shrinking */
 }
 
 .player-name-input:focus {

@@ -497,7 +497,7 @@ export function renderPlayerSetupList() {
 
     container.innerHTML = gameState.players.map(player => `
         <div class="player-setup-card" style="border-left: 4px solid ${player.color};">
-            <div style="display: flex; align-items: center; gap: 1rem; flex: 1;">
+            <div class="player-setup-info">
                 <span style="font-size: 2rem;">${player.icon}</span>
                 <input 
                     type="text" 
