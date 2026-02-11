@@ -55,9 +55,11 @@ window.closePanel = UI.closePanel;
 window.closeAllPanels = UI.closeAllPanels;
 
 // Initialize Game
-Logic.addPlayer(); // Add player 1
-Logic.addPlayer(); // Add player 2 by default
-UI.renderBoard();
+document.addEventListener('DOMContentLoaded', () => {
+    Logic.addPlayer(); // Add player 1
+    Logic.addPlayer(); // Add player 2 by default
+    UI.renderBoard();
+});
 
 // Expose gameState for debugging if needed
 window.gameState = gameState;
