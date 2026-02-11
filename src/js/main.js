@@ -64,6 +64,16 @@ window.closeAllPanels = UI.closeAllPanels;
 document.addEventListener('DOMContentLoaded', () => {
     // Only render board background, don't add players yet
     UI.renderBoard();
+
+    // Attach Event Listeners
+    const btnStart = document.getElementById('btnStartGame');
+    if (btnStart) btnStart.addEventListener('click', UI.goToSetup);
+
+    const btnManual = document.getElementById('btnOpenManual');
+    if (btnManual) btnManual.addEventListener('click', UI.showManual);
+
+    const btnCloseManual = document.getElementById('btnCloseManual');
+    if (btnCloseManual) btnCloseManual.addEventListener('click', UI.hideManual);
 });
 
 // Expose gameState for debugging if needed
