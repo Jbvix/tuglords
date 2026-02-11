@@ -523,6 +523,26 @@ body {
     margin: 0;
 }
 
+.floating-anchor {
+    font-size: 6rem;
+    color: var(--accent-gold);
+    display: inline-block;
+    animation: float 3s ease-in-out infinite;
+    text-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-15px);
+    }
+}
+
 .player-setup-list {
     display: flex;
     flex-direction: column;
