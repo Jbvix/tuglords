@@ -62,18 +62,49 @@ window.closeAllPanels = UI.closeAllPanels;
 // Initialize Game
 // Initialize Game
 document.addEventListener('DOMContentLoaded', () => {
+    console.log("🚀 [MAIN] DOMContentLoaded fired");
+
     // Only render board background, don't add players yet
-    UI.renderBoard();
+    try {
+        UI.renderBoard();
+        console.log("✅ [MAIN] Board rendered");
+    } catch (e) {
+        console.error("❌ [MAIN] Error rendering board:", e);
+    }
 
     // Attach Event Listeners
     const btnStart = document.getElementById('btnStartGame');
-    if (btnStart) btnStart.addEventListener('click', UI.goToSetup);
+    if (btnStart) {
+        console.log("✅ [MAIN] Found btnStartGame");
+        btnStart.addEventListener('click', () => {
+            console.log("🖱️ [MAIN] Start Game clicked");
+            UI.goToSetup();
+        });
+    } else {
+        console.error("❌ [MAIN] btnStartGame NOT found");
+    }
 
     const btnManual = document.getElementById('btnOpenManual');
-    if (btnManual) btnManual.addEventListener('click', UI.showManual);
+    if (btnManual) {
+        console.log("✅ [MAIN] Found btnOpenManual");
+        btnManual.addEventListener('click', () => {
+            console.log("🖱️ [MAIN] Manual clicked");
+            UI.showManual();
+        });
+    } else {
+        console.error("❌ [MAIN] btnOpenManual NOT found");
+    }
 
     const btnCloseManual = document.getElementById('btnCloseManual');
-    if (btnCloseManual) btnCloseManual.addEventListener('click', UI.hideManual);
+    if (btnCloseManual) {
+        console.log("✅ [MAIN] Found btnCloseManual");
+        btnCloseManual.addEventListener('click', () => {
+            console.log("🖱️ [MAIN] Close Manual clicked");
+            UI.hideManual();
+        });
+    } else {
+        console.error("❌ [MAIN] btnCloseManual NOT found");
+    }
 });
 
 // Expose gameState for debugging if needed
