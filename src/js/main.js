@@ -45,6 +45,11 @@ window.payLoan = Logic.payLoan;
 window.liquidateAsset = Logic.liquidateAsset;
 window.drawCard = Logic.drawCard;
 
+// Navigation
+window.showManual = UI.showManual;
+window.hideManual = UI.hideManual;
+window.goToSetup = UI.goToSetup;
+
 // Attach UI functions to window if needed (some close buttons might use them)
 window.closeModal = UI.closeModal;
 window.switchTab = UI.switchTab;
@@ -55,9 +60,9 @@ window.closePanel = UI.closePanel;
 window.closeAllPanels = UI.closeAllPanels;
 
 // Initialize Game
+// Initialize Game
 document.addEventListener('DOMContentLoaded', () => {
-    Logic.addPlayer(); // Add player 1
-    Logic.addPlayer(); // Add player 2 by default
+    // Only render board background, don't add players yet
     UI.renderBoard();
 });
 

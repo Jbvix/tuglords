@@ -17,6 +17,27 @@ export function openPanel(panelId, button) {
     }
 }
 
+export function showManual() {
+    document.getElementById('presentationScreen').style.display = 'none';
+    document.getElementById('manualScreen').style.display = 'flex';
+}
+
+export function hideManual() {
+    document.getElementById('manualScreen').style.display = 'none';
+    document.getElementById('presentationScreen').style.display = 'flex';
+}
+
+export function goToSetup() {
+    document.getElementById('presentationScreen').style.display = 'none';
+    document.getElementById('setupScreen').style.display = 'flex';
+
+    // Initialize default players only when entering setup
+    if (gameState.players.length === 0) {
+        window.addPlayer(); // Add player 1
+        window.addPlayer(); // Add player 2
+    }
+}
+
 export function closePanel(panelId) {
     const panel = document.getElementById(panelId);
     if (panel) {
