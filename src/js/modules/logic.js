@@ -375,7 +375,10 @@ export function buyProperty(space) {
     Audio.playSuccess();
     UI.renderPlayersPanel();
     UI.closeModal();
+
+    const actionsDiv = document.getElementById('contextualActions');
     if (actionsDiv) actionsDiv.style.display = 'none';
+
     UI.updatePlayerPositions(); // Updates ownership view
 }
 
