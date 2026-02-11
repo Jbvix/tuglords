@@ -12,11 +12,7 @@ document.body.addEventListener('click', () => {
     Audio.init();
 }, { once: true });
 
-// Initial Render
-Logic.addPlayer(); // Add player 1
-Logic.addPlayer(); // Add player 2 by default
-UI.renderBoard();
-window.addPlayer = Logic.addPlayer;
+
 window.updatePlayerName = Logic.updatePlayerName;
 window.removePlayer = Logic.removePlayer;
 window.startOrderRolls = Logic.startOrderRolls;
@@ -58,9 +54,7 @@ window.openPanel = UI.openPanel; // For bottom nav
 window.closePanel = UI.closePanel;
 window.closeAllPanels = UI.closeAllPanels;
 
-// Initialize
-// Initialize
-// Initial Render
+// Initialize Game
 Logic.addPlayer(); // Add player 1
 Logic.addPlayer(); // Add player 2 by default
 UI.renderBoard();
