@@ -392,9 +392,25 @@ export function buyTug(space) {
         return;
     }
 
-    if (tugType === 'ocean' && currentPlayer.hasOceanTug) {
-        UI.showNotification('⚠️ Já possui Rebocador Oceânico!');
-        return;
+    if (tugType === 'ocean') {
+        if (currentPlayer.hasOceanTug) {
+            UI.showNotification('⚠️ Já possui Rebocador Oceânico!');
+            return;
+        }
+
+        // Ocean Tug Requirements: All Certs + TugLord (University Master)
+        const requiredCerts = ['fire', 'rescue', 'collision', 'abandon'];
+        const hasAllCerts = requiredCerts.every(c => currentPlayer.certificates.includes(c));
+
+        if (!hasAllCerts) {
+            UI.showNotification('⚠️ Requer todos os certificados!');
+            return;
+        }
+
+        if (!currentPlayer.hasTuglord) {
+            UI.showNotification('⚠️ Requer status TugMaster (TugLord)!');
+            return;
+        }
     }
 
     currentPlayer.money -= price;
@@ -1233,21 +1249,33 @@ export function showContextualActions(house) {
 
     // ========== EVENTS (Ocean) ==========
     else if (house.type === 'ocean_event' || house.type === 'event') {
-        // triggerOceanEvent handles its own modal, so we just call it.
-        // However, showContextualActions is called AFTER move.
-        // We should ensure we don't double modal.
-        triggerOceanEvent();
-        return;
+        if (!currentPlayer.hasOceanTug) {
+            body = `<p style="color: #ef4444;">⚠️ Navegação Perigosa!</p>
+                     <p>Você precisa de um <strong>Rebocador Oceânico</strong> para enfrentar estes mares.</p>`;
+            buttons.push({ text: 'Recuar', onClick: `closeModal()`, class: 'btn-secondary' });
+        } else {
+            // triggerOceanEvent handles its own modal, so we just call it.
+            triggerOceanEvent();
+            return;
+        }
     }
 
     // Specific Contracts
     else if (house.type === 'contract' && house.price) {
-        body = `<p>Contrato disponível para execução.</p>`;
-        buttons.push({
-            text: `Executar (+R$ ${house.price})`,
-            onClick: `executeContract('${house.name}', ${house.price}); UI.closeModal();`,
-            class: 'btn-primary'
-        });
+        const hasTug = currentPlayer.portTugs > 0 || currentPlayer.hasOceanTug || currentPlayer.hasTuglord;
+
+        if (hasTug) {
+            body = `<p>Contrato disponível para execução.</p>`;
+            buttons.push({
+                text: `Executar (+R$ ${house.price})`,
+                onClick: `executeContract('${house.name}', ${house.price}); UI.closeModal();`,
+                class: 'btn-primary'
+            });
+        } else {
+            body = `<p style="color: #ef4444;">⚠️ Frota Insuficiente!</p>
+                     <p>Você precisa de pelo menos um rebocador operacional para realizar contratos.</p>`;
+            buttons.push({ text: 'Entendido', onClick: `UI.closeModal()`, class: 'btn-secondary' });
+        }
     }
 
     // Show the constructed modal if we have content
