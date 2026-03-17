@@ -306,8 +306,7 @@ export function updatePlayerPositions() {
             const pawn = document.createElement('div');
             pawn.className = 'player-pawn';
             pawn.style.background = player.color;
-            pawn.textContent = player.icon;
-            pawn.title = player.name;
+            pawn.title = player.name; // Mantém o tooltip com o nome
             houseEl.appendChild(pawn);
         }
 

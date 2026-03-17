@@ -721,8 +721,8 @@ body {
 }
 
 .board-house {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 0.1rem;
+    background: rgba(255, 255, 255, 0.15); /* Mais claro para contrastar com os emojis */
+    border-radius: 0.25rem; /* Bordas um pouco mais arredondadas */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -732,6 +732,7 @@ body {
     position: relative;
     cursor: pointer;
     overflow: hidden;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2); /* Sombra interna para dar profundidade */
 }
 
 .board-center {
@@ -804,9 +805,29 @@ body {
         font-size: 1.4rem;
     }
 
+    .house-players {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 2px;
+        pointer-events: none;
+    }
+
     .player-pawn {
-        width: 10px;
-        height: 10px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 2px solid white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        color: transparent; /* Oculta o emoji de texto */
+        font-size: 0;
+        z-index: 5;
     }
 
     .board-center h3 {
@@ -850,9 +871,14 @@ body {
     }
 
     .player-pawn {
-        width: 11px;
-        height: 11px;
-        font-size: 0.4rem;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 2px solid white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        color: transparent;
+        font-size: 0;
+        z-index: 5;
     }
 
     .board-center {
@@ -900,9 +926,14 @@ body {
     }
 
     .player-pawn {
-        width: 13px;
-        height: 13px;
-        font-size: 0.45rem;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 2px solid white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        color: transparent;
+        font-size: 0;
+        z-index: 5;
     }
 
     .board-center {
