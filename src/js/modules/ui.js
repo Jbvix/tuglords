@@ -122,6 +122,11 @@ export function showNotification(message) {
         pointer-events: none;
     `;
 
+    // Limita o empilhamento para não cobrir a tela (remove as mais antigas).
+    while (stack.children.length >= 3) {
+        stack.removeChild(stack.firstChild);
+    }
+
     const notification = document.createElement('div');
     notification.style.cssText = `
         background: rgba(251, 191, 36, 0.95);
@@ -132,7 +137,7 @@ export function showNotification(message) {
         box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         animation: slideDown 0.3s ease;
         text-align: center;
-        pointer-events: auto;
+        pointer-events: none;
         max-width: 100%;
     `;
     notification.textContent = message;
