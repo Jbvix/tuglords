@@ -6,21 +6,32 @@ export const Audio = {
     init() {
         if (this.initialized) return;
 
-        // Simple synth for single notes (movement, dice)
-        this.synth = new Tone.Synth({
-            oscillator: { type: "square" },
-            envelope: { attack: 0.01, decay: 0.1, sustain: 0, release: 0.1 }
-        }).toDestination();
+        // Degradação graciosa: se a lib Tone.js não carregou (CDN bloqueado/offline),
+        // o jogo segue normalmente sem áudio, em vez de lançar erro a cada clique.
+        if (typeof Tone === 'undefined') {
+            console.warn("🔇 Tone.js indisponível — áudio desativado.");
+            return;
+        }
 
-        // PolySynth for chords (success, critical)
-        this.polySynth = new Tone.PolySynth(Tone.Synth).toDestination();
-        this.polySynth.set({
-            oscillator: { type: "triangle" },
-            envelope: { attack: 0.05, decay: 0.2, sustain: 0.1, release: 1 }
-        });
+        try {
+            // Simple synth for single notes (movement, dice)
+            this.synth = new Tone.Synth({
+                oscillator: { type: "square" },
+                envelope: { attack: 0.01, decay: 0.1, sustain: 0, release: 0.1 }
+            }).toDestination();
 
-        this.initialized = true;
-        console.log("🔊 Audio System Initialized");
+            // PolySynth for chords (success, critical)
+            this.polySynth = new Tone.PolySynth(Tone.Synth).toDestination();
+            this.polySynth.set({
+                oscillator: { type: "triangle" },
+                envelope: { attack: 0.05, decay: 0.2, sustain: 0.1, release: 1 }
+            });
+
+            this.initialized = true;
+            console.log("🔊 Audio System Initialized");
+        } catch (e) {
+            console.warn("🔇 Falha ao inicializar áudio:", e.message);
+        }
     },
 
     playDice() {

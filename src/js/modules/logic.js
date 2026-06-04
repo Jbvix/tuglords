@@ -10,6 +10,14 @@ export function isProperty(house) {
     return !!house && (house.type === 'port' || house.type === 'property') && !!house.price;
 }
 
+// Frota OPERACIONAL do jogador (desconta rebocadores em docagem).
+export function operationalTugs(player) {
+    const port = player.portTugs - player.dockedTugs.port;
+    const ocean = player.hasOceanTug && !player.dockedTugs.ocean;
+    const tuglord = player.hasTuglord && !player.dockedTugs.tuglord;
+    return { port, ocean, tuglord, total: port + (ocean ? 1 : 0) + (tuglord ? 1 : 0) };
+}
+
 // ========== EXPORTED LOGIC FUNCTIONS ==========
 
 export function addPlayer() {
@@ -254,22 +262,46 @@ export function showLoanOptions() {
     UI.showNotification('💳 Escolha o valor do empréstimo');
 }
 
+// Avança o índice para o próximo jogador ATIVO (pulando eliminados),
+// incrementando a rodada ao dar a volta. Protegido contra loop infinito.
+function advanceToNextActivePlayer() {
+    const total = gameState.players.length;
+    let guard = 0;
+    do {
+        gameState.currentPlayerIndex = (gameState.currentPlayerIndex + 1) % total;
+        if (gameState.currentPlayerIndex === 0) gameState.currentRound++;
+        guard++;
+    } while (gameState.players[gameState.currentPlayerIndex].isEliminated && guard <= total);
+}
+
 export function endTurn() {
     if (!gameState.diceRolled) {
         UI.showNotification('⚠️ Role os dados primeiro!');
         return;
     }
 
-    gameState.currentPlayerIndex = (gameState.currentPlayerIndex + 1) % gameState.players.length;
-
-    if (gameState.currentPlayerIndex === 0) {
-        gameState.currentRound++;
-    }
+    // Vitória "TugLord Supremo" pode ter sido atingida durante o turno.
+    if (checkVictory()) return;
 
     const actionsDiv = document.getElementById('contextualActions');
     if (actionsDiv) actionsDiv.style.display = 'none';
 
-    const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+    advanceToNextActivePlayer();
+    let currentPlayer = gameState.players[gameState.currentPlayerIndex];
+
+    // Empréstimos vencendo no início do turno (pode liquidar/eliminar o jogador).
+    processLoans(currentPlayer);
+    if (gameState.phase === 'ended') return;
+
+    // Se o jogador faliu por inadimplência, passa ao próximo ativo.
+    let guard = 0;
+    while (currentPlayer.isEliminated && guard < gameState.players.length) {
+        advanceToNextActivePlayer();
+        currentPlayer = gameState.players[gameState.currentPlayerIndex];
+        processLoans(currentPlayer);
+        if (gameState.phase === 'ended') return;
+        guard++;
+    }
 
     // Skip Turn Check
     if (currentPlayer.skipNextTurn) {
@@ -339,7 +371,7 @@ export function handleShipyard(space) {
 
     let tugOptions = [];
     if (operationalPortTugs > 0) tugOptions.push({ label: `⚓ Portuário (${operationalPortTugs})`, value: 'port' });
-    if (operationalOceanTug) tugOptions.push({ label: `ρυ Oceânico`, value: 'ocean' });
+    if (operationalOceanTug) tugOptions.push({ label: `🌊 Oceânico`, value: 'ocean' });
     if (operationalTuglord) tugOptions.push({ label: `⭐ TugLord`, value: 'tuglord' });
 
     const modalBody = `
@@ -551,6 +583,8 @@ export function declareBankruptcy(player, creditor) {
     player.portTugs = 0;
     player.hasOceanTug = false;
     player.hasTuglord = false;
+    player.loans = [];
+    player.stocks = {};
 
     UI.showModal('💔 Falência', `<p>${player.name} foi eliminado!</p>`);
 
@@ -559,11 +593,13 @@ export function declareBankruptcy(player, creditor) {
 
     const activePlayers = gameState.players.filter(p => !p.isEliminated);
     if (activePlayers.length === 1) {
+        gameState.phase = 'ended';
         setTimeout(() => declareWinner(activePlayers[0]), 3000);
     }
 }
 
 export function declareWinner(winner) {
+    gameState.phase = 'ended';
     UI.showModal('🏆 Vitória!', `
         <div style="text-align: center;">
             <h1>${winner.icon} ${winner.name} Venceu!</h1>
@@ -901,8 +937,9 @@ export function openBankTerminal() {
         <div style="margin-bottom: 1rem;">
              <p style="font-weight: 600; color: #e0e0e0; margin-bottom: 0.5rem;">📋 Empréstimos Disponíveis</p>
              <div style="display: grid; gap: 0.5rem;">
-                 <button class="btn-secondary" onclick="takeLoan(500)">💵 R$500 (Pagar R$550)</button>
-                 <button class="btn-secondary" onclick="takeLoan(1000)">💵 R$1.000 (Pagar R$1.100)</button>
+                 <button class="btn-secondary" onclick="takeLoan(5000, 0.10)">💵 R$5.000 (Juros 10% • paga R$5.500 em 5 turnos)</button>
+                 <button class="btn-secondary" onclick="takeLoan(10000, 0.15)">💵 R$10.000 (Juros 15% • paga R$11.500 em 5 turnos)</button>
+                 <button class="btn-secondary" onclick="takeLoan(20000, 0.20)">💵 R$20.000 (Juros 20% • paga R$24.000 em 5 turnos)</button>
              </div>
         </div>
 
@@ -912,7 +949,7 @@ export function openBankTerminal() {
              <div style="display: grid; gap: 0.5rem;">
                  ${currentPlayer.loans.map((l, i) => `
                     <button class="btn-secondary" onclick="payLoan(${i})">
-                        💸 Pagar R$${l.totalDue} (${l.turnsRemaining} turnos)
+                        💸 Pagar R$${l.totalDue.toLocaleString('pt-BR')} (vence em ${l.turnsRemaining} ${l.turnsRemaining === 1 ? 'turno' : 'turnos'})
                     </button>
                  `).join('')}
              </div>
@@ -929,7 +966,7 @@ export function openBankTerminal() {
                     </button>
                  `).join('')}
                  ${currentPlayer.portTugs > 0 ? `<button class="btn-secondary" onclick="liquidateAsset('port_tug', null)">⚓ Rebocador Portuário (R$100)</button>` : ''}
-                 ${currentPlayer.hasOceanTug ? `<button class="btn-secondary" onclick="liquidateAsset('ocean_tug', null)">ρυ Rebocador Oceânico (R$250)</button>` : ''}
+                 ${currentPlayer.hasOceanTug ? `<button class="btn-secondary" onclick="liquidateAsset('ocean_tug', null)">🌊 Rebocador Oceânico (R$250)</button>` : ''}
              </div>
         </div>
         ` : ''}
@@ -937,14 +974,56 @@ export function openBankTerminal() {
     UI.showModal('🏦 Terminal Bancário', modalBody, [], true);
 }
 
-export function takeLoan(amount) {
+export function takeLoan(amount, rate = 0.10) {
     const currentPlayer = gameState.players[gameState.currentPlayerIndex];
-    const totalDue = Math.floor(amount * 1.1);
-    currentPlayer.loans.push({ principal: amount, totalDue, turnsRemaining: 5 });
+    const totalDue = Math.floor(amount * (1 + rate));
+    currentPlayer.loans.push({ principal: amount, totalDue, turnsRemaining: 5, rate });
     currentPlayer.money += amount;
-    UI.showNotification(`Empréstimo de R$${amount} realizado!`);
+    UI.showNotification(`Empréstimo de R$${amount.toLocaleString('pt-BR')} realizado!`);
     UI.renderPlayersPanel();
     UI.closeModal();
+}
+
+// Vence o prazo dos empréstimos do jogador no início do seu turno e cobra os
+// vencidos automaticamente (dispara liquidação/falência se faltar saldo).
+export function processLoans(player) {
+    if (!player.loans || player.loans.length === 0 || player.isEliminated) return;
+
+    for (let i = player.loans.length - 1; i >= 0; i--) {
+        const loan = player.loans[i];
+        loan.turnsRemaining--;
+
+        if (loan.turnsRemaining <= 0) {
+            // Remove antes de cobrar para evitar dupla contagem caso a cobrança
+            // dispare liquidação forçada (que reavalia ativos, não dívidas).
+            player.loans.splice(i, 1);
+            handleMandatoryPayment(player, loan.totalDue, 'Empréstimo vencido');
+            if (player.isEliminated) return;
+        }
+    }
+}
+
+// ========== VICTORY ==========
+
+// Critério "TugLord Supremo": 4 certificados + status TugLord +
+// Rebocador Oceânico + ao menos 5 portos.
+export function meetsSupremeVictory(player) {
+    if (!player || player.isEliminated) return false;
+    const requiredCerts = ['fire', 'rescue', 'collision', 'abandon'];
+    const hasAllCerts = requiredCerts.every(c => player.certificates.includes(c));
+    const portsOwned = gameState.houses.filter(h => isProperty(h) && h.owner === player.id).length;
+    return hasAllCerts && player.hasTuglord && player.hasOceanTug && portsOwned >= 5;
+}
+
+export function checkVictory() {
+    if (gameState.phase !== 'playing') return false;
+    const winner = gameState.players.find(p => meetsSupremeVictory(p));
+    if (winner) {
+        gameState.phase = 'ended';
+        declareWinner(winner);
+        return true;
+    }
+    return false;
 }
 
 export function payLoan(index) {
@@ -1142,6 +1221,13 @@ export function showContextualActions(house) {
 
     // ========== SERVICE (Combustível/Estaleiro) ==========
     else if (house.type === 'service' && house.price) {
+        // Docagem obrigatória: ao cair no Estaleiro com frota operacional, abre o
+        // fluxo de docagem (handleShipyard cuida do próprio modal).
+        if (house.name.includes('Estaleiro') && operationalTugs(currentPlayer).total > 0) {
+            handleShipyard(house);
+            return;
+        }
+
         const owner = house.owner !== undefined ? gameState.players.find(p => p.id === house.owner) : null;
 
         if (!owner) {
@@ -1165,17 +1251,6 @@ export function showContextualActions(house) {
         } else {
             body = `<p>Propriedade de <strong>${owner.name}</strong>.</p>`;
             buttons.push({ text: 'Continuar', onClick: `closeModal()`, class: 'btn-primary' });
-        }
-
-        // Auto-check for docking at Shipyard
-        if (house.name.includes('Estaleiro') && (currentPlayer.portTugs > 0 || currentPlayer.hasOceanTug || currentPlayer.hasTuglord)) {
-            // If we have toggle logic for docking, it acts automatically or via performManeuver?
-            // Original code had handleShipyard(house) on auto-timeout.
-            // Let's integrate it. handleShipyard usually opens its own modal?
-            // If handleShipyard opens a modal, we might conflict.
-            // Let's assume handleShipyard is NOT safe to call directly if we adhere to "one modal at a time".
-            // But handleShipyard is not exported/visible in the snippet I saw earlier.
-            // I'll assume check logic is done here or we add a button if needed.
         }
     }
 
@@ -1272,9 +1347,9 @@ export function showContextualActions(house) {
 
     // ========== EVENTS (Ocean) ==========
     else if (house.type === 'ocean_event' || house.type === 'event') {
-        if (!currentPlayer.hasOceanTug) {
+        if (operationalTugs(currentPlayer).total === 0) {
             body = `<p style="color: #ef4444;">⚠️ Navegação Perigosa!</p>
-                     <p>Você precisa de um <strong>Rebocador Oceânico</strong> para enfrentar estes mares.</p>`;
+                     <p>Você precisa de pelo menos um <strong>rebocador operacional</strong> para enfrentar estes mares.</p>`;
             buttons.push({ text: 'Recuar', onClick: `closeModal()`, class: 'btn-secondary' });
         } else {
             // triggerOceanEvent handles its own modal, so we just call it.
