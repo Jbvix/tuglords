@@ -148,66 +148,63 @@ export function showNotification(message) {
 }
 
 export function showModal(title, body, buttons = [], closeBtn = true) {
-    // Check if modal exists
     let modal = document.getElementById('gameModal');
     if (!modal) {
         modal = document.createElement('div');
         modal.id = 'gameModal';
-        modal.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            padding: 1.5rem;
-            backdrop-filter: blur(5px);
-            opacity: 0;
-            transition: opacity 0.3s;
-        `;
+        modal.className = 'modal-overlay';
         document.body.appendChild(modal);
+
+        // Clique no fundo fecha (apenas modais dispensáveis).
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal && modal.dataset.dismissible === 'true') closeModal();
+        });
     }
 
+    modal.dataset.dismissible = closeBtn ? 'true' : 'false';
+
     const buttonsHTML = buttons.map(btn => `
-        <button class="btn-primary" onclick="${btn.onClick}" style="width: 100%;">
+        <button class="${btn.class || 'btn-primary'}" onclick="${btn.onClick}" style="width: 100%;">
             ${btn.text}
         </button>
     `).join('');
 
     modal.innerHTML = `
-        <div style="background: #1e293b; border-radius: 1rem; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); border: 1px solid rgba(255,255,255,0.1); transform: scale(0.95); transition: transform 0.3s;">
-            <div style="padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: #1e293b; z-index: 10;">
-                <h3 style="margin: 0; font-size: 1.25rem; color: #fbbf24; font-weight: 700;">${title}</h3>
-                ${closeBtn ? '<button onclick="closeModal()" style="background: transparent; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer;">✕</button>' : ''}
+        <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+            <div class="modal-header">
+                <h3 id="modalTitle">${title}</h3>
+                ${closeBtn ? '<button class="modal-close-x" onclick="closeModal()" aria-label="Fechar">✕</button>' : ''}
             </div>
-            <div style="padding: 1.5rem;">
+            <div class="modal-body">
                 ${body}
-                ${buttonsHTML ? `<div style="margin-top: 1.5rem; display: grid; gap: 0.75rem;">${buttonsHTML}</div>` : ''}
+                ${buttonsHTML ? `<div class="modal-actions">${buttonsHTML}</div>` : ''}
             </div>
         </div>
     `;
 
-    // Animation
     requestAnimationFrame(() => {
-        modal.style.opacity = '1';
-        modal.querySelector('div').style.transform = 'scale(1)';
+        modal.classList.add('open');
+        // Move o foco para a primeira ação (acessibilidade de teclado).
+        const focusTarget = modal.querySelector('.modal-actions button') || modal.querySelector('.modal-close-x');
+        if (focusTarget) focusTarget.focus();
     });
 }
 
 export function closeModal() {
     const modal = document.getElementById('gameModal');
     if (modal) {
-        modal.style.opacity = '0';
-        modal.querySelector('div').style.transform = 'scale(0.95)';
-        setTimeout(() => {
-            modal.remove();
-        }, 300);
+        modal.classList.remove('open');
+        setTimeout(() => modal.remove(), 300);
     }
 }
+
+// Fecha modais dispensáveis com a tecla Esc.
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        const modal = document.getElementById('gameModal');
+        if (modal && modal.dataset.dismissible === 'true') closeModal();
+    }
+});
 
 // ========== RENDER FUNCTIONS ==========
 
