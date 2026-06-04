@@ -342,7 +342,7 @@ export function selectHouse(position) {
 
     // Calculate current rent if it's a property
     let rentInfo = '';
-    if (house.type === 'property' && house.rent) {
+    if ((house.type === 'property' || house.type === 'port') && house.rent) {
         rentInfo = `<div style="margin-top: 0.5rem; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 0.5rem;">
             <p style="margin: 0; color: #94a3b8; font-size: 0.85rem;">Aluguel Base: R$${house.rent[0]}</p>
         </div>`;

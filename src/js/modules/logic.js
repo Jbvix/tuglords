@@ -2,6 +2,14 @@ import { gameState, TRAINING_QUESTIONS, OCEAN_EVENTS, playerColors, playerIcons 
 import * as UI from './ui.js';
 import { Audio } from './audio.js';
 
+// ========== HELPERS ==========
+
+// Casas compráveis que geram aluguel. No state.js os portos usam type 'port';
+// aceitamos também 'property' para retrocompatibilidade.
+export function isProperty(house) {
+    return !!house && (house.type === 'port' || house.type === 'property') && !!house.price;
+}
+
 // ========== EXPORTED LOGIC FUNCTIONS ==========
 
 export function addPlayer() {
@@ -180,7 +188,11 @@ export function rollDice() {
 export function movePlayer(spaces) {
     const currentPlayer = gameState.players[gameState.currentPlayerIndex];
     if (currentPlayer.isEliminated) return; // Proteção
+    if (!spaces) return; // 0 casas: nada a fazer
 
+    const len = gameState.houses.length;
+    const direction = spaces >= 0 ? 1 : -1; // suporta retroceder (eventos)
+    const totalSteps = Math.abs(spaces);
     const startPosition = currentPlayer.position;
     let currentStep = 0;
 
@@ -189,10 +201,10 @@ export function movePlayer(spaces) {
     if (rollBtn) rollBtn.disabled = true;
     if (endBtn) endBtn.disabled = true;
 
-    UI.showNotification(`🎲 Movendo ${spaces} casas...`);
+    UI.showNotification(`🎲 ${direction === 1 ? 'Avançando' : 'Retrocedendo'} ${totalSteps} casas...`);
 
     const moveInterval = setInterval(() => {
-        if (currentStep >= spaces) {
+        if (currentStep >= totalSteps) {
             clearInterval(moveInterval);
 
             const finalPosition = currentPlayer.position;
@@ -210,13 +222,14 @@ export function movePlayer(spaces) {
         }
 
         currentStep++;
-        currentPlayer.position = (startPosition + currentStep) % gameState.houses.length;
+        // Módulo seguro para posições negativas ao retroceder.
+        currentPlayer.position = (((startPosition + direction * currentStep) % len) + len) % len;
         Audio.playMove();
 
         const stepHouse = gameState.houses[currentPlayer.position];
 
-        // Passagem pela partida
-        if (currentPlayer.position === 0 && currentStep < spaces) {
+        // Passagem pela partida (apenas avançando)
+        if (direction === 1 && currentPlayer.position === 0 && currentStep < totalSteps) {
             currentPlayer.money += 4000;
             UI.showNotification(`🏁 ${currentPlayer.name} passou pela Partida! +R$4000`);
             UI.renderPlayersPanel();
@@ -231,7 +244,7 @@ export function movePlayer(spaces) {
 
     setTimeout(() => {
         UI.renderPlayersPanel();
-    }, spaces * 200 + 500);
+    }, totalSteps * 200 + 500);
 }
 
 // ========== GAME LOGIC ACTIONS ==========
@@ -261,14 +274,21 @@ export function endTurn() {
     // Skip Turn Check
     if (currentPlayer.skipNextTurn) {
         currentPlayer.skipNextTurn = false;
-        gameState.diceRolled = true; // finge que rolou
-        UI.showNotification(`⏸️ ${currentPlayer.name} perdeu o turno!`);
+
+        // Atualiza a UI primeiro (updateTurnDisplay reseta diceRolled = false)...
         UI.updateTurnDisplay();
         UI.updatePlayerPositions();
         UI.renderPlayersPanel();
-        // Não avança para próxima checagem recursiva, espera jogador clicar "End Turn" de novo?
-        // No original ele chama return, effectively ending interaction.
-        // Mas como diceRolled=true, ele terá que clicar End Turn.
+
+        // ...e SÓ DEPOIS bloqueia a jogada, senão o reset acima reativaria os dados.
+        gameState.diceRolled = true;
+        const rollBtn = document.getElementById('rollDiceBtn');
+        if (rollBtn) {
+            rollBtn.disabled = true;
+            rollBtn.style.opacity = '0.5';
+        }
+
+        UI.showNotification(`⏸️ ${currentPlayer.name} perdeu o turno! Clique em Finalizar Turno.`);
         return;
     }
 
@@ -622,9 +642,10 @@ export function applyOceanEventEffect(event) {
 export function advanceToNextProperty(skipRent) {
     const currentPlayer = gameState.players[gameState.currentPlayerIndex];
     let spaces = 0;
-    for (let i = 1; i <= 36; i++) {
-        const pos = (currentPlayer.position + i) % 36;
-        if (gameState.houses[pos].type === 'property') {
+    const len = gameState.houses.length;
+    for (let i = 1; i <= len; i++) {
+        const pos = (currentPlayer.position + i) % len;
+        if (isProperty(gameState.houses[pos])) {
             spaces = i;
             break;
         }
@@ -638,9 +659,10 @@ export function advanceToNextProperty(skipRent) {
 export function returnToLastProperty() {
     const currentPlayer = gameState.players[gameState.currentPlayerIndex];
     let spaces = 0;
-    for (let i = 1; i <= 36; i++) {
-        const pos = (currentPlayer.position - i + 36) % 36;
-        if (gameState.houses[pos].type === 'property') {
+    const len = gameState.houses.length;
+    for (let i = 1; i <= len; i++) {
+        const pos = (currentPlayer.position - i + len) % len;
+        if (isProperty(gameState.houses[pos])) {
             spaces = -i;
             break;
         }
@@ -763,10 +785,10 @@ export function openStockExchange() {
 
     // Available properties to buy stocks (not owned by current player, has owner, < 5 stocks)
     const availableProperties = gameState.houses.filter(h =>
-        h.type === 'property' &&
+        isProperty(h) &&
         h.owner !== undefined &&
         h.owner !== currentPlayer.id &&
-        h.stocks < 5
+        (h.stocks || 0) < 5
     );
 
     // Player's current stocks
@@ -814,7 +836,7 @@ export function openStockExchange() {
         return `
                     <button class="btn-secondary" onclick="buyStock('${prop.name.replace(/'/g, "\\'")}', ${price})" style="text-align: left;">
                         ${prop.name}<br>
-                        <small style="color: #94a3b8;">R$${price} | Dono: ${owner.name} | Disp: ${5 - prop.stocks}</small>
+                        <small style="color: #94a3b8;">R$${price} | Dono: ${owner.name} | Disp: ${5 - (prop.stocks || 0)}</small>
                     </button>
                     `;
     }).join('')}
@@ -831,6 +853,7 @@ export function buyStock(propName, price) {
     const property = gameState.houses.find(h => h.name === propName);
 
     if (currentPlayer.money < price) { UI.showNotification('Saldo insuficiente'); return; }
+    if (!property.stocks) property.stocks = 0;
     if (property.stocks >= 5) { UI.showNotification('Limite atingido'); return; }
 
     currentPlayer.money -= price;
@@ -1039,7 +1062,7 @@ export function showContextualActions(house) {
     let buttons = [];
 
     // ========== PROPERTY (Porto) ==========
-    if (house.type === 'property' && house.price) {
+    if (isProperty(house)) {
         const owner = house.owner !== undefined ? gameState.players.find(p => p.id === house.owner) : null;
 
         if (!owner) {
@@ -1072,7 +1095,7 @@ export function showContextualActions(house) {
                 // User requested "popup", implying interaction. Let's make it manual click to close/pay.
                 buttons.push({
                     text: `Pagar R$ ${rent}`,
-                    onClick: `handleMandatoryPayment(gameState.players[${gameState.currentPlayerIndex}], ${rent}, 'Aluguel (${house.name})', gameState.players[${owner.id - 1}]); UI.closeModal();`,
+                    onClick: `handleMandatoryPayment(gameState.players[${gameState.currentPlayerIndex}], ${rent}, 'Aluguel (${house.name})', gameState.players.find(p => p.id === ${owner.id})); UI.closeModal();`,
                     class: 'btn-primary'
                 });
             }
@@ -1111,7 +1134,7 @@ export function showContextualActions(house) {
             `;
             buttons.push({
                 text: `Pagar R$ ${serviceFee}`,
-                onClick: `handleMandatoryPayment(gameState.players[${gameState.currentPlayerIndex}], ${serviceFee}, 'Taxa (${house.name})', gameState.players[${owner.id - 1}]); UI.closeModal();`,
+                onClick: `handleMandatoryPayment(gameState.players[${gameState.currentPlayerIndex}], ${serviceFee}, 'Taxa (${house.name})', gameState.players.find(p => p.id === ${owner.id})); UI.closeModal();`,
                 class: 'btn-primary'
             });
         }
