@@ -76,29 +76,52 @@ export function switchTab(button, tabId) {
 }
 
 export function showNotification(message) {
-    const notification = document.createElement('div');
-    notification.style.cssText = `
+    // Container único e empilhável — evita que múltiplas notificações se
+    // sobreponham no mesmo ponto da tela.
+    let stack = document.getElementById('notificationStack');
+    if (!stack) {
+        stack = document.createElement('div');
+        stack.id = 'notificationStack';
+        document.body.appendChild(stack);
+    }
+    // Reposiciona conforme a fase (na setup o header não existe).
+    stack.style.cssText = `
         position: fixed;
         top: ${gameState.phase === 'setup' ? '20px' : '80px'};
         left: 50%;
         transform: translateX(-50%);
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        max-width: 90%;
+        width: max-content;
+        pointer-events: none;
+    `;
+
+    const notification = document.createElement('div');
+    notification.style.cssText = `
         background: rgba(251, 191, 36, 0.95);
         color: #1a2942;
         padding: 1rem 1.5rem;
         border-radius: 0.75rem;
         font-weight: 700;
-        z-index: 1000;
         box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         animation: slideDown 0.3s ease;
-        max-width: 90%;
         text-align: center;
+        pointer-events: auto;
+        max-width: 100%;
     `;
     notification.textContent = message;
-    document.body.appendChild(notification);
+    stack.appendChild(notification);
 
     setTimeout(() => {
         notification.style.animation = 'slideUp 0.3s ease';
-        setTimeout(() => notification.remove(), 300);
+        setTimeout(() => {
+            notification.remove();
+            if (stack && !stack.hasChildNodes()) stack.remove();
+        }, 300);
     }, 2000);
 }
 
@@ -166,6 +189,28 @@ export function closeModal() {
 
 // ========== RENDER FUNCTIONS ==========
 
+// Escapa aspas/sinais para uso seguro em atributos HTML (title/aria-label).
+function escapeAttr(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+// Monta uma célula de casa. Inclui title/aria-label (tooltip no desktop e
+// leitura por leitores de tela), já que as labels visuais ficam ocultas.
+function houseCell(house, col, row) {
+    const priceLabel = house.price ? ` — R$ ${house.price.toLocaleString('pt-BR')}` : '';
+    const label = escapeAttr(`${house.name}${priceLabel}`);
+    let h = `<div class="board-house" data-position="${house.pos}" style="grid-column: ${col}; grid-row: ${row};" onclick="selectHouse(${house.pos})" title="${label}" aria-label="${label}">`;
+    h += `<div class="house-icon">${house.icon}</div>`;
+    h += `<div class="house-name">${house.name}</div>`;
+    if (house.price) h += `<div class="house-price">R$ ${house.price}</div>`;
+    h += '<div class="house-players"></div></div>';
+    return h;
+}
+
 export function renderBoard() {
     const boardDiv = document.getElementById('visualBoard');
     const boardLayout = gameState.houses;
@@ -177,13 +222,7 @@ export function renderBoard() {
 
     // Lado INFERIOR (posições 1-8) - grid-row: 10, colunas 9-2
     for (let i = 1; i <= 8; i++) {
-        const house = boardLayout[i];
-        const col = 10 - i; // Colunas 9, 8, 7, 6, 5, 4, 3, 2
-        boardHTML += `<div class="board-house" data-position="${house.pos}" style="grid-column: ${col}; grid-row: 10;" onclick="selectHouse(${house.pos})">`;
-        boardHTML += `<div class="house-icon">${house.icon}</div>`;
-        boardHTML += `<div class="house-name">${house.name}</div>`;
-        if (house.price) boardHTML += `<div class="house-price">R$ ${house.price}</div>`;
-        boardHTML += '<div class="house-players"></div></div>';
+        boardHTML += houseCell(boardLayout[i], 10 - i, 10);
     }
 
     // Canto inferior esquerdo (SORTE - posição 9)
@@ -191,13 +230,7 @@ export function renderBoard() {
 
     // Lado ESQUERDO (posições 10-17) - grid-column: 1, linhas 9-2
     for (let i = 10; i <= 17; i++) {
-        const house = boardLayout[i];
-        const row = 10 - (i - 9); // Linhas 9, 8, 7, 6, 5, 4, 3, 2
-        boardHTML += `<div class="board-house" data-position="${house.pos}" style="grid-column: 1; grid-row: ${row};" onclick="selectHouse(${house.pos})">`;
-        boardHTML += `<div class="house-icon">${house.icon}</div>`;
-        boardHTML += `<div class="house-name">${house.name}</div>`;
-        if (house.price) boardHTML += `<div class="house-price">R$ ${house.price}</div>`;
-        boardHTML += '<div class="house-players"></div></div>';
+        boardHTML += houseCell(boardLayout[i], 1, 10 - (i - 9));
     }
 
     // Canto superior esquerdo (CERTIFICADO TUGLORD - posição 18)
@@ -205,13 +238,7 @@ export function renderBoard() {
 
     // Lado SUPERIOR (posições 19-26) - grid-row: 1, colunas 2-9
     for (let i = 19; i <= 26; i++) {
-        const house = boardLayout[i];
-        const col = (i - 18) + 1; // Colunas 2, 3, 4, 5, 6, 7, 8, 9
-        boardHTML += `<div class="board-house" data-position="${house.pos}" style="grid-column: ${col}; grid-row: 1;" onclick="selectHouse(${house.pos})">`;
-        boardHTML += `<div class="house-icon">${house.icon}</div>`;
-        boardHTML += `<div class="house-name">${house.name}</div>`;
-        if (house.price) boardHTML += `<div class="house-price">R$ ${house.price}</div>`;
-        boardHTML += '<div class="house-players"></div></div>';
+        boardHTML += houseCell(boardLayout[i], (i - 18) + 1, 1);
     }
 
     // Canto superior direito (BANCO - posição 27)
@@ -219,13 +246,7 @@ export function renderBoard() {
 
     // Lado DIREITO (posições 28-35) - grid-column: 10, linhas 2-9
     for (let i = 28; i <= 35; i++) {
-        const house = boardLayout[i];
-        const row = (i - 27) + 1; // Linhas 2, 3, 4, 5, 6, 7, 8, 9
-        boardHTML += `<div class="board-house" data-position="${house.pos}" style="grid-column: 10; grid-row: ${row};" onclick="selectHouse(${house.pos})">`;
-        boardHTML += `<div class="house-icon">${house.icon}</div>`;
-        boardHTML += `<div class="house-name">${house.name}</div>`;
-        if (house.price) boardHTML += `<div class="house-price">R$ ${house.price}</div>`;
-        boardHTML += '<div class="house-players"></div></div>';
+        boardHTML += houseCell(boardLayout[i], 10, (i - 27) + 1);
     }
 
     // Centro - Branding
@@ -518,12 +539,12 @@ export function renderPlayerSetupList() {
 const style = document.createElement('style');
 style.textContent = `
     @keyframes slideDown {
-        from { transform: translateX(-50%) translateY(-20px); opacity: 0; }
-        to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        from { transform: translateY(-20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
     }
     @keyframes slideUp {
-        from { transform: translateX(-50%) translateY(0); opacity: 1; }
-        to { transform: translateX(-50%) translateY(-20px); opacity: 0; }
+        from { transform: translateY(0); opacity: 1; }
+        to { transform: translateY(-20px); opacity: 0; }
     }
     @keyframes pulse {
         0%, 100% { transform: scale(1); }
