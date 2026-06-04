@@ -18,6 +18,11 @@ export function operationalTugs(player) {
     return { port, ocean, tuglord, total: port + (ocean ? 1 : 0) + (tuglord ? 1 : 0) };
 }
 
+// Formatação monetária pt-BR consistente (ex: 30000 -> "30.000").
+export function fmt(n) {
+    return Number(n || 0).toLocaleString('pt-BR');
+}
+
 // ========== EXPORTED LOGIC FUNCTIONS ==========
 
 export function addPlayer() {
@@ -480,7 +485,7 @@ export function handleMandatoryPayment(player, amount, reason, recipient = null)
     if (player.money >= amount) {
         player.money -= amount;
         if (recipient) recipient.money += amount;
-        UI.showNotification(`💸 ${player.name} pagou R$${amount} (${reason})`);
+        UI.showNotification(`💸 ${player.name} pagou R$${fmt(amount)} (${reason})`);
         Audio.playMoney();
         UI.renderPlayersPanel();
         return true;
@@ -1145,9 +1150,9 @@ export function showContextualActions(house) {
         const owner = house.owner !== undefined ? gameState.players.find(p => p.id === house.owner) : null;
 
         if (!owner) {
-            body = `<p>Este porto está à venda por <strong style="color: var(--accent-gold);">R$ ${house.price}</strong>.</p>`;
+            body = `<p>Este porto está à venda por <strong style="color: var(--accent-gold);">R$ ${fmt(house.price)}</strong>.</p>`;
             buttons.push({
-                text: `Comprar (R$ ${house.price})`,
+                text: `Comprar (R$ ${fmt(house.price)})`,
                 onClick: `buyProperty(gameState.houses[${house.pos}])`,
                 class: 'btn-primary'
             });
@@ -1168,12 +1173,12 @@ export function showContextualActions(house) {
                 const rent = calculateRent(house, owner);
                 body = `
                     <p>Propriedade de <strong>${owner.name}</strong>.</p>
-                    <p style="color: #ef4444; font-size: 1.2rem;">Aluguel: R$ ${rent}</p>
+                    <p style="color: #ef4444; font-size: 1.2rem;">Aluguel: R$ ${fmt(rent)}</p>
                 `;
                 // Auto-pay logic wrapped in a "Pay" button for user agency (or auto after delay)
                 // User requested "popup", implying interaction. Let's make it manual click to close/pay.
                 buttons.push({
-                    text: `Pagar R$ ${rent}`,
+                    text: `Pagar R$ ${fmt(rent)}`,
                     onClick: `handleMandatoryPayment(gameState.players[${gameState.currentPlayerIndex}], ${rent}, 'Aluguel (${house.name})', gameState.players.find(p => p.id === ${owner.id})); UI.closeModal();`,
                     class: 'btn-primary'
                 });
@@ -1186,9 +1191,9 @@ export function showContextualActions(house) {
         const owner = house.owner !== undefined ? gameState.players.find(p => p.id === house.owner) : null;
 
         if (!owner) {
-            body = `<p>Esta oficina está à venda por <strong style="color: var(--accent-gold);">R$ ${house.price}</strong>.</p>`;
+            body = `<p>Esta oficina está à venda por <strong style="color: var(--accent-gold);">R$ ${fmt(house.price)}</strong>.</p>`;
             buttons.push({
-                text: `Comprar (R$ ${house.price})`,
+                text: `Comprar (R$ ${fmt(house.price)})`,
                 onClick: `buyProperty(gameState.houses[${house.pos}])`,
                 class: 'btn-primary'
             });
@@ -1209,10 +1214,10 @@ export function showContextualActions(house) {
             const serviceFee = house.serviceFee;
             body = `
                 <p>Propriedade de <strong>${owner.name}</strong>.</p>
-                <p style="color: #ef4444;">Taxa de Serviço: R$ ${serviceFee}</p>
+                <p style="color: #ef4444;">Taxa de Serviço: R$ ${fmt(serviceFee)}</p>
             `;
             buttons.push({
-                text: `Pagar R$ ${serviceFee}`,
+                text: `Pagar R$ ${fmt(serviceFee)}`,
                 onClick: `handleMandatoryPayment(gameState.players[${gameState.currentPlayerIndex}], ${serviceFee}, 'Taxa (${house.name})', gameState.players.find(p => p.id === ${owner.id})); UI.closeModal();`,
                 class: 'btn-primary'
             });
@@ -1231,9 +1236,9 @@ export function showContextualActions(house) {
         const owner = house.owner !== undefined ? gameState.players.find(p => p.id === house.owner) : null;
 
         if (!owner) {
-            body = `<p>Este serviço está à venda por <strong style="color: var(--accent-gold);">R$ ${house.price}</strong>.</p>`;
+            body = `<p>Este serviço está à venda por <strong style="color: var(--accent-gold);">R$ ${fmt(house.price)}</strong>.</p>`;
             buttons.push({
-                text: `Comprar (R$ ${house.price})`,
+                text: `Comprar (R$ ${fmt(house.price)})`,
                 onClick: `buyProperty(gameState.houses[${house.pos}])`,
                 class: 'btn-primary'
             });
@@ -1242,7 +1247,7 @@ export function showContextualActions(house) {
             body = `<p style="color: #22c55e;">✅ Você possui este serviço.</p>`;
             if (house.name.includes('Estaleiro') && !currentPlayer.hasTuglord && currentPlayer.money >= house.tuglordBuildCost) {
                 buttons.push({
-                    text: `Comissionar TugLord (R$ ${house.tuglordBuildCost})`,
+                    text: `Comissionar TugLord (R$ ${fmt(house.tuglordBuildCost)})`,
                     onClick: `commissionTugLord(${house.tuglordBuildCost}); UI.closeModal();`,
                     class: 'btn-primary'
                 });
@@ -1259,7 +1264,7 @@ export function showContextualActions(house) {
         const tugTypeName = house.tugType === 'port' ? 'Portuário' : 'Oceânico';
         body = `<p>Deseja comprar um Rebocador <strong>${tugTypeName}</strong>?</p>`;
         buttons.push({
-            text: `Comprar (R$ ${house.price})`,
+            text: `Comprar (R$ ${fmt(house.price)})`,
             onClick: `buyTug(gameState.houses[${house.pos}]); UI.closeModal();`,
             class: 'btn-primary'
         });
@@ -1271,7 +1276,7 @@ export function showContextualActions(house) {
         if (!currentPlayer.certificates.includes(house.certificate)) {
             body = `<p>Treinamento disponível: <strong>${house.certificate.toUpperCase()}</strong>.</p>`;
             buttons.push({
-                text: `Fazer Treinamento (R$ ${house.price})`,
+                text: `Fazer Treinamento (R$ ${fmt(house.price)})`,
                 onClick: `buyTraining('${house.name}', ${house.price}, '${house.certificate}');`, // buyTraining opens exam modal
                 class: 'btn-primary'
             });
@@ -1329,7 +1334,7 @@ export function showContextualActions(house) {
     else if (house.type === 'tax' && house.price) {
         body = `<p>Pagamento obrigatório de imposto.</p>`;
         buttons.push({
-            text: `Pagar R$ ${house.price}`,
+            text: `Pagar R$ ${fmt(house.price)}`,
             onClick: `payTax(${house.price}); UI.closeModal();`,
             class: 'btn-primary'
         });
@@ -1365,7 +1370,7 @@ export function showContextualActions(house) {
         if (hasTug) {
             body = `<p>Contrato disponível para execução.</p>`;
             buttons.push({
-                text: `Executar (+R$ ${house.price})`,
+                text: `Executar (+R$ ${fmt(house.price)})`,
                 onClick: `executeContract('${house.name}', ${house.price}); UI.closeModal();`,
                 class: 'btn-primary'
             });
@@ -1380,5 +1385,162 @@ export function showContextualActions(house) {
     if (body) {
         UI.showModal(title, body, buttons, false);
     }
+}
+
+// ========== PERSISTENCE & MENU (Sprint 4) ==========
+
+const SAVE_KEY = 'tuglords_save_v1';
+
+export function saveGame() {
+    if (gameState.phase === 'setup') {
+        UI.showNotification('⚠️ Inicie uma partida para salvar.');
+        return;
+    }
+    try {
+        const data = {
+            version: 1,
+            savedAt: new Date().toISOString(),
+            players: gameState.players,
+            currentPlayerIndex: gameState.currentPlayerIndex,
+            currentRound: gameState.currentRound,
+            phase: gameState.phase,
+            // Apenas o estado dinâmico das casas (dono/ações); o resto é estático.
+            houses: gameState.houses.map(h => ({ pos: h.pos, owner: h.owner ?? null, stocks: h.stocks || 0 }))
+        };
+        localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+        UI.showNotification('💾 Jogo salvo!');
+        UI.closeModal();
+    } catch (e) {
+        UI.showNotification('❌ Falha ao salvar.');
+        console.error('saveGame:', e);
+    }
+}
+
+export function hasSavedGame() {
+    try { return !!localStorage.getItem(SAVE_KEY); } catch (e) { return false; }
+}
+
+export function loadGame() {
+    let raw;
+    try { raw = localStorage.getItem(SAVE_KEY); } catch (e) { raw = null; }
+    if (!raw) {
+        UI.showNotification('⚠️ Nenhum jogo salvo encontrado.');
+        return;
+    }
+    try {
+        const data = JSON.parse(raw);
+        gameState.players = data.players;
+        gameState.currentPlayerIndex = data.currentPlayerIndex;
+        gameState.currentRound = data.currentRound;
+        gameState.phase = data.phase;
+        gameState.diceRolled = true; // turno em andamento aguarda "Finalizar"
+
+        // Restaura dono/ações por posição.
+        data.houses.forEach(h => {
+            const house = gameState.houses[h.pos];
+            if (house) {
+                house.owner = (h.owner === null || h.owner === undefined) ? undefined : h.owner;
+                house.stocks = h.stocks || 0;
+            }
+        });
+
+        // Vai direto para a tela de jogo.
+        ['presentationScreen', 'manualScreen', 'setupScreen'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
+        const gameScreen = document.getElementById('gameScreen');
+        if (gameScreen) gameScreen.style.display = 'block';
+
+        UI.closeAllPanels();
+        UI.renderBoard();
+        UI.renderPlayersPanel();
+        UI.updateTurnDisplay();
+        UI.updatePlayerPositions();
+
+        const current = gameState.players[gameState.currentPlayerIndex];
+        const house = gameState.houses[current.position];
+        const currentHouseName = document.getElementById('currentHouseName');
+        if (currentHouseName && house) currentHouseName.textContent = house.name;
+
+        UI.showNotification('📤 Jogo carregado!');
+    } catch (e) {
+        UI.showNotification('❌ Save corrompido.');
+        console.error('loadGame:', e);
+    }
+}
+
+// Patrimônio líquido estimado (caixa + 50% dos ativos).
+export function netWorth(player) {
+    let total = player.money;
+    gameState.houses.forEach(h => {
+        if (isProperty(h) && h.owner === player.id) total += Math.floor(h.price * 0.5);
+    });
+    total += player.portTugs * 100;
+    if (player.hasOceanTug) total += 250;
+    if (player.hasTuglord) total += 375;
+    (player.loans || []).forEach(l => { total -= l.totalDue; });
+    return total;
+}
+
+export function showStatistics() {
+    const ranked = [...gameState.players].sort((a, b) => netWorth(b) - netWorth(a));
+    const rows = ranked.map((p, i) => {
+        const ports = gameState.houses.filter(h => isProperty(h) && h.owner === p.id).length;
+        const status = p.isEliminated ? '💀 Eliminado' : `R$ ${fmt(netWorth(p))}`;
+        return `
+            <div style="display:flex; align-items:center; gap:0.75rem; padding:0.6rem; border-radius:0.5rem; background:rgba(255,255,255,0.05); border-left:4px solid ${p.color}; margin-bottom:0.5rem; ${p.isEliminated ? 'opacity:0.55;' : ''}">
+                <span style="font-weight:900; width:24px; color:var(--accent-gold);">${i + 1}º</span>
+                <span style="font-size:1.3rem;">${p.icon}</span>
+                <div style="flex:1; min-width:0;">
+                    <div style="font-weight:700;">${p.name}</div>
+                    <div style="font-size:0.78rem; color:#94a3b8;">⚓ ${ports} portos · 🎓 ${p.certificates.length}/4 · 💰 R$ ${fmt(p.money)}</div>
+                </div>
+                <span style="font-weight:800; color:#22c55e; white-space:nowrap;">${status}</span>
+            </div>`;
+    }).join('');
+
+    UI.closeAllPanels();
+    UI.showModal('📊 Estatísticas', `
+        <p style="color:#94a3b8; margin-top:0;">Rodada ${gameState.currentRound} · classificação por patrimônio líquido</p>
+        ${rows}
+    `, [{ text: 'Fechar', onClick: 'closeModal()', class: 'btn-primary' }], true);
+}
+
+export function showVictoryInfo() {
+    const current = gameState.players[gameState.currentPlayerIndex];
+    const certs = ['fire', 'rescue', 'collision', 'abandon'];
+    const haveCerts = current ? certs.filter(c => current.certificates.includes(c)).length : 0;
+    const ports = current ? gameState.houses.filter(h => isProperty(h) && h.owner === current.id).length : 0;
+    const chk = (ok) => ok ? '✅' : '⬜';
+
+    UI.closeAllPanels();
+    UI.showModal('🏆 Como Vencer', `
+        <p>Torne-se o <strong style="color:var(--accent-gold);">TugLord Supremo</strong> completando todos os objetivos:</p>
+        <ul style="list-style:none; padding:0; line-height:2;">
+            <li>${chk(haveCerts === 4)} 4 Certificados (${haveCerts}/4)</li>
+            <li>${chk(current && current.hasTuglord)} Status TugLord</li>
+            <li>${chk(current && current.hasOceanTug)} Rebocador Oceânico</li>
+            <li>${chk(ports >= 5)} 5+ Portos (${ports}/5)</li>
+        </ul>
+        <p style="font-size:0.85rem; color:#94a3b8;">Progresso de <strong>${current ? current.name : '-'}</strong>. Também vence quem ficar como único não-falido.</p>
+    `, [{ text: 'Entendido', onClick: 'closeModal()', class: 'btn-primary' }], true);
+}
+
+export function toggleAudio() {
+    const muted = Audio.toggleMute();
+    UI.showNotification(muted ? '🔇 Áudio desligado' : '🔊 Áudio ligado');
+    const btn = document.getElementById('btnToggleAudio');
+    if (btn) btn.textContent = muted ? '🔇 Áudio: Desligado' : '🔊 Áudio: Ligado';
+}
+
+export function exitGame() {
+    UI.showModal('🚪 Sair da Partida', `
+        <p>Tem certeza? O progresso não salvo será perdido.</p>
+    `, [
+        { text: 'Salvar e Sair', onClick: 'saveGame(); location.reload();', class: 'btn-primary' },
+        { text: 'Sair sem Salvar', onClick: 'location.reload();', class: 'btn-secondary' },
+        { text: 'Cancelar', onClick: 'closeModal();', class: 'btn-secondary' }
+    ], true);
 }
 

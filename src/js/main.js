@@ -48,6 +48,15 @@ window.handleMandatoryPayment = Logic.handleMandatoryPayment;
 window.initiateArrest = Logic.initiateArrest;
 window.checkTugLordCertificate = Logic.checkTugLordCertificate; // Ensure this is definitely here
 
+// Menu & Persistence (Sprint 4)
+window.saveGame = Logic.saveGame;
+window.loadGame = Logic.loadGame;
+window.showStatistics = Logic.showStatistics;
+window.showVictoryInfo = Logic.showVictoryInfo;
+window.exitGame = Logic.exitGame;
+window.toggleAudio = Logic.toggleAudio;
+window.showManualModal = UI.showManualModal;
+
 // Navigation
 window.showManual = UI.showManual;
 window.hideManual = UI.hideManual;

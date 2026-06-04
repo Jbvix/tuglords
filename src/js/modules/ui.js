@@ -22,6 +22,28 @@ export function showManual() {
     document.getElementById('manualScreen').style.display = 'flex';
 }
 
+// Manual acessível durante a partida, via modal (menu).
+export function showManualModal() {
+    closeAllPanels();
+    showModal('📖 Manual do Jogo', `
+        <div style="line-height:1.6; color:#e2e8f0;">
+            <h4 style="color:var(--accent-gold); margin:0 0 0.25rem;">Objetivo</h4>
+            <p style="margin:0 0 0.75rem;">Torne-se o <strong>TugLord Supremo</strong>: domine portos, monte sua frota de rebocadores e conquiste certificações.</p>
+            <h4 style="color:var(--accent-gold); margin:0 0 0.25rem;">Como jogar</h4>
+            <ul style="padding-left:1.1rem; margin:0 0 0.75rem;">
+                <li>Role os dados para mover seu peão.</li>
+                <li>Compre <strong>portos</strong> e cobre aluguel de quem cair neles.</li>
+                <li><strong>Rebocadores</strong> aumentam o nível do aluguel.</li>
+                <li><strong>Eventos Oceânicos</strong> exigem um rebocador operacional.</li>
+                <li>No <strong>Estaleiro</strong> pode haver docagem obrigatória (3 turnos).</li>
+                <li>Faça <strong>certificações</strong> para evitar multas e habilitar a frota oceânica.</li>
+            </ul>
+            <h4 style="color:var(--accent-gold); margin:0 0 0.25rem;">Vitória</h4>
+            <p style="margin:0;">4 certificados + TugLord + Rebocador Oceânico + 5 portos — ou seja o último não-falido.</p>
+        </div>
+    `, [{ text: 'Fechar', onClick: 'closeModal()', class: 'btn-primary' }], true);
+}
+
 export function hideManual() {
     document.getElementById('manualScreen').style.display = 'none';
     document.getElementById('presentationScreen').style.display = 'flex';
@@ -365,7 +387,7 @@ export function selectHouse(position) {
     let rentInfo = '';
     if ((house.type === 'property' || house.type === 'port') && house.rent) {
         rentInfo = `<div style="margin-top: 0.5rem; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 0.5rem;">
-            <p style="margin: 0; color: #94a3b8; font-size: 0.85rem;">Aluguel Base: R$${house.rent[0]}</p>
+            <p style="margin: 0; color: #94a3b8; font-size: 0.85rem;">Aluguel Base: R$ ${house.rent[0].toLocaleString('pt-BR')}</p>
         </div>`;
     }
 
@@ -373,7 +395,7 @@ export function selectHouse(position) {
         <div style="text-align: center; margin-bottom: 1.5rem;">
             <div style="font-size: 4rem; margin-bottom: 1rem;">${house.icon}</div>
             <h2 style="color: var(--accent-gold); margin: 0 0 0.5rem 0;">${house.name}</h2>
-            ${house.price ? `<p style="font-size: 1.25rem; font-weight: 700; color: #e0e0e0;">R$ ${house.price}</p>` : ''}
+            ${house.price ? `<p style="font-size: 1.25rem; font-weight: 700; color: #e0e0e0;">R$ ${house.price.toLocaleString('pt-BR')}</p>` : ''}
             <p style="color: #94a3b8; font-style: italic;">${getHouseTypeLabel(house.type)}</p>
         </div>
 
@@ -463,6 +485,28 @@ export function renderPlayersPanel() {
             ? assetsList + fleetInfo + certsInfo
             : '<p class="text-sm text-slate-400">Nenhum ativo ainda</p>';
 
+        // Casa atual (nome em vez do índice cru).
+        const houseHere = gameState.houses[player.position];
+        const positionLabel = houseHere ? `${houseHere.icon} ${houseHere.name}` : `Casa ${player.position}`;
+
+        // Progresso rumo ao "TugLord Supremo".
+        const reqCerts = ['fire', 'rescue', 'collision', 'abandon'];
+        const certCount = reqCerts.filter(c => player.certificates.includes(c)).length;
+        const portsOwned = gameState.houses.filter(h =>
+            (h.type === 'port' || h.type === 'property') && h.price && h.owner === player.id).length;
+        const goalMet = certCount === 4 && player.hasTuglord && player.hasOceanTug && portsOwned >= 5;
+        const chip = (ok, label) => `<span style="font-size:0.7rem; padding:0.1rem 0.4rem; border-radius:0.4rem; background:${ok ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.06)'}; color:${ok ? '#22c55e' : '#94a3b8'};">${ok ? '✅' : '⬜'} ${label}</span>`;
+        const victoryProgress = `
+            <div style="margin-top:0.5rem;">
+                <div style="font-size:0.72rem; color:#fbbf24; font-weight:700; margin-bottom:0.3rem;">🏆 TugLord Supremo ${goalMet ? '— COMPLETO!' : ''}</div>
+                <div style="display:flex; flex-wrap:wrap; gap:0.25rem;">
+                    ${chip(certCount === 4, `Certs ${certCount}/4`)}
+                    ${chip(player.hasTuglord, 'TugLord')}
+                    ${chip(player.hasOceanTug, 'Oceânico')}
+                    ${chip(portsOwned >= 5, `Portos ${portsOwned}/5`)}
+                </div>
+            </div>`;
+
         return `
         <div class="player-card ${index === gameState.currentPlayerIndex ? 'active' : ''}" 
              style="border-left: 4px solid ${player.color};">
@@ -477,8 +521,9 @@ export function renderPlayersPanel() {
             <div class="tab-content active" id="fin-${player.id}">
                 <div class="badge">
                     <span class="dot" style="background: ${player.color};"></span>
-                    <span>Posição: ${player.position}</span>
+                    <span>${positionLabel}</span>
                 </div>
+                ${victoryProgress}
             </div>
             <div class="tab-content" id="assets-${player.id}">
                 ${assetsContent}

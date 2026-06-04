@@ -2,6 +2,13 @@ export const Audio = {
     synth: null,
     polySynth: null,
     initialized: false,
+    muted: false,
+
+    // Alterna mudo e retorna o novo estado (true = mudo).
+    toggleMute() {
+        this.muted = !this.muted;
+        return this.muted;
+    },
 
     init() {
         if (this.initialized) return;
@@ -35,7 +42,7 @@ export const Audio = {
     },
 
     playDice() {
-        if (!this.initialized) return;
+        if (!this.initialized || this.muted) return;
         const now = Tone.now();
         // Rapid clicks
         this.synth.triggerAttackRelease("C6", "32n", now);
@@ -44,20 +51,20 @@ export const Audio = {
     },
 
     playMove() {
-        if (!this.initialized) return;
+        if (!this.initialized || this.muted) return;
         // Short blip
         this.synth.triggerAttackRelease("C5", "64n");
     },
 
     playSuccess() {
-        if (!this.initialized) return;
+        if (!this.initialized || this.muted) return;
         const now = Tone.now();
         // Major arpeggio
         this.polySynth.triggerAttackRelease(["C5", "E5", "G5", "C6"], "8n", now);
     },
 
     playMoney() {
-        if (!this.initialized) return;
+        if (!this.initialized || this.muted) return;
         const now = Tone.now();
         // Coin sound
         this.synth.triggerAttackRelease("B5", "16n", now);
@@ -65,14 +72,14 @@ export const Audio = {
     },
 
     playCritical() {
-        if (!this.initialized) return;
+        if (!this.initialized || this.muted) return;
         const now = Tone.now();
         // Low dissonant sound
         this.polySynth.triggerAttackRelease(["C2", "F#2"], "4n", now);
     },
 
     playError() {
-        if (!this.initialized) return;
+        if (!this.initialized || this.muted) return;
         const now = Tone.now();
         // Descending slide
         this.synth.triggerAttackRelease("G4", "16n", now);
