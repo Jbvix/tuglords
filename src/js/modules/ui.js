@@ -112,7 +112,7 @@ export function showNotification(message) {
         top: ${gameState.phase === 'setup' ? '20px' : '80px'};
         left: 50%;
         transform: translateX(-50%);
-        z-index: 1000;
+        z-index: 2500;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -121,6 +121,11 @@ export function showNotification(message) {
         width: max-content;
         pointer-events: none;
     `;
+
+    // Limita o empilhamento para não cobrir a tela (remove as mais antigas).
+    while (stack.children.length >= 3) {
+        stack.removeChild(stack.firstChild);
+    }
 
     const notification = document.createElement('div');
     notification.style.cssText = `
@@ -132,7 +137,7 @@ export function showNotification(message) {
         box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         animation: slideDown 0.3s ease;
         text-align: center;
-        pointer-events: auto;
+        pointer-events: none;
         max-width: 100%;
     `;
     notification.textContent = message;
