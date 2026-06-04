@@ -23,6 +23,24 @@
 
 ---
 
+## 🆕 Novidades (v19.6 — Ciclo de Correções e Melhorias)
+
+Esta versão passou por 5 sprints de correção de mecânica, responsividade e UX.
+Todas as mudanças foram validadas com testes E2E headless (Playwright).
+
+| Sprint | Tema | Destaques |
+|--------|------|-----------|
+| **1** | Correção crítica de mecânica | Portos voltam a ser compráveis/cobrar aluguel (incompatibilidade `port` × `property`); "perder o turno" agora realmente pula; movimento negativo (retroceder) corrigido; aluguel creditado ao dono correto |
+| **2** | Sistemas de jogo | Docagem obrigatória no Estaleiro; empréstimos vencem e são cobrados automaticamente; Eventos Oceânicos exigem apenas 1 rebocador operacional; condição de vitória **TugLord Supremo**; áudio resiliente a falha de CDN |
+| **3** | Responsividade & Acessibilidade | Zoom liberado (viewport); peões visíveis em telas <480px; `title`/`aria-label` nas casas; alvos de toque ≥44px; notificações empilháveis; CSS desduplicado |
+| **4** | UX & UI | Menu funcional (salvar/carregar via localStorage, estatísticas, manual, áudio, sair); Bolsa de Valores real no painel; formatação monetária pt-BR; posição mostra o nome da casa; indicador de progresso da vitória |
+| **5** | Polimento & QA | Modais extraídos para classes CSS com `role`/`aria-modal`, fechar com **Esc** e clique no fundo, foco automático; estados `:focus-visible`; suporte a `prefers-reduced-motion` |
+
+### 🏆 Condição de vitória "TugLord Supremo"
+Além de ser o último jogador não-falido, vence quem reunir: **4 certificados + status TugLord + Rebocador Oceânico + 5 portos**.
+
+---
+
 ## 🌊 Sobre o Projeto
 
 **TUGLORDS** é um jogo de tabuleiro estratégico digital ambientado no competitivo mundo dos rebocadores marítimos brasileiros. Inspirado nos clássicos jogos de gestão econômica, TUGLORDS combina mecânicas de estratégia, gestão financeira e aleatoriedade controlada para criar uma experiência imersiva no universo náutico.

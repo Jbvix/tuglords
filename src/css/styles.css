@@ -194,8 +194,8 @@ body {
     background: rgba(255, 255, 255, 0.1);
     border: none;
     color: #e0e0e0;
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     cursor: pointer;
     font-size: 1.25rem;
@@ -234,8 +234,8 @@ body {
     font-size: 0.875rem;
     cursor: pointer;
     transition: all 0.2s;
-    min-height: 36px;
-    /* Reduzido de 44px */
+    min-height: 44px;
+    /* Alvo de toque acessível (WCAG 2.5.5 / iOS HIG) */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -316,7 +316,7 @@ body {
     cursor: pointer;
     white-space: nowrap;
     transition: all 0.2s;
-    min-height: 36px;
+    min-height: 44px;
 }
 
 .tab-btn.active {
@@ -341,99 +341,9 @@ body {
     min-height: 400px;
 }
 
-/* ===== TABLET & DESKTOP (min-width: 768px) ===== */
-@media (min-width: 768px) {
-    .game-container {
-        padding-bottom: 0;
-    }
-
-    .mobile-header {
-        padding: 1rem 2rem;
-    }
-
-    .mobile-header h1 {
-        font-size: 1.5rem;
-    }
-
-    .bottom-nav {
-        position: relative;
-        grid-template-columns: repeat(4, 1fr);
-        max-width: 600px;
-        margin: 0 auto;
-        border-radius: 1rem;
-        bottom: auto;
-    }
-
-    .game-board-wrapper {
-        padding: 2rem;
-    }
-
-    .sliding-panel {
-        max-width: 480px;
-        left: auto;
-        right: 0;
-        max-height: 100vh;
-        border-radius: 1rem 0 0 1rem;
-    }
-
-    .panel-content {
-        max-height: calc(100vh - 140px);
-    }
-}
-
-/* ===== DESKTOP (min-width: 1024px) ===== */
-@media (min-width: 1024px) {
-    .game-container {
-        display: grid;
-        grid-template-columns: 360px 1fr 360px;
-        gap: 1.5rem;
-        padding: 1.5rem;
-        max-width: 1800px;
-        margin: 0 auto;
-    }
-
-    .mobile-header {
-        display: none;
-    }
-
-    .bottom-nav {
-        display: none;
-    }
-
-    .game-board-wrapper {
-        order: 2;
-        padding: 0;
-    }
-
-    .sliding-panel {
-        position: relative;
-        transform: translateY(0) !important;
-        max-height: calc(100vh - 3rem);
-        border-radius: 1rem;
-        max-width: none;
-        right: auto;
-    }
-
-    .sliding-panel.panel-left {
-        order: 1;
-    }
-
-    .sliding-panel.panel-right {
-        order: 3;
-    }
-
-    .panel-handle {
-        display: none;
-    }
-
-    .panel-overlay {
-        display: none;
-    }
-
-    .panel-close {
-        display: none;
-    }
-}
+/* NOTA: os breakpoints de layout (768px e 1024px) estão consolidados no fim
+   deste arquivo, na seção "TABLET & DESKTOP RESPONSIVENESS". Os blocos
+   duplicados que existiam aqui foram removidos. */
 
 /* Badge Styles */
 .badge {
@@ -783,6 +693,35 @@ body {
     grid-row: 1;
 }
 
+/* Peões e área de jogadores — estilo BASE (mobile, inclui telas <480px).
+   Antes só existia dentro do @media 480px, deixando os peões invisíveis em
+   celulares pequenos. */
+.house-players {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 2px;
+    pointer-events: none;
+}
+
+.player-pawn {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    color: transparent;
+    /* oculta o emoji de texto, mantém o disco colorido */
+    font-size: 0;
+    z-index: 5;
+}
+
 @media (min-width: 480px) {
     .board-game {
         width: 100%;
@@ -1050,5 +989,117 @@ body {
 
     .board-container {
         padding: 0;
+    }
+}
+
+/* ===== MODAIS (Sprint 5: extraídos do estilo inline para classes) ===== */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 1.5rem;
+    backdrop-filter: blur(5px);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.modal-overlay.open {
+    opacity: 1;
+}
+
+.modal-box {
+    background: #1e293b;
+    border-radius: 1rem;
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transform: scale(0.95);
+    transition: transform 0.3s;
+}
+
+.modal-overlay.open .modal-box {
+    transform: scale(1);
+}
+
+.modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    background: #1e293b;
+    z-index: 10;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: var(--accent-gold);
+    font-weight: 700;
+}
+
+.modal-close-x {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close-x:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #e0e0e0;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-actions {
+    margin-top: 1.5rem;
+    display: grid;
+    gap: 0.75rem;
+}
+
+/* ===== ACESSIBILIDADE — foco visível por teclado ===== */
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.nav-btn:focus-visible,
+.tab-btn:focus-visible,
+.panel-close:focus-visible,
+.modal-close-x:focus-visible,
+.btn-remove:focus-visible,
+.player-name-input:focus-visible,
+.board-house:focus-visible {
+    outline: 3px solid var(--accent-gold);
+    outline-offset: 2px;
+}
+
+/* ===== Respeita preferência de movimento reduzido ===== */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
     }
 }

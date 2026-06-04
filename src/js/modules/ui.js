@@ -22,6 +22,28 @@ export function showManual() {
     document.getElementById('manualScreen').style.display = 'flex';
 }
 
+// Manual acessível durante a partida, via modal (menu).
+export function showManualModal() {
+    closeAllPanels();
+    showModal('📖 Manual do Jogo', `
+        <div style="line-height:1.6; color:#e2e8f0;">
+            <h4 style="color:var(--accent-gold); margin:0 0 0.25rem;">Objetivo</h4>
+            <p style="margin:0 0 0.75rem;">Torne-se o <strong>TugLord Supremo</strong>: domine portos, monte sua frota de rebocadores e conquiste certificações.</p>
+            <h4 style="color:var(--accent-gold); margin:0 0 0.25rem;">Como jogar</h4>
+            <ul style="padding-left:1.1rem; margin:0 0 0.75rem;">
+                <li>Role os dados para mover seu peão.</li>
+                <li>Compre <strong>portos</strong> e cobre aluguel de quem cair neles.</li>
+                <li><strong>Rebocadores</strong> aumentam o nível do aluguel.</li>
+                <li><strong>Eventos Oceânicos</strong> exigem um rebocador operacional.</li>
+                <li>No <strong>Estaleiro</strong> pode haver docagem obrigatória (3 turnos).</li>
+                <li>Faça <strong>certificações</strong> para evitar multas e habilitar a frota oceânica.</li>
+            </ul>
+            <h4 style="color:var(--accent-gold); margin:0 0 0.25rem;">Vitória</h4>
+            <p style="margin:0;">4 certificados + TugLord + Rebocador Oceânico + 5 portos — ou seja o último não-falido.</p>
+        </div>
+    `, [{ text: 'Fechar', onClick: 'closeModal()', class: 'btn-primary' }], true);
+}
+
 export function hideManual() {
     document.getElementById('manualScreen').style.display = 'none';
     document.getElementById('presentationScreen').style.display = 'flex';
@@ -76,95 +98,137 @@ export function switchTab(button, tabId) {
 }
 
 export function showNotification(message) {
-    const notification = document.createElement('div');
-    notification.style.cssText = `
+    // Container único e empilhável — evita que múltiplas notificações se
+    // sobreponham no mesmo ponto da tela.
+    let stack = document.getElementById('notificationStack');
+    if (!stack) {
+        stack = document.createElement('div');
+        stack.id = 'notificationStack';
+        document.body.appendChild(stack);
+    }
+    // Reposiciona conforme a fase (na setup o header não existe).
+    stack.style.cssText = `
         position: fixed;
         top: ${gameState.phase === 'setup' ? '20px' : '80px'};
         left: 50%;
         transform: translateX(-50%);
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        max-width: 90%;
+        width: max-content;
+        pointer-events: none;
+    `;
+
+    const notification = document.createElement('div');
+    notification.style.cssText = `
         background: rgba(251, 191, 36, 0.95);
         color: #1a2942;
         padding: 1rem 1.5rem;
         border-radius: 0.75rem;
         font-weight: 700;
-        z-index: 1000;
         box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         animation: slideDown 0.3s ease;
-        max-width: 90%;
         text-align: center;
+        pointer-events: auto;
+        max-width: 100%;
     `;
     notification.textContent = message;
-    document.body.appendChild(notification);
+    stack.appendChild(notification);
 
     setTimeout(() => {
         notification.style.animation = 'slideUp 0.3s ease';
-        setTimeout(() => notification.remove(), 300);
+        setTimeout(() => {
+            notification.remove();
+            if (stack && !stack.hasChildNodes()) stack.remove();
+        }, 300);
     }, 2000);
 }
 
 export function showModal(title, body, buttons = [], closeBtn = true) {
-    // Check if modal exists
     let modal = document.getElementById('gameModal');
     if (!modal) {
         modal = document.createElement('div');
         modal.id = 'gameModal';
-        modal.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            padding: 1.5rem;
-            backdrop-filter: blur(5px);
-            opacity: 0;
-            transition: opacity 0.3s;
-        `;
+        modal.className = 'modal-overlay';
         document.body.appendChild(modal);
+
+        // Clique no fundo fecha (apenas modais dispensáveis).
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal && modal.dataset.dismissible === 'true') closeModal();
+        });
     }
 
+    modal.dataset.dismissible = closeBtn ? 'true' : 'false';
+
     const buttonsHTML = buttons.map(btn => `
-        <button class="btn-primary" onclick="${btn.onClick}" style="width: 100%;">
+        <button class="${btn.class || 'btn-primary'}" onclick="${btn.onClick}" style="width: 100%;">
             ${btn.text}
         </button>
     `).join('');
 
     modal.innerHTML = `
-        <div style="background: #1e293b; border-radius: 1rem; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); border: 1px solid rgba(255,255,255,0.1); transform: scale(0.95); transition: transform 0.3s;">
-            <div style="padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: #1e293b; z-index: 10;">
-                <h3 style="margin: 0; font-size: 1.25rem; color: #fbbf24; font-weight: 700;">${title}</h3>
-                ${closeBtn ? '<button onclick="closeModal()" style="background: transparent; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer;">✕</button>' : ''}
+        <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+            <div class="modal-header">
+                <h3 id="modalTitle">${title}</h3>
+                ${closeBtn ? '<button class="modal-close-x" onclick="closeModal()" aria-label="Fechar">✕</button>' : ''}
             </div>
-            <div style="padding: 1.5rem;">
+            <div class="modal-body">
                 ${body}
-                ${buttonsHTML ? `<div style="margin-top: 1.5rem; display: grid; gap: 0.75rem;">${buttonsHTML}</div>` : ''}
+                ${buttonsHTML ? `<div class="modal-actions">${buttonsHTML}</div>` : ''}
             </div>
         </div>
     `;
 
-    // Animation
     requestAnimationFrame(() => {
-        modal.style.opacity = '1';
-        modal.querySelector('div').style.transform = 'scale(1)';
+        modal.classList.add('open');
+        // Move o foco para a primeira ação (acessibilidade de teclado).
+        const focusTarget = modal.querySelector('.modal-actions button') || modal.querySelector('.modal-close-x');
+        if (focusTarget) focusTarget.focus();
     });
 }
 
 export function closeModal() {
     const modal = document.getElementById('gameModal');
     if (modal) {
-        modal.style.opacity = '0';
-        modal.querySelector('div').style.transform = 'scale(0.95)';
-        setTimeout(() => {
-            modal.remove();
-        }, 300);
+        modal.classList.remove('open');
+        setTimeout(() => modal.remove(), 300);
     }
 }
 
+// Fecha modais dispensáveis com a tecla Esc.
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        const modal = document.getElementById('gameModal');
+        if (modal && modal.dataset.dismissible === 'true') closeModal();
+    }
+});
+
 // ========== RENDER FUNCTIONS ==========
+
+// Escapa aspas/sinais para uso seguro em atributos HTML (title/aria-label).
+function escapeAttr(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+// Monta uma célula de casa. Inclui title/aria-label (tooltip no desktop e
+// leitura por leitores de tela), já que as labels visuais ficam ocultas.
+function houseCell(house, col, row) {
+    const priceLabel = house.price ? ` — R$ ${house.price.toLocaleString('pt-BR')}` : '';
+    const label = escapeAttr(`${house.name}${priceLabel}`);
+    let h = `<div class="board-house" data-position="${house.pos}" style="grid-column: ${col}; grid-row: ${row};" onclick="selectHouse(${house.pos})" title="${label}" aria-label="${label}">`;
+    h += `<div class="house-icon">${house.icon}</div>`;
+    h += `<div class="house-name">${house.name}</div>`;
+    if (house.price) h += `<div class="house-price">R$ ${house.price}</div>`;
+    h += '<div class="house-players"></div></div>';
+    return h;
+}
 
 export function renderBoard() {
     const boardDiv = document.getElementById('visualBoard');
@@ -177,13 +241,7 @@ export function renderBoard() {
 
     // Lado INFERIOR (posições 1-8) - grid-row: 10, colunas 9-2
     for (let i = 1; i <= 8; i++) {
-        const house = boardLayout[i];
-        const col = 10 - i; // Colunas 9, 8, 7, 6, 5, 4, 3, 2
-        boardHTML += `<div class="board-house" data-position="${house.pos}" style="grid-column: ${col}; grid-row: 10;" onclick="selectHouse(${house.pos})">`;
-        boardHTML += `<div class="house-icon">${house.icon}</div>`;
-        boardHTML += `<div class="house-name">${house.name}</div>`;
-        if (house.price) boardHTML += `<div class="house-price">R$ ${house.price}</div>`;
-        boardHTML += '<div class="house-players"></div></div>';
+        boardHTML += houseCell(boardLayout[i], 10 - i, 10);
     }
 
     // Canto inferior esquerdo (SORTE - posição 9)
@@ -191,13 +249,7 @@ export function renderBoard() {
 
     // Lado ESQUERDO (posições 10-17) - grid-column: 1, linhas 9-2
     for (let i = 10; i <= 17; i++) {
-        const house = boardLayout[i];
-        const row = 10 - (i - 9); // Linhas 9, 8, 7, 6, 5, 4, 3, 2
-        boardHTML += `<div class="board-house" data-position="${house.pos}" style="grid-column: 1; grid-row: ${row};" onclick="selectHouse(${house.pos})">`;
-        boardHTML += `<div class="house-icon">${house.icon}</div>`;
-        boardHTML += `<div class="house-name">${house.name}</div>`;
-        if (house.price) boardHTML += `<div class="house-price">R$ ${house.price}</div>`;
-        boardHTML += '<div class="house-players"></div></div>';
+        boardHTML += houseCell(boardLayout[i], 1, 10 - (i - 9));
     }
 
     // Canto superior esquerdo (CERTIFICADO TUGLORD - posição 18)
@@ -205,13 +257,7 @@ export function renderBoard() {
 
     // Lado SUPERIOR (posições 19-26) - grid-row: 1, colunas 2-9
     for (let i = 19; i <= 26; i++) {
-        const house = boardLayout[i];
-        const col = (i - 18) + 1; // Colunas 2, 3, 4, 5, 6, 7, 8, 9
-        boardHTML += `<div class="board-house" data-position="${house.pos}" style="grid-column: ${col}; grid-row: 1;" onclick="selectHouse(${house.pos})">`;
-        boardHTML += `<div class="house-icon">${house.icon}</div>`;
-        boardHTML += `<div class="house-name">${house.name}</div>`;
-        if (house.price) boardHTML += `<div class="house-price">R$ ${house.price}</div>`;
-        boardHTML += '<div class="house-players"></div></div>';
+        boardHTML += houseCell(boardLayout[i], (i - 18) + 1, 1);
     }
 
     // Canto superior direito (BANCO - posição 27)
@@ -219,13 +265,7 @@ export function renderBoard() {
 
     // Lado DIREITO (posições 28-35) - grid-column: 10, linhas 2-9
     for (let i = 28; i <= 35; i++) {
-        const house = boardLayout[i];
-        const row = (i - 27) + 1; // Linhas 2, 3, 4, 5, 6, 7, 8, 9
-        boardHTML += `<div class="board-house" data-position="${house.pos}" style="grid-column: 10; grid-row: ${row};" onclick="selectHouse(${house.pos})">`;
-        boardHTML += `<div class="house-icon">${house.icon}</div>`;
-        boardHTML += `<div class="house-name">${house.name}</div>`;
-        if (house.price) boardHTML += `<div class="house-price">R$ ${house.price}</div>`;
-        boardHTML += '<div class="house-players"></div></div>';
+        boardHTML += houseCell(boardLayout[i], 10, (i - 27) + 1);
     }
 
     // Centro - Branding
@@ -342,9 +382,9 @@ export function selectHouse(position) {
 
     // Calculate current rent if it's a property
     let rentInfo = '';
-    if (house.type === 'property' && house.rent) {
+    if ((house.type === 'property' || house.type === 'port') && house.rent) {
         rentInfo = `<div style="margin-top: 0.5rem; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 0.5rem;">
-            <p style="margin: 0; color: #94a3b8; font-size: 0.85rem;">Aluguel Base: R$${house.rent[0]}</p>
+            <p style="margin: 0; color: #94a3b8; font-size: 0.85rem;">Aluguel Base: R$ ${house.rent[0].toLocaleString('pt-BR')}</p>
         </div>`;
     }
 
@@ -352,7 +392,7 @@ export function selectHouse(position) {
         <div style="text-align: center; margin-bottom: 1.5rem;">
             <div style="font-size: 4rem; margin-bottom: 1rem;">${house.icon}</div>
             <h2 style="color: var(--accent-gold); margin: 0 0 0.5rem 0;">${house.name}</h2>
-            ${house.price ? `<p style="font-size: 1.25rem; font-weight: 700; color: #e0e0e0;">R$ ${house.price}</p>` : ''}
+            ${house.price ? `<p style="font-size: 1.25rem; font-weight: 700; color: #e0e0e0;">R$ ${house.price.toLocaleString('pt-BR')}</p>` : ''}
             <p style="color: #94a3b8; font-style: italic;">${getHouseTypeLabel(house.type)}</p>
         </div>
 
@@ -442,6 +482,28 @@ export function renderPlayersPanel() {
             ? assetsList + fleetInfo + certsInfo
             : '<p class="text-sm text-slate-400">Nenhum ativo ainda</p>';
 
+        // Casa atual (nome em vez do índice cru).
+        const houseHere = gameState.houses[player.position];
+        const positionLabel = houseHere ? `${houseHere.icon} ${houseHere.name}` : `Casa ${player.position}`;
+
+        // Progresso rumo ao "TugLord Supremo".
+        const reqCerts = ['fire', 'rescue', 'collision', 'abandon'];
+        const certCount = reqCerts.filter(c => player.certificates.includes(c)).length;
+        const portsOwned = gameState.houses.filter(h =>
+            (h.type === 'port' || h.type === 'property') && h.price && h.owner === player.id).length;
+        const goalMet = certCount === 4 && player.hasTuglord && player.hasOceanTug && portsOwned >= 5;
+        const chip = (ok, label) => `<span style="font-size:0.7rem; padding:0.1rem 0.4rem; border-radius:0.4rem; background:${ok ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.06)'}; color:${ok ? '#22c55e' : '#94a3b8'};">${ok ? '✅' : '⬜'} ${label}</span>`;
+        const victoryProgress = `
+            <div style="margin-top:0.5rem;">
+                <div style="font-size:0.72rem; color:#fbbf24; font-weight:700; margin-bottom:0.3rem;">🏆 TugLord Supremo ${goalMet ? '— COMPLETO!' : ''}</div>
+                <div style="display:flex; flex-wrap:wrap; gap:0.25rem;">
+                    ${chip(certCount === 4, `Certs ${certCount}/4`)}
+                    ${chip(player.hasTuglord, 'TugLord')}
+                    ${chip(player.hasOceanTug, 'Oceânico')}
+                    ${chip(portsOwned >= 5, `Portos ${portsOwned}/5`)}
+                </div>
+            </div>`;
+
         return `
         <div class="player-card ${index === gameState.currentPlayerIndex ? 'active' : ''}" 
              style="border-left: 4px solid ${player.color};">
@@ -456,8 +518,9 @@ export function renderPlayersPanel() {
             <div class="tab-content active" id="fin-${player.id}">
                 <div class="badge">
                     <span class="dot" style="background: ${player.color};"></span>
-                    <span>Posição: ${player.position}</span>
+                    <span>${positionLabel}</span>
                 </div>
+                ${victoryProgress}
             </div>
             <div class="tab-content" id="assets-${player.id}">
                 ${assetsContent}
@@ -518,12 +581,12 @@ export function renderPlayerSetupList() {
 const style = document.createElement('style');
 style.textContent = `
     @keyframes slideDown {
-        from { transform: translateX(-50%) translateY(-20px); opacity: 0; }
-        to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        from { transform: translateY(-20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
     }
     @keyframes slideUp {
-        from { transform: translateX(-50%) translateY(0); opacity: 1; }
-        to { transform: translateX(-50%) translateY(-20px); opacity: 0; }
+        from { transform: translateY(0); opacity: 1; }
+        to { transform: translateY(-20px); opacity: 0; }
     }
     @keyframes pulse {
         0%, 100% { transform: scale(1); }
