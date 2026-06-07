@@ -1,4 +1,4 @@
-import { gameState, TRAINING_QUESTIONS, CERTIFICATES, CERT_LABELS, CERTIFIED_FEE_MULTIPLIER, OCEAN_EVENTS, playerColors, playerIcons } from './state.js';
+import { gameState, TRAINING_QUESTIONS, CERTIFICATES, CERT_LABELS, CERTIFIED_FEE_MULTIPLIER, CARD_DECK, OCEAN_EVENTS, playerColors, playerIcons } from './state.js';
 import * as UI from './ui.js';
 import { Audio } from './audio.js';
 
@@ -1152,6 +1152,86 @@ export function drawCard(type) {
     if (actionsDiv) actionsDiv.style.display = 'none';
 }
 
+// Dispõe uma fileira de cartas viradas para baixo no centro do tabuleiro para o
+// jogador escolher. Cada carta recebe um sorteio do baralho (Sorte/Azar).
+export function showCardPicker(type) {
+    const center = document.querySelector('.board-center');
+    if (!center) { drawCard(type); return; } // fallback se o centro não existir
+
+    const NUM_CARDS = 5;
+    gameState._savedCenterHTML = center.innerHTML;
+    gameState._cardDraw = Array.from({ length: NUM_CARDS },
+        () => CARD_DECK[Math.floor(Math.random() * CARD_DECK.length)]);
+    gameState._cardPicked = false;
+
+    const label = type === 'surprise' ? 'Carta Surpresa' : 'Sorte ou Azar';
+    let html = `<div class="card-picker">
+        <p class="card-picker-title">🎴 ${label} — escolha uma carta</p>
+        <div class="card-row">`;
+    for (let i = 0; i < NUM_CARDS; i++) {
+        const c = gameState._cardDraw[i];
+        const good = c.val >= 0;
+        html += `
+            <div class="game-card" onclick="pickCard(${i}, '${type}')">
+                <div class="game-card-inner">
+                    <div class="game-card-face game-card-back">⚓</div>
+                    <div class="game-card-face game-card-front ${good ? 'good' : 'bad'}">
+                        <div class="gc-icon">${good ? '🍀' : '⚠️'}</div>
+                        <div class="gc-msg">${c.msg}</div>
+                    </div>
+                </div>
+            </div>`;
+    }
+    html += `</div></div>`;
+    center.innerHTML = html;
+}
+
+// Revela a carta escolhida, aplica o efeito e restaura o centro do tabuleiro.
+export function pickCard(index, type) {
+    if (gameState._cardPicked) return; // só uma escolha por rodada
+    const center = document.querySelector('.board-center');
+    const draw = gameState._cardDraw;
+    if (!center || !draw) return;
+    gameState._cardPicked = true;
+
+    const effect = draw[index];
+    const cards = center.querySelectorAll('.game-card');
+    cards.forEach((card, i) => {
+        card.style.pointerEvents = 'none';
+        if (i === index) {
+            card.classList.add('chosen');
+            card.querySelector('.game-card-inner').classList.add('flipped');
+        } else {
+            card.classList.add('dimmed');
+        }
+    });
+
+    const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+    setTimeout(() => {
+        if (effect.val > 0) {
+            currentPlayer.money += effect.val;
+            UI.showNotification(`🍀 ${effect.msg}`);
+            Audio.playSuccess();
+        } else if (effect.val < 0) {
+            handleMandatoryPayment(currentPlayer, Math.abs(effect.val), 'Carta');
+        } else {
+            UI.showNotification(effect.msg);
+        }
+        UI.renderPlayersPanel();
+    }, 650);
+
+    // Restaura o branding do centro após o jogador ver o resultado.
+    setTimeout(() => {
+        if (gameState._savedCenterHTML != null) {
+            center.innerHTML = gameState._savedCenterHTML;
+            gameState._savedCenterHTML = null;
+        }
+        gameState._cardDraw = null;
+        const actionsDiv = document.getElementById('contextualActions');
+        if (actionsDiv) actionsDiv.style.display = 'none';
+    }, 2800);
+}
+
 export function showContextualActions(house) {
     // Hide old bottom panel just in case
     const actionsDiv = document.getElementById('contextualActions');
@@ -1366,12 +1446,12 @@ export function showContextualActions(house) {
 
     // ========== LUCK/SURPRISE ==========
     else if (house.type === 'luck' || house.type === 'surprise') {
-        body = `<p>A sorte está lançada!</p>`;
-        buttons.push({
-            text: 'Pegar Carta',
-            onClick: `drawCard('${house.type}'); UI.closeModal();`, // drawCard might show notification, modal is better closed?
-            class: 'btn-primary'
-        });
+        // Dispõe a fileira de cartas no centro do tabuleiro para o jogador
+        // escolher; sem modal intermediário.
+        UI.closeModal();
+        showCardPicker(house.type);
+        UI.showNotification('🎴 Escolha uma carta no centro do tabuleiro!');
+        return;
     }
 
     // ========== EVENTS (Ocean) ==========

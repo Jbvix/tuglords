@@ -63,6 +63,20 @@ export const TECH_CERTIFICATES = ['azimuth', 'diesel', 'highspeed', 'maneuver'];
 // serviço é multiplicada por este fator, gerando renda extra ao dono.
 export const CERTIFIED_FEE_MULTIPLIER = 1.5;
 
+// Baralho de cartas Sorte/Azar. Ao cair numa casa de carta, o jogador escolhe
+// uma carta virada para baixo (fileira no centro do tabuleiro) e a revela.
+// val > 0 = Sorte (ganha); val < 0 = Azar (paga).
+export const CARD_DECK = [
+    { msg: 'Contrato de reboque firmado! +R$500', val: 500 },
+    { msg: 'Carga recuperada no porto! +R$300', val: 300 },
+    { msg: 'Resgate bem-sucedido! +R$400', val: 400 },
+    { msg: 'Bonificação por pontualidade! +R$200', val: 200 },
+    { msg: 'Multa ambiental! -R$300', val: -300 },
+    { msg: 'Avaria no motor! -R$400', val: -400 },
+    { msg: 'Manutenção emergencial! -R$250', val: -250 },
+    { msg: 'Taxa portuária extra! -R$200', val: -200 },
+];
+
 // Rótulos amigáveis exibidos ao jogador (a interface não deve mostrar o ID cru).
 export const CERT_LABELS = {
     // Segurança (obrigatórios)

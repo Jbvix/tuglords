@@ -672,6 +672,115 @@ body {
     margin: 0;
 }
 
+/* ===== Seletor de cartas (Sorte/Azar) no centro do tabuleiro ===== */
+.card-picker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    width: 100%;
+    height: 100%;
+    padding: 0.4rem;
+}
+
+.card-picker-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--accent-gold);
+    margin: 0;
+    text-align: center;
+}
+
+.card-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    align-items: center;
+    perspective: 800px;
+}
+
+.game-card {
+    width: 64px;
+    height: 92px;
+    cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.4s ease;
+}
+
+.game-card:hover .game-card-inner {
+    transform: translateY(-4px);
+}
+
+.game-card.dimmed {
+    opacity: 0.35;
+    filter: grayscale(0.6);
+}
+
+.game-card.chosen {
+    transform: scale(1.08);
+}
+
+.game-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.5s;
+    transform-style: preserve-3d;
+}
+
+.game-card-inner.flipped {
+    transform: rotateY(180deg);
+}
+
+.game-card-face {
+    position: absolute;
+    inset: 0;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    border-radius: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0.3rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.game-card-back {
+    background: linear-gradient(145deg, #1e3a8a, #2563eb);
+    border: 2px solid #60a5fa;
+    color: #bfdbfe;
+    font-size: 1.6rem;
+}
+
+.game-card-front {
+    transform: rotateY(180deg);
+    color: #fff;
+    gap: 0.25rem;
+}
+
+.game-card-front.good {
+    background: linear-gradient(145deg, #166534, #22c55e);
+    border: 2px solid #4ade80;
+}
+
+.game-card-front.bad {
+    background: linear-gradient(145deg, #7f1d1d, #ef4444);
+    border: 2px solid #f87171;
+}
+
+.game-card-front .gc-icon {
+    font-size: 1.5rem;
+}
+
+.game-card-front .gc-msg {
+    font-size: 0.5rem;
+    font-weight: 600;
+    line-height: 1.1;
+}
+
 /* Board corners positioning */
 .board-corner[style*="grid-column: 3"][style*="grid-row: 3"] {
     grid-column: 8;
