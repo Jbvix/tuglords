@@ -453,12 +453,20 @@ export function buyProperty(space) {
     UI.showNotification(`✅ ${space.name} adquirido!`);
     Audio.playSuccess();
     UI.renderPlayersPanel();
+    UI.updatePlayerPositions(); // Updates ownership view
+
+    // Oficinas: ao adquirir, o novo dono já presta o exame técnico da área
+    // para emitir (e receber) o certificado. Sem aprovação não há certificado;
+    // se reprovar, pode refazer o exame numa próxima visita.
+    if (space.type === 'workshop' && space.certificate && !currentPlayer.certificates.includes(space.certificate)) {
+        presentExam(space.certificate, space.name, true);
+        return;
+    }
+
     UI.closeModal();
 
     const actionsDiv = document.getElementById('contextualActions');
     if (actionsDiv) actionsDiv.style.display = 'none';
-
-    UI.updatePlayerPositions(); // Updates ownership view
 }
 
 export function buyTug(space) {
@@ -1200,7 +1208,8 @@ export function showContextualActions(house) {
         const owner = house.owner !== undefined ? gameState.players.find(p => p.id === house.owner) : null;
 
         if (!owner) {
-            body = `<p>Esta oficina está à venda por <strong style="color: var(--accent-gold);">R$ ${fmt(house.price)}</strong>.</p>`;
+            body = `<p>Esta oficina está à venda por <strong style="color: var(--accent-gold);">R$ ${fmt(house.price)}</strong>.</p>
+                <p style="color: #94a3b8; font-size: 0.9rem;">📝 Após a compra, você fará o <strong>exame técnico</strong> de ${CERT_LABELS[house.certificate] || house.certificate} para emitir o certificado.</p>`;
             buttons.push({
                 text: `Comprar (R$ ${fmt(house.price)})`,
                 onClick: `buyProperty(gameState.houses[${house.pos}])`,
