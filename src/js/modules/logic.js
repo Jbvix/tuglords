@@ -6,11 +6,11 @@ import { Audio } from './audio.js';
 // Centralizados para ajuste fácil do ritmo do turno. Pensados para dar tempo
 // ao usuário de perceber cada etapa (dados → peão → popup) sem pressa.
 const TIMING = {
-    diceFrame: 110,    // intervalo entre quadros da rolagem dos dados (ms)
-    diceFrames: 14,    // quantos quadros a rolagem dura antes de parar
-    diceSettle: 850,   // pausa para o jogador ver o resultado antes de mover
-    moveStep: 380,     // intervalo entre cada casa percorrida pelo peão (ms)
-    arrivalPopup: 900  // pausa após chegar à casa antes de abrir o popup (ms)
+    diceFrame: 130,     // intervalo entre quadros da rolagem dos dados (ms)
+    diceFrames: 16,     // quantos quadros a rolagem dura antes de parar
+    diceSettle: 1200,   // pausa para o jogador ver o resultado antes de mover
+    moveStep: 520,      // intervalo entre cada casa percorrida pelo peão (ms)
+    arrivalPopup: 1300  // pausa após chegar à casa antes de abrir o popup (ms)
 };
 
 // ========== HELPERS ==========
