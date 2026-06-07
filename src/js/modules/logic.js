@@ -2,6 +2,17 @@ import { gameState, TRAINING_QUESTIONS, OCEAN_EVENTS, playerColors, playerIcons 
 import * as UI from './ui.js';
 import { Audio } from './audio.js';
 
+// ========== TEMPOS DE ANIMAÇÃO ==========
+// Centralizados para ajuste fácil do ritmo do turno. Pensados para dar tempo
+// ao usuário de perceber cada etapa (dados → peão → popup) sem pressa.
+const TIMING = {
+    diceFrame: 110,    // intervalo entre quadros da rolagem dos dados (ms)
+    diceFrames: 14,    // quantos quadros a rolagem dura antes de parar
+    diceSettle: 850,   // pausa para o jogador ver o resultado antes de mover
+    moveStep: 380,     // intervalo entre cada casa percorrida pelo peão (ms)
+    arrivalPopup: 900  // pausa após chegar à casa antes de abrir o popup (ms)
+};
+
 // ========== HELPERS ==========
 
 // Casas compráveis que geram aluguel. No state.js os portos usam type 'port';
@@ -172,7 +183,7 @@ export function rollDice() {
         Audio.playDice();
         rolls++;
 
-        if (rolls > 12) {
+        if (rolls > TIMING.diceFrames) {
             clearInterval(interval);
             const final1 = Math.floor(Math.random() * 6) + 1;
             const final2 = Math.floor(Math.random() * 6) + 1;
@@ -190,16 +201,18 @@ export function rollDice() {
 
             console.log(`🎲 Dados: ${final1} + ${final2} = ${total}`);
 
-            movePlayer(total);
-
+            // Trava a rolagem e o botão imediatamente, mas dá uma pausa para o
+            // jogador enxergar o resultado antes de o peão começar a andar.
             gameState.diceRolled = true;
             const btn = document.getElementById('rollDiceBtn');
             if (btn) {
                 btn.disabled = true;
                 btn.style.opacity = '0.5';
             }
+
+            setTimeout(() => movePlayer(total), TIMING.diceSettle);
         }
-    }, 100);
+    }, TIMING.diceFrame);
 }
 
 export function movePlayer(spaces) {
@@ -234,7 +247,7 @@ export function movePlayer(spaces) {
 
             if (endBtn) endBtn.disabled = false;
 
-            setTimeout(() => showContextualActions(house), 500);
+            setTimeout(() => showContextualActions(house), TIMING.arrivalPopup);
             return;
         }
 
@@ -257,11 +270,11 @@ export function movePlayer(spaces) {
         const currentHouseName = document.getElementById('currentHouseName');
         if (currentHouseName) currentHouseName.textContent = `→ ${stepHouse.name}`;
 
-    }, 200); // Acelerado um pouco
+    }, TIMING.moveStep);
 
     setTimeout(() => {
         UI.renderPlayersPanel();
-    }, totalSteps * 200 + 500);
+    }, totalSteps * TIMING.moveStep + 500);
 }
 
 // ========== GAME LOGIC ACTIONS ==========
