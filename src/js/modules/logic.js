@@ -152,6 +152,10 @@ export function startGame() {
     UI.updateTurnDisplay();
 
     UI.showNotification(`${gameState.players[0].icon} ${gameState.players[0].name} começa!`);
+
+    // Inicia o fundo musical (o clique em "Começar Jogo" é um gesto do usuário,
+    // necessário para a Web Audio API iniciar o contexto de som).
+    Audio.startMusic();
 }
 
 export function rollDice() {
