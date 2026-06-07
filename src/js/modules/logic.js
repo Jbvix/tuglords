@@ -1,4 +1,4 @@
-import { gameState, TRAINING_QUESTIONS, OCEAN_EVENTS, playerColors, playerIcons } from './state.js';
+import { gameState, TRAINING_QUESTIONS, CERTIFICATES, CERT_LABELS, OCEAN_EVENTS, playerColors, playerIcons } from './state.js';
 import * as UI from './ui.js';
 import { Audio } from './audio.js';
 
@@ -478,8 +478,7 @@ export function buyTug(space) {
         }
 
         // Ocean Tug Requirements: All Certs + TugLord (University Master)
-        const requiredCerts = ['fire', 'rescue', 'collision', 'abandon'];
-        const hasAllCerts = requiredCerts.every(c => currentPlayer.certificates.includes(c));
+        const hasAllCerts = CERTIFICATES.every(c => currentPlayer.certificates.includes(c));
 
         if (!hasAllCerts) {
             UI.showNotification('⚠️ Requer todos os certificados!');
@@ -694,8 +693,7 @@ export function applyOceanEventEffect(event) {
     } else if (event.type === 'skip_turn') {
         currentPlayer.skipNextTurn = true;
     } else if (event.type === 'inspection') {
-        const required = ['fire', 'rescue', 'collision', 'abandon'];
-        const hasAll = required.every(c => currentPlayer.certificates.includes(c));
+        const hasAll = CERTIFICATES.every(c => currentPlayer.certificates.includes(c));
         if (hasAll) currentPlayer.money += 200;
         else handleMandatoryPayment(currentPlayer, 150, "Multa Inspeção");
     }
@@ -790,22 +788,14 @@ export function handleExamAnswer(submitted, correct, certificate, name, isFree) 
     const currentPlayer = gameState.players[gameState.currentPlayerIndex];
 
     if (submitted === correct) {
-        currentPlayer.certificates.push(certificate);
-        UI.showNotification(`✅ Aprovado em ${name}!`);
-        // Effect
+        if (!currentPlayer.certificates.includes(certificate)) {
+            currentPlayer.certificates.push(certificate);
+        }
+        UI.showNotification(`✅ Aprovado em ${name}! Certificado: ${CERT_LABELS[certificate] || certificate}`);
     } else {
-        UI.showNotification(`❌ Reprovado!`);
+        UI.showNotification(`❌ Reprovado em ${name}! Tente novamente.`);
     }
     UI.renderPlayersPanel();
-}
-
-export function receiveCertificate(certificate, officeName) {
-    const currentPlayer = gameState.players[gameState.currentPlayerIndex];
-    if (!currentPlayer.certificates.includes(certificate)) {
-        currentPlayer.certificates.push(certificate);
-        UI.showNotification(`✅ Certificado ${certificate} recebido!`);
-        UI.renderPlayersPanel();
-    }
 }
 
 export function commissionTugLord(cost) {
@@ -830,8 +820,7 @@ export function executeContract(name, amount) {
 
 export function visitUniversity() {
     const currentPlayer = gameState.players[gameState.currentPlayerIndex];
-    const trainingCerts = ['fire', 'rescue', 'collision', 'abandon'];
-    const missing = trainingCerts.filter(c => !currentPlayer.certificates.includes(c));
+    const missing = CERTIFICATES.filter(c => !currentPlayer.certificates.includes(c));
 
     if (missing.length === 0) {
         UI.showNotification('Já possui todos os certificados!');
@@ -839,8 +828,7 @@ export function visitUniversity() {
     }
 
     const selected = missing[Math.floor(Math.random() * missing.length)];
-    const map = { fire: 'Incêndio', rescue: 'Homem ao Mar', collision: 'Colisão', abandon: 'Abandono' };
-    presentExam(selected, map[selected], true);
+    presentExam(selected, CERT_LABELS[selected], true);
 }
 
 export function openStockExchange() {
@@ -1036,8 +1024,7 @@ export function processLoans(player) {
 // Rebocador Oceânico + ao menos 5 portos.
 export function meetsSupremeVictory(player) {
     if (!player || player.isEliminated) return false;
-    const requiredCerts = ['fire', 'rescue', 'collision', 'abandon'];
-    const hasAllCerts = requiredCerts.every(c => player.certificates.includes(c));
+    const hasAllCerts = CERTIFICATES.every(c => player.certificates.includes(c));
     const portsOwned = gameState.houses.filter(h => isProperty(h) && h.owner === player.id).length;
     return hasAllCerts && player.hasTuglord && player.hasOceanTug && portsOwned >= 5;
 }
@@ -1222,10 +1209,10 @@ export function showContextualActions(house) {
             buttons.push({ text: 'Passar', onClick: `closeModal()`, class: 'btn-secondary' });
         } else if (owner.id === currentPlayer.id) {
             if (!currentPlayer.certificates.includes(house.certificate)) {
-                body = `<p>Como dono, você pode obter o certificado <strong>${house.certificate}</strong> gratuitamente.</p>`;
+                body = `<p>Como dono, você pode emitir o certificado <strong>${CERT_LABELS[house.certificate] || house.certificate}</strong> — mas precisa conhecer a área: faça o exame técnico (gratuito).</p>`;
                 buttons.push({
-                    text: 'Obter Certificado',
-                    onClick: `receiveCertificate('${house.certificate}', '${house.name}'); UI.closeModal();`,
+                    text: '📝 Fazer Exame Técnico',
+                    onClick: `presentExam('${house.certificate}', '${house.name}', true);`,
                     class: 'btn-primary'
                 });
             } else {
@@ -1531,8 +1518,7 @@ export function showStatistics() {
 
 export function showVictoryInfo() {
     const current = gameState.players[gameState.currentPlayerIndex];
-    const certs = ['fire', 'rescue', 'collision', 'abandon'];
-    const haveCerts = current ? certs.filter(c => current.certificates.includes(c)).length : 0;
+    const haveCerts = current ? CERTIFICATES.filter(c => current.certificates.includes(c)).length : 0;
     const ports = current ? gameState.houses.filter(h => isProperty(h) && h.owner === current.id).length : 0;
     const chk = (ok) => ok ? '✅' : '⬜';
 

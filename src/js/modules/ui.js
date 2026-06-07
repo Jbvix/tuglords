@@ -1,4 +1,4 @@
-import { gameState } from './state.js';
+import { gameState, CERTIFICATES, CERT_LABELS } from './state.js';
 
 // ========== UI FUNCTIONS ==========
 
@@ -474,7 +474,7 @@ export function renderPlayersPanel() {
         if (player.certificates.length > 0) {
             certsInfo += `<p class="text-sm text-slate-300" style="margin: 0.5rem 0;">
                 🎓 <strong>Certificados (${player.certificates.length}):</strong><br>
-                <span style="color: #94a3b8; font-size: 0.85rem;">${player.certificates.join(', ')}</span>
+                <span style="color: #94a3b8; font-size: 0.85rem;">${player.certificates.map(c => CERT_LABELS[c] || c).join(', ')}</span>
             </p>`;
         }
 
@@ -487,8 +487,7 @@ export function renderPlayersPanel() {
         const positionLabel = houseHere ? `${houseHere.icon} ${houseHere.name}` : `Casa ${player.position}`;
 
         // Progresso rumo ao "TugLord Supremo".
-        const reqCerts = ['fire', 'rescue', 'collision', 'abandon'];
-        const certCount = reqCerts.filter(c => player.certificates.includes(c)).length;
+        const certCount = CERTIFICATES.filter(c => player.certificates.includes(c)).length;
         const portsOwned = gameState.houses.filter(h =>
             (h.type === 'port' || h.type === 'property') && h.price && h.owner === player.id).length;
         const goalMet = certCount === 4 && player.hasTuglord && player.hasOceanTug && portsOwned >= 5;
