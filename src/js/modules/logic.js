@@ -113,12 +113,14 @@ export function startOrderRolls() {
             const animInterval = setInterval(() => {
                 const rand = Math.floor(Math.random() * 6) + 1 + Math.floor(Math.random() * 6) + 1;
                 rollElement.textContent = `🎲 ${rand}`;
+                Audio.playDice(); // som de dados rolando, como na jogada normal
                 animCount++;
 
                 if (animCount > 10) {
                     clearInterval(animInterval);
                     rollElement.textContent = `🎲 ${rollValue}`;
                     rollElement.style.animation = 'pulse 0.5s';
+                    Audio.playMoney(); // valor fixado para este jogador
                 }
             }, 100);
         }
@@ -164,8 +166,11 @@ export function startGame() {
 
     UI.showNotification(`${gameState.players[0].icon} ${gameState.players[0].name} começa!`);
 
-    // Inicia o fundo musical (o clique em "Começar Jogo" é um gesto do usuário,
-    // necessário para a Web Audio API iniciar o contexto de som).
+    // Som de início de partida (arpejo de sucesso).
+    Audio.playSuccess();
+
+    // Garante o fundo musical (idempotente — já deve estar tocando desde a
+    // tela inicial, mas reforça caso o áudio só inicialize agora).
     Audio.startMusic();
 }
 

@@ -7,9 +7,13 @@ import { Audio } from './modules/audio.js';
 window.addPlayer = Logic.addPlayer;
 // ... (rest of imports)
 
-// Initialize Audio on first interaction
+// Inicializa o áudio e começa o fundo musical no primeiro clique do usuário.
+// Esse primeiro gesto (ex.: já na tela de apresentação) é exigido pela
+// Web Audio API para iniciar o contexto de som — então a música ambiente
+// passa a tocar desde a tela inicial.
 document.body.addEventListener('click', () => {
     Audio.init();
+    Audio.startMusic();
 }, { once: true });
 
 
