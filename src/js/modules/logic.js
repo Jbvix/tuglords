@@ -9,7 +9,7 @@ const TIMING = {
     diceFrame: 130,     // intervalo entre quadros da rolagem dos dados (ms)
     diceFrames: 16,     // quantos quadros a rolagem dura antes de parar
     diceSettle: 1200,   // pausa para o jogador ver o resultado antes de mover
-    moveStep: 520,      // intervalo entre cada casa percorrida pelo peão (ms)
+    moveStep: 1000,     // intervalo entre cada casa percorrida pelo peão (ms)
     arrivalPopup: 1300  // pausa após chegar à casa antes de abrir o popup (ms)
 };
 
