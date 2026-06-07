@@ -37,6 +37,13 @@ export const Audio = {
         }
 
         try {
+            // Os navegadores deixam o AudioContext suspenso até um gesto do
+            // usuário. init() roda no primeiro clique, então retomamos o
+            // contexto aqui — sem isto nem efeitos nem música tocam.
+            if (Tone.context.state !== 'running') {
+                Tone.start().catch(() => {});
+            }
+
             // Simple synth for single notes (movement, dice)
             this.synth = new Tone.Synth({
                 oscillator: { type: "square" },
@@ -174,8 +181,22 @@ export const Audio = {
         try {
             this._setupMusic();
             if (!this.musicReady) return;
-            Tone.Transport.start();
-            this.musicPlaying = true;
+
+            const begin = () => {
+                if (this.muted || this.musicPlaying) return;
+                Tone.Transport.start();
+                this.musicPlaying = true;
+                console.log("🎵 Fundo musical iniciado");
+            };
+
+            // Garante o AudioContext rodando antes de iniciar o Transport;
+            // se ainda estiver suspenso, retoma e só então começa.
+            if (Tone.context.state === 'running') {
+                begin();
+            } else {
+                Tone.start().then(begin).catch((e) =>
+                    console.warn("🔇 Falha ao retomar contexto de áudio:", e.message));
+            }
         } catch (e) {
             console.warn("🔇 Falha ao iniciar fundo musical:", e.message);
         }
