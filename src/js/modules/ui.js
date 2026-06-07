@@ -230,6 +230,17 @@ function houseCell(house, col, row) {
     return h;
 }
 
+// Monta uma célula de CANTO. Igual ao canto antigo, mas agora interativa:
+// inclui data-position (para peão/realce), onclick (abre info) e o contêiner
+// de peões — corrigindo a ausência de informação e o sumiço do peão nos cantos.
+function cornerCell(house, col, row) {
+    const label = escapeAttr(house.name);
+    return `<div class="board-corner" data-position="${house.pos}" style="grid-column: ${col}; grid-row: ${row};" onclick="selectHouse(${house.pos})" title="${label}" aria-label="${label}">`
+        + `<span class="corner-icon">${house.icon}</span>`
+        + `<div class="house-players"></div>`
+        + `</div>`;
+}
+
 export function renderBoard() {
     const boardDiv = document.getElementById('visualBoard');
     const boardLayout = gameState.houses;
@@ -237,7 +248,7 @@ export function renderBoard() {
     let boardHTML = '<div class="board-game">';
 
     // Canto inferior direito (PARTIDA - posição 0)
-    boardHTML += '<div class="board-corner" style="grid-column: 10; grid-row: 10;"><span>🏁</span></div>';
+    boardHTML += cornerCell(boardLayout[0], 10, 10);
 
     // Lado INFERIOR (posições 1-8) - grid-row: 10, colunas 9-2
     for (let i = 1; i <= 8; i++) {
@@ -245,7 +256,7 @@ export function renderBoard() {
     }
 
     // Canto inferior esquerdo (SORTE - posição 9)
-    boardHTML += '<div class="board-corner" style="grid-column: 1; grid-row: 10;"><span>🍀</span></div>';
+    boardHTML += cornerCell(boardLayout[9], 1, 10);
 
     // Lado ESQUERDO (posições 10-17) - grid-column: 1, linhas 9-2
     for (let i = 10; i <= 17; i++) {
@@ -253,7 +264,7 @@ export function renderBoard() {
     }
 
     // Canto superior esquerdo (CERTIFICADO TUGLORD - posição 18)
-    boardHTML += '<div class="board-corner" style="grid-column: 1; grid-row: 1;"><span>🎖️</span></div>';
+    boardHTML += cornerCell(boardLayout[18], 1, 1);
 
     // Lado SUPERIOR (posições 19-26) - grid-row: 1, colunas 2-9
     for (let i = 19; i <= 26; i++) {
@@ -261,7 +272,7 @@ export function renderBoard() {
     }
 
     // Canto superior direito (BANCO - posição 27)
-    boardHTML += '<div class="board-corner" style="grid-column: 10; grid-row: 1;"><span>🏛️</span></div>';
+    boardHTML += cornerCell(boardLayout[27], 10, 1);
 
     // Lado DIREITO (posições 28-35) - grid-column: 10, linhas 2-9
     for (let i = 28; i <= 35; i++) {
@@ -378,7 +389,7 @@ export function selectHouse(position) {
     const house = gameState.houses[position];
     if (!house) return;
 
-    const owner = house.owner ? gameState.players.find(p => p.id === house.owner) : null;
+    const owner = house.owner !== undefined ? gameState.players.find(p => p.id === house.owner) : null;
 
     // Calculate current rent if it's a property
     let rentInfo = '';
@@ -410,19 +421,25 @@ export function selectHouse(position) {
 
 function getHouseTypeLabel(type) {
     const types = {
-        'start': 'Início',
+        'start': 'Partida',
         'port': 'Porto Comercial',
         'event': 'Evento Oceânico',
+        'ocean_event': 'Evento Oceânico',
         'fuel': 'Posto de Combustível',
+        'service': 'Serviço Portuário',
         'bank': 'Banco',
-        'surprise': 'Surpresa',
-        'workshop': 'Oficina/Estaleiro',
-        'corner': 'Canto',
+        'surprise': 'Carta Surpresa',
+        'workshop': 'Oficina',
+        'corner': 'Canto da Sorte',
         'luck': 'Sorte ou Azar',
         'stock': 'Bolsa de Valores',
+        'stock_exchange': 'Bolsa de Valores',
         'training': 'Centro de Treinamento',
-        'tax': 'Taxa',
-        'tuglord': 'Certificação TugLord'
+        'university': 'Universidade',
+        'tug_purchase': 'Loja de Rebocadores',
+        'tax': 'Taxa Portuária',
+        'tuglord': 'Certificação TugLord',
+        'tuglord_certificate': 'Certificação TugLord'
     };
     return types[type] || 'Local';
 }

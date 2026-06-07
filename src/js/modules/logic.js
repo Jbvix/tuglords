@@ -923,10 +923,9 @@ export function buyStock(propName, price) {
     const owner = gameState.players.find(p => p.id === property.owner);
     owner.money += price;
 
-    UI.showNotification(`Ação comprada!`);
+    UI.showNotification(`✅ Ação de ${propName} comprada!`);
     UI.renderPlayersPanel();
-    UI.closeModal();
-    setTimeout(openStockExchange, 300);
+    UI.closeModal(); // Fecha o popup após a compra (sem reabrir).
 }
 
 export function payDividends(propertyOwner) {
@@ -1184,6 +1183,10 @@ export function showCardPicker(type) {
     }
     html += `</div></div>`;
     center.innerHTML = html;
+
+    // Garante que o centro (e as cartas) entre na área visível — em telas onde
+    // o tabuleiro é mais alto que a janela, o centro poderia ficar fora da vista.
+    try { center.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
 }
 
 // Revela a carta escolhida, aplica o efeito e restaura o centro do tabuleiro.
