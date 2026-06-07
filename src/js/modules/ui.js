@@ -112,7 +112,7 @@ export function showNotification(message) {
         top: ${gameState.phase === 'setup' ? '20px' : '80px'};
         left: 50%;
         transform: translateX(-50%);
-        z-index: 1000;
+        z-index: 3000; /* acima do modal (2000) — antes ficava atrás e borrado */
         display: flex;
         flex-direction: column;
         align-items: center;
