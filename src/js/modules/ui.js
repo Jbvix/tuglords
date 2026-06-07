@@ -1,4 +1,4 @@
-import { gameState } from './state.js';
+import { gameState, CERTIFICATES, TECH_CERTIFICATES, CERT_LABELS } from './state.js';
 
 // ========== UI FUNCTIONS ==========
 
@@ -471,10 +471,19 @@ export function renderPlayersPanel() {
         }
 
         let certsInfo = '';
-        if (player.certificates.length > 0) {
+        // Separa certificados de segurança (obrigatórios) dos técnicos (bônus).
+        const safetyCerts = CERTIFICATES.filter(c => player.certificates.includes(c));
+        const techCerts = TECH_CERTIFICATES.filter(c => player.certificates.includes(c));
+        if (safetyCerts.length > 0) {
             certsInfo += `<p class="text-sm text-slate-300" style="margin: 0.5rem 0;">
-                🎓 <strong>Certificados (${player.certificates.length}):</strong><br>
-                <span style="color: #94a3b8; font-size: 0.85rem;">${player.certificates.join(', ')}</span>
+                🎓 <strong>Certificados de Segurança (${safetyCerts.length}/4):</strong><br>
+                <span style="color: #94a3b8; font-size: 0.85rem;">${safetyCerts.map(c => CERT_LABELS[c] || c).join(', ')}</span>
+            </p>`;
+        }
+        if (techCerts.length > 0) {
+            certsInfo += `<p class="text-sm text-slate-300" style="margin: 0.5rem 0;">
+                🔧 <strong>Certificados Técnicos (${techCerts.length}/4):</strong><br>
+                <span style="color: #94a3b8; font-size: 0.85rem;">${techCerts.map(c => CERT_LABELS[c] || c).join(', ')}</span>
             </p>`;
         }
 
@@ -487,20 +496,22 @@ export function renderPlayersPanel() {
         const positionLabel = houseHere ? `${houseHere.icon} ${houseHere.name}` : `Casa ${player.position}`;
 
         // Progresso rumo ao "TugLord Supremo".
-        const reqCerts = ['fire', 'rescue', 'collision', 'abandon'];
-        const certCount = reqCerts.filter(c => player.certificates.includes(c)).length;
+        const certCount = CERTIFICATES.filter(c => player.certificates.includes(c)).length;
         const portsOwned = gameState.houses.filter(h =>
             (h.type === 'port' || h.type === 'property') && h.price && h.owner === player.id).length;
+        const techCount = TECH_CERTIFICATES.filter(c => player.certificates.includes(c)).length;
+        // Certificados de segurança são obrigatórios; os técnicos são bônus (não entram na meta).
         const goalMet = certCount === 4 && player.hasTuglord && player.hasOceanTug && portsOwned >= 5;
         const chip = (ok, label) => `<span style="font-size:0.7rem; padding:0.1rem 0.4rem; border-radius:0.4rem; background:${ok ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.06)'}; color:${ok ? '#22c55e' : '#94a3b8'};">${ok ? '✅' : '⬜'} ${label}</span>`;
         const victoryProgress = `
             <div style="margin-top:0.5rem;">
                 <div style="font-size:0.72rem; color:#fbbf24; font-weight:700; margin-bottom:0.3rem;">🏆 TugLord Supremo ${goalMet ? '— COMPLETO!' : ''}</div>
                 <div style="display:flex; flex-wrap:wrap; gap:0.25rem;">
-                    ${chip(certCount === 4, `Certs ${certCount}/4`)}
+                    ${chip(certCount === 4, `Segurança ${certCount}/4`)}
                     ${chip(player.hasTuglord, 'TugLord')}
                     ${chip(player.hasOceanTug, 'Oceânico')}
                     ${chip(portsOwned >= 5, `Portos ${portsOwned}/5`)}
+                    <span style="font-size:0.7rem; padding:0.1rem 0.4rem; border-radius:0.4rem; background:rgba(59,130,246,0.15); color:#60a5fa;">🔧 Técnicos ${techCount}/4 (bônus)</span>
                 </div>
             </div>`;
 

@@ -1,4 +1,4 @@
-import { gameState, TRAINING_QUESTIONS, OCEAN_EVENTS, playerColors, playerIcons } from './state.js';
+import { gameState, TRAINING_QUESTIONS, CERTIFICATES, CERT_LABELS, CERTIFIED_FEE_MULTIPLIER, CARD_DECK, OCEAN_EVENTS, playerColors, playerIcons } from './state.js';
 import * as UI from './ui.js';
 import { Audio } from './audio.js';
 
@@ -453,12 +453,20 @@ export function buyProperty(space) {
     UI.showNotification(`✅ ${space.name} adquirido!`);
     Audio.playSuccess();
     UI.renderPlayersPanel();
+    UI.updatePlayerPositions(); // Updates ownership view
+
+    // Oficinas: ao adquirir, o novo dono já presta o exame técnico da área
+    // para emitir (e receber) o certificado. Sem aprovação não há certificado;
+    // se reprovar, pode refazer o exame numa próxima visita.
+    if (space.type === 'workshop' && space.certificate && !currentPlayer.certificates.includes(space.certificate)) {
+        presentExam(space.certificate, space.name, true);
+        return;
+    }
+
     UI.closeModal();
 
     const actionsDiv = document.getElementById('contextualActions');
     if (actionsDiv) actionsDiv.style.display = 'none';
-
-    UI.updatePlayerPositions(); // Updates ownership view
 }
 
 export function buyTug(space) {
@@ -478,8 +486,7 @@ export function buyTug(space) {
         }
 
         // Ocean Tug Requirements: All Certs + TugLord (University Master)
-        const requiredCerts = ['fire', 'rescue', 'collision', 'abandon'];
-        const hasAllCerts = requiredCerts.every(c => currentPlayer.certificates.includes(c));
+        const hasAllCerts = CERTIFICATES.every(c => currentPlayer.certificates.includes(c));
 
         if (!hasAllCerts) {
             UI.showNotification('⚠️ Requer todos os certificados!');
@@ -694,8 +701,7 @@ export function applyOceanEventEffect(event) {
     } else if (event.type === 'skip_turn') {
         currentPlayer.skipNextTurn = true;
     } else if (event.type === 'inspection') {
-        const required = ['fire', 'rescue', 'collision', 'abandon'];
-        const hasAll = required.every(c => currentPlayer.certificates.includes(c));
+        const hasAll = CERTIFICATES.every(c => currentPlayer.certificates.includes(c));
         if (hasAll) currentPlayer.money += 200;
         else handleMandatoryPayment(currentPlayer, 150, "Multa Inspeção");
     }
@@ -790,22 +796,14 @@ export function handleExamAnswer(submitted, correct, certificate, name, isFree) 
     const currentPlayer = gameState.players[gameState.currentPlayerIndex];
 
     if (submitted === correct) {
-        currentPlayer.certificates.push(certificate);
-        UI.showNotification(`✅ Aprovado em ${name}!`);
-        // Effect
+        if (!currentPlayer.certificates.includes(certificate)) {
+            currentPlayer.certificates.push(certificate);
+        }
+        UI.showNotification(`✅ Aprovado em ${name}! Certificado: ${CERT_LABELS[certificate] || certificate}`);
     } else {
-        UI.showNotification(`❌ Reprovado!`);
+        UI.showNotification(`❌ Reprovado em ${name}! Tente novamente.`);
     }
     UI.renderPlayersPanel();
-}
-
-export function receiveCertificate(certificate, officeName) {
-    const currentPlayer = gameState.players[gameState.currentPlayerIndex];
-    if (!currentPlayer.certificates.includes(certificate)) {
-        currentPlayer.certificates.push(certificate);
-        UI.showNotification(`✅ Certificado ${certificate} recebido!`);
-        UI.renderPlayersPanel();
-    }
 }
 
 export function commissionTugLord(cost) {
@@ -830,8 +828,7 @@ export function executeContract(name, amount) {
 
 export function visitUniversity() {
     const currentPlayer = gameState.players[gameState.currentPlayerIndex];
-    const trainingCerts = ['fire', 'rescue', 'collision', 'abandon'];
-    const missing = trainingCerts.filter(c => !currentPlayer.certificates.includes(c));
+    const missing = CERTIFICATES.filter(c => !currentPlayer.certificates.includes(c));
 
     if (missing.length === 0) {
         UI.showNotification('Já possui todos os certificados!');
@@ -839,8 +836,7 @@ export function visitUniversity() {
     }
 
     const selected = missing[Math.floor(Math.random() * missing.length)];
-    const map = { fire: 'Incêndio', rescue: 'Homem ao Mar', collision: 'Colisão', abandon: 'Abandono' };
-    presentExam(selected, map[selected], true);
+    presentExam(selected, CERT_LABELS[selected], true);
 }
 
 export function openStockExchange() {
@@ -1036,8 +1032,7 @@ export function processLoans(player) {
 // Rebocador Oceânico + ao menos 5 portos.
 export function meetsSupremeVictory(player) {
     if (!player || player.isEliminated) return false;
-    const requiredCerts = ['fire', 'rescue', 'collision', 'abandon'];
-    const hasAllCerts = requiredCerts.every(c => player.certificates.includes(c));
+    const hasAllCerts = CERTIFICATES.every(c => player.certificates.includes(c));
     const portsOwned = gameState.houses.filter(h => isProperty(h) && h.owner === player.id).length;
     return hasAllCerts && player.hasTuglord && player.hasOceanTug && portsOwned >= 5;
 }
@@ -1157,6 +1152,86 @@ export function drawCard(type) {
     if (actionsDiv) actionsDiv.style.display = 'none';
 }
 
+// Dispõe uma fileira de cartas viradas para baixo no centro do tabuleiro para o
+// jogador escolher. Cada carta recebe um sorteio do baralho (Sorte/Azar).
+export function showCardPicker(type) {
+    const center = document.querySelector('.board-center');
+    if (!center) { drawCard(type); return; } // fallback se o centro não existir
+
+    const NUM_CARDS = 5;
+    gameState._savedCenterHTML = center.innerHTML;
+    gameState._cardDraw = Array.from({ length: NUM_CARDS },
+        () => CARD_DECK[Math.floor(Math.random() * CARD_DECK.length)]);
+    gameState._cardPicked = false;
+
+    const label = type === 'surprise' ? 'Carta Surpresa' : 'Sorte ou Azar';
+    let html = `<div class="card-picker">
+        <p class="card-picker-title">🎴 ${label} — escolha uma carta</p>
+        <div class="card-row">`;
+    for (let i = 0; i < NUM_CARDS; i++) {
+        const c = gameState._cardDraw[i];
+        const good = c.val >= 0;
+        html += `
+            <div class="game-card" onclick="pickCard(${i}, '${type}')">
+                <div class="game-card-inner">
+                    <div class="game-card-face game-card-back">⚓</div>
+                    <div class="game-card-face game-card-front ${good ? 'good' : 'bad'}">
+                        <div class="gc-icon">${good ? '🍀' : '⚠️'}</div>
+                        <div class="gc-msg">${c.msg}</div>
+                    </div>
+                </div>
+            </div>`;
+    }
+    html += `</div></div>`;
+    center.innerHTML = html;
+}
+
+// Revela a carta escolhida, aplica o efeito e restaura o centro do tabuleiro.
+export function pickCard(index, type) {
+    if (gameState._cardPicked) return; // só uma escolha por rodada
+    const center = document.querySelector('.board-center');
+    const draw = gameState._cardDraw;
+    if (!center || !draw) return;
+    gameState._cardPicked = true;
+
+    const effect = draw[index];
+    const cards = center.querySelectorAll('.game-card');
+    cards.forEach((card, i) => {
+        card.style.pointerEvents = 'none';
+        if (i === index) {
+            card.classList.add('chosen');
+            card.querySelector('.game-card-inner').classList.add('flipped');
+        } else {
+            card.classList.add('dimmed');
+        }
+    });
+
+    const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+    setTimeout(() => {
+        if (effect.val > 0) {
+            currentPlayer.money += effect.val;
+            UI.showNotification(`🍀 ${effect.msg}`);
+            Audio.playSuccess();
+        } else if (effect.val < 0) {
+            handleMandatoryPayment(currentPlayer, Math.abs(effect.val), 'Carta');
+        } else {
+            UI.showNotification(effect.msg);
+        }
+        UI.renderPlayersPanel();
+    }, 650);
+
+    // Restaura o branding do centro após o jogador ver o resultado.
+    setTimeout(() => {
+        if (gameState._savedCenterHTML != null) {
+            center.innerHTML = gameState._savedCenterHTML;
+            gameState._savedCenterHTML = null;
+        }
+        gameState._cardDraw = null;
+        const actionsDiv = document.getElementById('contextualActions');
+        if (actionsDiv) actionsDiv.style.display = 'none';
+    }, 2800);
+}
+
 export function showContextualActions(house) {
     // Hide old bottom panel just in case
     const actionsDiv = document.getElementById('contextualActions');
@@ -1213,7 +1288,8 @@ export function showContextualActions(house) {
         const owner = house.owner !== undefined ? gameState.players.find(p => p.id === house.owner) : null;
 
         if (!owner) {
-            body = `<p>Esta oficina está à venda por <strong style="color: var(--accent-gold);">R$ ${fmt(house.price)}</strong>.</p>`;
+            body = `<p>Esta oficina está à venda por <strong style="color: var(--accent-gold);">R$ ${fmt(house.price)}</strong>.</p>
+                <p style="color: #94a3b8; font-size: 0.9rem;">📝 Após a compra, você fará o <strong>exame técnico</strong> de ${CERT_LABELS[house.certificate] || house.certificate} para emitir o certificado.</p>`;
             buttons.push({
                 text: `Comprar (R$ ${fmt(house.price)})`,
                 onClick: `buyProperty(gameState.houses[${house.pos}])`,
@@ -1222,10 +1298,10 @@ export function showContextualActions(house) {
             buttons.push({ text: 'Passar', onClick: `closeModal()`, class: 'btn-secondary' });
         } else if (owner.id === currentPlayer.id) {
             if (!currentPlayer.certificates.includes(house.certificate)) {
-                body = `<p>Como dono, você pode obter o certificado <strong>${house.certificate}</strong> gratuitamente.</p>`;
+                body = `<p>Como dono, você pode emitir o certificado <strong>${CERT_LABELS[house.certificate] || house.certificate}</strong> — mas precisa conhecer a área: faça o exame técnico (gratuito).</p>`;
                 buttons.push({
-                    text: 'Obter Certificado',
-                    onClick: `receiveCertificate('${house.certificate}', '${house.name}'); UI.closeModal();`,
+                    text: '📝 Fazer Exame Técnico',
+                    onClick: `presentExam('${house.certificate}', '${house.name}', true);`,
                     class: 'btn-primary'
                 });
             } else {
@@ -1233,9 +1309,15 @@ export function showContextualActions(house) {
                 buttons.push({ text: 'Continuar', onClick: `closeModal()`, class: 'btn-primary' });
             }
         } else {
-            const serviceFee = house.serviceFee;
+            // Oficina certificada (dono tem o certificado técnico da área) cobra
+            // serviço premium — renda extra para quem investiu no certificado.
+            const certified = owner.certificates.includes(house.certificate);
+            const serviceFee = certified
+                ? Math.round(house.serviceFee * CERTIFIED_FEE_MULTIPLIER)
+                : house.serviceFee;
             body = `
                 <p>Propriedade de <strong>${owner.name}</strong>.</p>
+                ${certified ? `<p style="color: var(--accent-gold);">🎓 Oficina certificada em ${CERT_LABELS[house.certificate] || house.certificate} — serviço premium (+${Math.round((CERTIFIED_FEE_MULTIPLIER - 1) * 100)}%).</p>` : ''}
                 <p style="color: #ef4444;">Taxa de Serviço: R$ ${fmt(serviceFee)}</p>
             `;
             buttons.push({
@@ -1311,7 +1393,7 @@ export function showContextualActions(house) {
 
     // ========== UNIVERSITY ==========
     else if (house.type === 'university') {
-        body = `<p>Acesse a Universidade para realizar exames de certificação.</p>`;
+        body = `<p>🎓 Universidade do Mar — faça exames dos <strong>certificados de segurança obrigatórios</strong> (Incêndio, Homem ao Mar, Colisão, Abandono). Exame gratuito!</p>`;
         buttons.push({
             text: 'Acessar Universidade',
             onClick: `visitUniversity();`, // Opens exam modal
@@ -1364,12 +1446,12 @@ export function showContextualActions(house) {
 
     // ========== LUCK/SURPRISE ==========
     else if (house.type === 'luck' || house.type === 'surprise') {
-        body = `<p>A sorte está lançada!</p>`;
-        buttons.push({
-            text: 'Pegar Carta',
-            onClick: `drawCard('${house.type}'); UI.closeModal();`, // drawCard might show notification, modal is better closed?
-            class: 'btn-primary'
-        });
+        // Dispõe a fileira de cartas no centro do tabuleiro para o jogador
+        // escolher; sem modal intermediário.
+        UI.closeModal();
+        showCardPicker(house.type);
+        UI.showNotification('🎴 Escolha uma carta no centro do tabuleiro!');
+        return;
     }
 
     // ========== EVENTS (Ocean) ==========
@@ -1531,8 +1613,7 @@ export function showStatistics() {
 
 export function showVictoryInfo() {
     const current = gameState.players[gameState.currentPlayerIndex];
-    const certs = ['fire', 'rescue', 'collision', 'abandon'];
-    const haveCerts = current ? certs.filter(c => current.certificates.includes(c)).length : 0;
+    const haveCerts = current ? CERTIFICATES.filter(c => current.certificates.includes(c)).length : 0;
     const ports = current ? gameState.houses.filter(h => isProperty(h) && h.owner === current.id).length : 0;
     const chk = (ok) => ok ? '✅' : '⬜';
 

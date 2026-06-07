@@ -14,14 +14,14 @@ export const gameState = {
         { name: 'Banco', type: 'bank', icon: '🏦', actions: ['loan'] },
         { name: 'Loja de Rebocadores', type: 'tug_purchase', price: 10000, tugType: 'port', icon: '🛒', actions: ['buy'] }, // Added Shop
         { name: 'Carta Surpresa', type: 'surprise', icon: '🎁', actions: [] },
-        { name: 'SCHOTTEL', type: 'workshop', price: 8000, serviceFee: 1500, certificate: 'fire', icon: '🛠️', actions: ['buy'] },
+        { name: 'SCHOTTEL', type: 'workshop', price: 8000, serviceFee: 1500, certificate: 'azimuth', icon: '🛠️', actions: ['buy'] },
         { name: 'Canto Sorte', type: 'corner', icon: '🍀', actions: [] }, // Index 9
         // Side 2 (Left)
         { name: 'Porto de Salvador', type: 'port', price: 9000, rent: [900, 1800, 3500, 5500, 8000, 11000], icon: '⛵', actions: ['buy'] },
         { name: 'Evento Oceânico', type: 'event', icon: '🌊', actions: [] },
-        { name: 'CAT', type: 'workshop', price: 9000, serviceFee: 1800, certificate: 'rescue', icon: '🏭', actions: ['buy'] },
+        { name: 'CAT', type: 'workshop', price: 9000, serviceFee: 1800, certificate: 'diesel', icon: '🏭', actions: ['buy'] },
         { name: 'Porto de Vitória', type: 'port', price: 8500, rent: [850, 1700, 3200, 5200, 7800, 10500], icon: '🚤', actions: ['buy'] },
-        { name: 'Posto de Abastecimento', type: 'service', price: 6500, icon: '⛽', actions: ['buy'] },
+        { name: 'Universidade do Mar', type: 'university', icon: '🎓', actions: [] },
         { name: 'Porto de Macaé', type: 'port', price: 11000, rent: [1100, 2200, 4000, 6500, 9500, 13000], icon: '⛴️', actions: ['buy'] },
         { name: 'Carta Sorte', type: 'luck', icon: '🎲', actions: [] },
         { name: 'Porto do Açu', type: 'port', price: 14000, rent: [1400, 2800, 5000, 8000, 12000, 16000], icon: '🛳️', actions: ['buy'] },
@@ -30,11 +30,11 @@ export const gameState = {
         // Side 3 (Top)
         { name: 'Porto de Itajaí', type: 'port', price: 9500, rent: [950, 1900, 3600, 5800, 8500, 11500], icon: '🛥️', actions: ['buy'] },
         { name: 'Evento Oceânico', type: 'event', icon: '🌊', actions: [] },
-        { name: 'MTU', type: 'workshop', price: 8500, serviceFee: 1600, certificate: 'collision', icon: '🔧', actions: ['buy'] },
+        { name: 'MTU', type: 'workshop', price: 8500, serviceFee: 1600, certificate: 'highspeed', icon: '🔧', actions: ['buy'] },
         { name: 'Porto de Rio Grande', type: 'port', price: 9000, rent: [900, 1800, 3500, 5500, 8000, 11000], icon: '🚤', actions: ['buy'] },
         { name: 'Bolsa de Valores', type: 'stock_exchange', icon: '📈', actions: ['invest'] },
         { name: 'Porto de Paranaguá', type: 'port', price: 10500, rent: [1050, 2100, 3900, 6200, 9000, 12500], icon: '⛴️', actions: ['buy'] },
-        { name: 'Treinamento', type: 'training', price: 3000, certificate: 'abandon', icon: '🎓', actions: ['buy'] },
+        { name: 'Treinamento', type: 'training', price: 3000, certificate: 'maneuver', icon: '🎓', actions: ['buy'] },
         { name: 'Porto de Suape', type: 'port', price: 11500, rent: [1150, 2300, 4200, 6800, 9800, 13500], icon: '🚢', actions: ['buy'] },
         // Corner 27
         { name: 'Banco Central', type: 'bank', icon: '🏛️', actions: [] },
@@ -50,7 +50,49 @@ export const gameState = {
     ].map((h, i) => ({ ...h, pos: i }))
 };
 
+// Certificados de SEGURANÇA — OBRIGATÓRIOS para a vitória, rebocador oceânico
+// e bônus de inspeção. Obtidos na Universidade (exames de segurança).
+export const CERTIFICATES = ['fire', 'rescue', 'collision', 'abandon'];
+
+// Certificados TÉCNICOS — OPCIONAIS (bônus). Concedidos pelas oficinas
+// (SCHOTTEL/CAT/MTU) e pelo Treinamento, mediante exame técnico da área.
+export const TECH_CERTIFICATES = ['azimuth', 'diesel', 'highspeed', 'maneuver'];
+
+// Bônus dos certificados técnicos: uma oficina cujo DONO possui o certificado
+// técnico da área vira "certificada" e cobra um serviço premium — a taxa de
+// serviço é multiplicada por este fator, gerando renda extra ao dono.
+export const CERTIFIED_FEE_MULTIPLIER = 1.5;
+
+// Baralho de cartas Sorte/Azar. Ao cair numa casa de carta, o jogador escolhe
+// uma carta virada para baixo (fileira no centro do tabuleiro) e a revela.
+// val > 0 = Sorte (ganha); val < 0 = Azar (paga).
+export const CARD_DECK = [
+    { msg: 'Contrato de reboque firmado! +R$500', val: 500 },
+    { msg: 'Carga recuperada no porto! +R$300', val: 300 },
+    { msg: 'Resgate bem-sucedido! +R$400', val: 400 },
+    { msg: 'Bonificação por pontualidade! +R$200', val: 200 },
+    { msg: 'Multa ambiental! -R$300', val: -300 },
+    { msg: 'Avaria no motor! -R$400', val: -400 },
+    { msg: 'Manutenção emergencial! -R$250', val: -250 },
+    { msg: 'Taxa portuária extra! -R$200', val: -200 },
+];
+
+// Rótulos amigáveis exibidos ao jogador (a interface não deve mostrar o ID cru).
+export const CERT_LABELS = {
+    // Segurança (obrigatórios)
+    fire: 'Incêndio',
+    rescue: 'Homem ao Mar',
+    collision: 'Colisão',
+    abandon: 'Abandono',
+    // Técnicos (opcionais)
+    azimuth: 'Propulsão Azimutal',
+    diesel: 'Motores Diesel',
+    highspeed: 'Diesel de Alta Rotação',
+    maneuver: 'Manobra de Rebocador'
+};
+
 export const TRAINING_QUESTIONS = {
+    // ===== CERTIFICADOS DE SEGURANÇA (Universidade) — OBRIGATÓRIOS =====
     fire: [
         {
             question: "Qual é a primeira ação ao descobrir um incêndio a bordo?",
@@ -64,12 +106,7 @@ export const TRAINING_QUESTIONS = {
         },
         {
             question: "Qual classe de incêndio envolve líquidos inflamáveis?",
-            options: [
-                "Classe A",
-                "Classe B",
-                "Classe C",
-                "Classe D"
-            ],
+            options: ["Classe A", "Classe B", "Classe C", "Classe D"],
             correct: "Classe B"
         }
     ],
@@ -86,24 +123,14 @@ export const TRAINING_QUESTIONS = {
         },
         {
             question: "Qual equipamento deve ser lançado primeiro para homem ao mar?",
-            options: [
-                "Colete salva-vidas",
-                "Boia circular",
-                "Corda com nó",
-                "Escada de embarque"
-            ],
+            options: ["Colete salva-vidas", "Boia circular", "Corda com nó", "Escada de embarque"],
             correct: "Boia circular"
         }
     ],
     collision: [
         {
             question: "Qual é a regra de ouro para evitar colisões no mar?",
-            options: [
-                "Máquinas sempre prontas",
-                "Vigília constante",
-                "Velocidade reduzida",
-                "Sinais sonoros contínuos"
-            ],
+            options: ["Máquinas sempre prontas", "Vigília constante", "Velocidade reduzida", "Sinais sonoros contínuos"],
             correct: "Vigília constante"
         },
         {
@@ -120,12 +147,7 @@ export const TRAINING_QUESTIONS = {
     abandon: [
         {
             question: "Qual sinal sonoro indica abandono de navio?",
-            options: [
-                "Um apito longo",
-                "Três apitos curtos",
-                "Sete apitos curtos e um longo",
-                "Dois apitos longos"
-            ],
+            options: ["Um apito longo", "Três apitos curtos", "Sete apitos curtos e um longo", "Dois apitos longos"],
             correct: "Sete apitos curtos e um longo"
         },
         {
@@ -137,6 +159,140 @@ export const TRAINING_QUESTIONS = {
                 "Extintor portátil de incêndio"
             ],
             correct: "Radiobaliza de localização de sinistros"
+        }
+    ],
+
+    // ===== CERTIFICADOS TÉCNICOS (Oficinas/Treinamento) — OPCIONAIS =====
+    // SCHOTTEL — Propulsão Azimutal (Rudderpropeller / Z-drive)
+    azimuth: [
+        {
+            question: "O que é um propulsor azimutal (Rudderpropeller), especialidade da SCHOTTEL?",
+            options: [
+                "Uma hélice de passo fixo em eixo único",
+                "Um propulsor que gira 360° fornecendo empuxo em qualquer direção",
+                "Um leme convencional sem hélice",
+                "Um motor de propulsão a vapor"
+            ],
+            correct: "Um propulsor que gira 360° fornecendo empuxo em qualquer direção"
+        },
+        {
+            question: "Qual é a principal vantagem do propulsor azimutal em um rebocador?",
+            options: [
+                "Elimina a necessidade de motor",
+                "Permite navegar sem combustível",
+                "Alta manobrabilidade, dispensando leme convencional",
+                "Reduz a tripulação a zero"
+            ],
+            correct: "Alta manobrabilidade, dispensando leme convencional"
+        },
+        {
+            question: "Em um rebocador ASD (Azimuth Stern Drive), onde ficam os propulsores azimutais?",
+            options: [
+                "Na popa",
+                "No topo do mastro",
+                "Acima da linha d'água, no costado",
+                "Fixos na proa"
+            ],
+            correct: "Na popa"
+        }
+    ],
+    // CAT (Caterpillar) — Motores Diesel marítimos
+    diesel: [
+        {
+            question: "Qual é o ciclo de funcionamento dos motores marítimos Caterpillar?",
+            options: [
+                "Ciclo Otto (ignição por vela)",
+                "Ciclo diesel (ignição por compressão)",
+                "Ciclo a vapor",
+                "Propulsão eólica"
+            ],
+            correct: "Ciclo diesel (ignição por compressão)"
+        },
+        {
+            question: "No motor diesel, como ocorre a ignição do combustível?",
+            options: [
+                "Por uma vela de ignição",
+                "Pela alta temperatura do ar comprimido",
+                "Por chama piloto externa",
+                "Por descarga da bateria no cilindro"
+            ],
+            correct: "Pela alta temperatura do ar comprimido"
+        },
+        {
+            question: "Qual sistema é essencial para evitar o superaquecimento de um motor diesel marítimo?",
+            options: [
+                "Circuito de arrefecimento (água)",
+                "Sistema de velas de ignição",
+                "Vela de proa",
+                "Âncora flutuante"
+            ],
+            correct: "Circuito de arrefecimento (água)"
+        }
+    ],
+    // MTU — Motores diesel de alta rotação (Series 2000/4000)
+    highspeed: [
+        {
+            question: "Os motores mtu (Series 2000/4000) são classificados como diesel de qual categoria?",
+            options: [
+                "Baixa rotação a vapor",
+                "Alta rotação (high-speed)",
+                "Combustão externa",
+                "Propulsão a vela"
+            ],
+            correct: "Alta rotação (high-speed)"
+        },
+        {
+            question: "Para que serve o turbocompressor em um motor diesel de alta rotação?",
+            options: [
+                "Aproveita os gases de escape para aumentar a admissão de ar",
+                "Gera a ignição por faísca",
+                "Funciona como leme auxiliar",
+                "Substitui o óleo lubrificante"
+            ],
+            correct: "Aproveita os gases de escape para aumentar a admissão de ar"
+        },
+        {
+            question: "Por que motores diesel de alta rotação são usados em embarcações de trabalho?",
+            options: [
+                "Alta potência com menor peso e volume",
+                "Por dispensarem combustível",
+                "Por não exigirem lubrificação",
+                "Por funcionarem sem ar"
+            ],
+            correct: "Alta potência com menor peso e volume"
+        }
+    ],
+    // Treinamento — Manobra e operação de rebocador
+    maneuver: [
+        {
+            question: "O que mede o 'bollard pull' de um rebocador?",
+            options: [
+                "A força de tração estática que ele consegue exercer",
+                "A velocidade máxima do rebocador",
+                "O peso da âncora",
+                "O volume do tanque de combustível"
+            ],
+            correct: "A força de tração estática que ele consegue exercer"
+        },
+        {
+            question: "Em uma manobra de atracação, qual é a função típica do rebocador?",
+            options: [
+                "Empurrar ou puxar o navio para posicioná-lo no berço",
+                "Transportar a carga do navio",
+                "Substituir o motor do navio",
+                "Içar os contêineres"
+            ],
+            correct: "Empurrar ou puxar o navio para posicioná-lo no berço"
+        },
+        {
+            question: "O que caracteriza uma manobra de 'escort towing'?",
+            options: [
+                "Acompanhar o navio pronto para controlá-lo em emergência",
+                "Rebocar apenas a âncora",
+                "Limpar o casco do navio",
+                "Abastecer o navio em alto-mar"
+            ],
+            correct: "Acompanhar o navio pronto para controlá-lo em emergência"
         }
     ]
 };
