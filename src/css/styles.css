@@ -157,6 +157,12 @@ body {
     transform: translateY(0);
 }
 
+/* Terminal Bancário: o painel fixo fica oculto. O terminal abre como MODAL
+   apenas quando o jogador cai na casa do Banco (openBankTerminal). */
+#panelBank {
+    display: none !important;
+}
+
 .panel-handle {
     width: 40px;
     height: 4px;
@@ -1066,7 +1072,7 @@ body {
 @media (min-width: 1024px) {
     .game-container {
         display: grid;
-        grid-template-columns: 360px 1fr 360px;
+        grid-template-columns: 360px 1fr;
         gap: 1.5rem;
         padding: 1.5rem;
         max-width: 1800px;
