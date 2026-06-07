@@ -1,4 +1,4 @@
-import { gameState, TRAINING_QUESTIONS, CERTIFICATES, CERT_LABELS, OCEAN_EVENTS, playerColors, playerIcons } from './state.js';
+import { gameState, TRAINING_QUESTIONS, CERTIFICATES, CERT_LABELS, CERTIFIED_FEE_MULTIPLIER, OCEAN_EVENTS, playerColors, playerIcons } from './state.js';
 import * as UI from './ui.js';
 import { Audio } from './audio.js';
 
@@ -1229,9 +1229,15 @@ export function showContextualActions(house) {
                 buttons.push({ text: 'Continuar', onClick: `closeModal()`, class: 'btn-primary' });
             }
         } else {
-            const serviceFee = house.serviceFee;
+            // Oficina certificada (dono tem o certificado técnico da área) cobra
+            // serviço premium — renda extra para quem investiu no certificado.
+            const certified = owner.certificates.includes(house.certificate);
+            const serviceFee = certified
+                ? Math.round(house.serviceFee * CERTIFIED_FEE_MULTIPLIER)
+                : house.serviceFee;
             body = `
                 <p>Propriedade de <strong>${owner.name}</strong>.</p>
+                ${certified ? `<p style="color: var(--accent-gold);">🎓 Oficina certificada em ${CERT_LABELS[house.certificate] || house.certificate} — serviço premium (+${Math.round((CERTIFIED_FEE_MULTIPLIER - 1) * 100)}%).</p>` : ''}
                 <p style="color: #ef4444;">Taxa de Serviço: R$ ${fmt(serviceFee)}</p>
             `;
             buttons.push({

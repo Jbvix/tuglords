@@ -58,6 +58,11 @@ export const CERTIFICATES = ['fire', 'rescue', 'collision', 'abandon'];
 // (SCHOTTEL/CAT/MTU) e pelo Treinamento, mediante exame técnico da área.
 export const TECH_CERTIFICATES = ['azimuth', 'diesel', 'highspeed', 'maneuver'];
 
+// Bônus dos certificados técnicos: uma oficina cujo DONO possui o certificado
+// técnico da área vira "certificada" e cobra um serviço premium — a taxa de
+// serviço é multiplicada por este fator, gerando renda extra ao dono.
+export const CERTIFIED_FEE_MULTIPLIER = 1.5;
+
 // Rótulos amigáveis exibidos ao jogador (a interface não deve mostrar o ID cru).
 export const CERT_LABELS = {
     // Segurança (obrigatórios)
