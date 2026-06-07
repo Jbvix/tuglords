@@ -1298,7 +1298,7 @@ export function showContextualActions(house) {
 
     // ========== UNIVERSITY ==========
     else if (house.type === 'university') {
-        body = `<p>Acesse a Universidade para realizar exames de certificação.</p>`;
+        body = `<p>🎓 Universidade do Mar — faça exames dos <strong>certificados de segurança obrigatórios</strong> (Incêndio, Homem ao Mar, Colisão, Abandono). Exame gratuito!</p>`;
         buttons.push({
             text: 'Acessar Universidade',
             onClick: `visitUniversity();`, // Opens exam modal

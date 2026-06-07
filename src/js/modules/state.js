@@ -21,7 +21,7 @@ export const gameState = {
         { name: 'Evento Oceânico', type: 'event', icon: '🌊', actions: [] },
         { name: 'CAT', type: 'workshop', price: 9000, serviceFee: 1800, certificate: 'diesel', icon: '🏭', actions: ['buy'] },
         { name: 'Porto de Vitória', type: 'port', price: 8500, rent: [850, 1700, 3200, 5200, 7800, 10500], icon: '🚤', actions: ['buy'] },
-        { name: 'Posto de Abastecimento', type: 'service', price: 6500, icon: '⛽', actions: ['buy'] },
+        { name: 'Universidade do Mar', type: 'university', icon: '🎓', actions: [] },
         { name: 'Porto de Macaé', type: 'port', price: 11000, rent: [1100, 2200, 4000, 6500, 9500, 13000], icon: '⛴️', actions: ['buy'] },
         { name: 'Carta Sorte', type: 'luck', icon: '🎲', actions: [] },
         { name: 'Porto do Açu', type: 'port', price: 14000, rent: [1400, 2800, 5000, 8000, 12000, 16000], icon: '🛳️', actions: ['buy'] },
@@ -50,12 +50,22 @@ export const gameState = {
     ].map((h, i) => ({ ...h, pos: i }))
 };
 
-// Certificados técnicos do jogo. Cada um é concedido por uma oficina/casa
-// específica e exige aprovação no exame da respectiva área.
-export const CERTIFICATES = ['azimuth', 'diesel', 'highspeed', 'maneuver'];
+// Certificados de SEGURANÇA — OBRIGATÓRIOS para a vitória, rebocador oceânico
+// e bônus de inspeção. Obtidos na Universidade (exames de segurança).
+export const CERTIFICATES = ['fire', 'rescue', 'collision', 'abandon'];
+
+// Certificados TÉCNICOS — OPCIONAIS (bônus). Concedidos pelas oficinas
+// (SCHOTTEL/CAT/MTU) e pelo Treinamento, mediante exame técnico da área.
+export const TECH_CERTIFICATES = ['azimuth', 'diesel', 'highspeed', 'maneuver'];
 
 // Rótulos amigáveis exibidos ao jogador (a interface não deve mostrar o ID cru).
 export const CERT_LABELS = {
+    // Segurança (obrigatórios)
+    fire: 'Incêndio',
+    rescue: 'Homem ao Mar',
+    collision: 'Colisão',
+    abandon: 'Abandono',
+    // Técnicos (opcionais)
     azimuth: 'Propulsão Azimutal',
     diesel: 'Motores Diesel',
     highspeed: 'Diesel de Alta Rotação',
@@ -63,6 +73,77 @@ export const CERT_LABELS = {
 };
 
 export const TRAINING_QUESTIONS = {
+    // ===== CERTIFICADOS DE SEGURANÇA (Universidade) — OBRIGATÓRIOS =====
+    fire: [
+        {
+            question: "Qual é a primeira ação ao descobrir um incêndio a bordo?",
+            options: [
+                "Abandonar o navio imediatamente",
+                "Tentar apagar com água do mar",
+                "Soar o alarme geral",
+                "Contactar o armador"
+            ],
+            correct: "Soar o alarme geral"
+        },
+        {
+            question: "Qual classe de incêndio envolve líquidos inflamáveis?",
+            options: ["Classe A", "Classe B", "Classe C", "Classe D"],
+            correct: "Classe B"
+        }
+    ],
+    rescue: [
+        {
+            question: "Qual manobra é usada para resgatar homem ao mar?",
+            options: [
+                "Manobra de Scharnow",
+                "Manobra de Williamson",
+                "Manobra de Anderson",
+                "Manobra de Boutakov"
+            ],
+            correct: "Manobra de Williamson"
+        },
+        {
+            question: "Qual equipamento deve ser lançado primeiro para homem ao mar?",
+            options: ["Colete salva-vidas", "Boia circular", "Corda com nó", "Escada de embarque"],
+            correct: "Boia circular"
+        }
+    ],
+    collision: [
+        {
+            question: "Qual é a regra de ouro para evitar colisões no mar?",
+            options: ["Máquinas sempre prontas", "Vigília constante", "Velocidade reduzida", "Sinais sonoros contínuos"],
+            correct: "Vigília constante"
+        },
+        {
+            question: "Em situação de risco de colisão, qual embarcação deve manobrar?",
+            options: [
+                "A menor embarcação",
+                "A que avista primeiro",
+                "A que tem o outro por bombordo",
+                "A que tem o outro por boreste"
+            ],
+            correct: "A que tem o outro por boreste"
+        }
+    ],
+    abandon: [
+        {
+            question: "Qual sinal sonoro indica abandono de navio?",
+            options: ["Um apito longo", "Três apitos curtos", "Sete apitos curtos e um longo", "Dois apitos longos"],
+            correct: "Sete apitos curtos e um longo"
+        },
+        {
+            question: "O que é EPIRB?",
+            options: [
+                "Equipamento de primeiros socorros",
+                "Radiobaliza de localização de sinistros",
+                "Equipamento de proteção individual",
+                "Extintor portátil de incêndio"
+            ],
+            correct: "Radiobaliza de localização de sinistros"
+        }
+    ],
+
+    // ===== CERTIFICADOS TÉCNICOS (Oficinas/Treinamento) — OPCIONAIS =====
     // SCHOTTEL — Propulsão Azimutal (Rudderpropeller / Z-drive)
     azimuth: [
         {
