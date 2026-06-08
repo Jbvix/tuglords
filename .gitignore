@@ -1,0 +1,6 @@
+# Estado local do Netlify CLI (não versionar)
+.netlify/
+
+# Dependências / sistema
+node_modules/
+.DS_Store

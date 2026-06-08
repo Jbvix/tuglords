@@ -157,6 +157,12 @@ body {
     transform: translateY(0);
 }
 
+/* Terminal Bancário: o painel fixo fica oculto. O terminal abre como MODAL
+   apenas quando o jogador cai na casa do Banco (openBankTerminal). */
+#panelBank {
+    display: none !important;
+}
+
 .panel-handle {
     width: 40px;
     height: 4px;
@@ -645,6 +651,26 @@ body {
     box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2); /* Sombra interna para dar profundidade */
 }
 
+/* Cantos: agora interativos (clique abre info) e com contêiner de peão.
+   position: relative para o .house-players (absolute) sobrepor corretamente. */
+.board-corner {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.4rem;
+}
+
+.corner-icon {
+    font-size: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
 .board-center {
     background: rgba(0, 0, 0, 0.3);
     border-radius: 0.2rem;
@@ -1046,7 +1072,7 @@ body {
 @media (min-width: 1024px) {
     .game-container {
         display: grid;
-        grid-template-columns: 360px 1fr 360px;
+        grid-template-columns: 360px 1fr;
         gap: 1.5rem;
         padding: 1.5rem;
         max-width: 1800px;

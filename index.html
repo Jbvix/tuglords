@@ -12,7 +12,9 @@
 
     <title>TUGLORDS v19.0 - Start</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Favicon inline (âncora) — evita o 404 de /favicon.ico -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚓</text></svg>">
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -272,7 +274,7 @@
                 <span class="nav-btn-icon">🎲</span>
                 <span>Tabuleiro</span>
             </button>
-            <button class="nav-btn" onclick="openPanel('panelBank', this)">
+            <button class="nav-btn" onclick="openBankTerminal()">
                 <span class="nav-btn-icon">🏦</span>
                 <span>Banco</span>
             </button>

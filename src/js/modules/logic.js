@@ -923,10 +923,9 @@ export function buyStock(propName, price) {
     const owner = gameState.players.find(p => p.id === property.owner);
     owner.money += price;
 
-    UI.showNotification(`Ação comprada!`);
+    UI.showNotification(`✅ Ação de ${propName} comprada!`);
     UI.renderPlayersPanel();
-    UI.closeModal();
-    setTimeout(openStockExchange, 300);
+    UI.closeModal(); // Fecha o popup após a compra (sem reabrir).
 }
 
 export function payDividends(propertyOwner) {
@@ -1154,24 +1153,20 @@ export function drawCard(type) {
 
 // Dispõe uma fileira de cartas viradas para baixo no centro do tabuleiro para o
 // jogador escolher. Cada carta recebe um sorteio do baralho (Sorte/Azar).
+// As cartas são exibidas num MODAL (sempre visível, sobre o tabuleiro) para
+// garantir que apareçam em qualquer layout/tema/navegador.
 export function showCardPicker(type) {
-    const center = document.querySelector('.board-center');
-    if (!center) { drawCard(type); return; } // fallback se o centro não existir
-
     const NUM_CARDS = 5;
-    gameState._savedCenterHTML = center.innerHTML;
     gameState._cardDraw = Array.from({ length: NUM_CARDS },
         () => CARD_DECK[Math.floor(Math.random() * CARD_DECK.length)]);
     gameState._cardPicked = false;
 
     const label = type === 'surprise' ? 'Carta Surpresa' : 'Sorte ou Azar';
-    let html = `<div class="card-picker">
-        <p class="card-picker-title">🎴 ${label} — escolha uma carta</p>
-        <div class="card-row">`;
+    let cards = '';
     for (let i = 0; i < NUM_CARDS; i++) {
         const c = gameState._cardDraw[i];
         const good = c.val >= 0;
-        html += `
+        cards += `
             <div class="game-card" onclick="pickCard(${i}, '${type}')">
                 <div class="game-card-inner">
                     <div class="game-card-face game-card-back">⚓</div>
@@ -1182,25 +1177,28 @@ export function showCardPicker(type) {
                 </div>
             </div>`;
     }
-    html += `</div></div>`;
-    center.innerHTML = html;
+    const body = `
+        <p style="text-align: center; margin-bottom: 1rem; color: #cbd5e1;">Escolha uma carta para revelar sua sorte!</p>
+        <div class="card-row">${cards}</div>`;
+    UI.showModal(`🎴 ${label}`, body, [], false);
 }
 
-// Revela a carta escolhida, aplica o efeito e restaura o centro do tabuleiro.
+// Revela a carta escolhida (vira com animação), aplica o efeito e fecha o modal.
 export function pickCard(index, type) {
     if (gameState._cardPicked) return; // só uma escolha por rodada
-    const center = document.querySelector('.board-center');
     const draw = gameState._cardDraw;
-    if (!center || !draw) return;
+    if (!draw) return;
     gameState._cardPicked = true;
 
     const effect = draw[index];
-    const cards = center.querySelectorAll('.game-card');
+    const modal = document.getElementById('gameModal');
+    const cards = modal ? modal.querySelectorAll('.game-card') : [];
     cards.forEach((card, i) => {
         card.style.pointerEvents = 'none';
         if (i === index) {
             card.classList.add('chosen');
-            card.querySelector('.game-card-inner').classList.add('flipped');
+            const inner = card.querySelector('.game-card-inner');
+            if (inner) inner.classList.add('flipped');
         } else {
             card.classList.add('dimmed');
         }
@@ -1220,12 +1218,9 @@ export function pickCard(index, type) {
         UI.renderPlayersPanel();
     }, 650);
 
-    // Restaura o branding do centro após o jogador ver o resultado.
+    // Fecha o modal das cartas após o jogador ver o resultado.
     setTimeout(() => {
-        if (gameState._savedCenterHTML != null) {
-            center.innerHTML = gameState._savedCenterHTML;
-            gameState._savedCenterHTML = null;
-        }
+        UI.closeModal();
         gameState._cardDraw = null;
         const actionsDiv = document.getElementById('contextualActions');
         if (actionsDiv) actionsDiv.style.display = 'none';
@@ -1446,11 +1441,8 @@ export function showContextualActions(house) {
 
     // ========== LUCK/SURPRISE ==========
     else if (house.type === 'luck' || house.type === 'surprise') {
-        // Dispõe a fileira de cartas no centro do tabuleiro para o jogador
-        // escolher; sem modal intermediário.
-        UI.closeModal();
+        // Abre o modal com a fileira de cartas para o jogador escolher.
         showCardPicker(house.type);
-        UI.showNotification('🎴 Escolha uma carta no centro do tabuleiro!');
         return;
     }
 
