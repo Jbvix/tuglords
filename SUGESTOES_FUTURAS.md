@@ -62,4 +62,21 @@ estratégica acima da operação do dia a dia.
 
 ---
 
+## 4. Polimento visual — animações e feedback de UI
+
+Tornar a interface mais viva e gratificante:
+
+- ✨ **Popups de sucesso mais animados** — ex.: **explosão de estrelas**
+  (confete/partículas) ao comprar porto, ganhar carta de Sorte, conquistar
+  certificado, vitória etc. Animação curta e leve (CSS/canvas), sem libs
+  pesadas.
+- 🔘 **Botões com destaque quando selecionados** — estado visual claro de
+  seleção/foco (realce, brilho, leve escala/sombra) para o botão ativo,
+  melhorando a percepção de qual ação foi escolhida.
+
+> Implementar respeitando o padrão atual (CSS + estilos inline) e mantendo
+> boa performance no mobile.
+
+---
+
 _Registrado em 2026-06-08 a pedido do autor (Jossian Brito)._
