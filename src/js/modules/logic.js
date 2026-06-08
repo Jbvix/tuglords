@@ -1,4 +1,4 @@
-import { gameState, TRAINING_QUESTIONS, CERTIFICATES, CERT_LABELS, CERTIFIED_FEE_MULTIPLIER, CARD_DECK, OCEAN_EVENTS, playerColors, playerIcons } from './state.js';
+import { gameState, TRAINING_QUESTIONS, CERTIFICATES, TECH_CERTIFICATES, CERT_LABELS, CERTIFIED_FEE_MULTIPLIER, CARD_DECK, OCEAN_EVENTS, playerColors, playerIcons } from './state.js';
 import * as UI from './ui.js';
 import { Audio } from './audio.js';
 
@@ -950,13 +950,116 @@ export function payDividends(propertyOwner) {
 
 export function openBankTerminal() {
     const currentPlayer = gameState.players[gameState.currentPlayerIndex];
-    const modalBody = `
+    // Terminal completo (ao CAIR na casa do Banco): status + botões de empréstimo.
+    const modalBody = bankStatusHTML(currentPlayer) + bankLoanActionsHTML(currentPlayer);
+    UI.showModal('🏦 Terminal Bancário', modalBody, [], true);
+}
+
+// Acesso SOB DEMANDA (botão 🏦): mostra o STATUS do jogador como um painel —
+// saldo, ativos e a Bolsa de Valores que ele administra. SEM botões de
+// empréstimo (esses só aparecem ao cair na casa do Banco, em openBankTerminal).
+export function openBankStatus() {
+    const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+    const note = `<p style="text-align:center; font-size:0.8rem; color:#94a3b8; margin-top:1rem;">
+        ℹ️ Empréstimos só podem ser contratados/pagos ao <strong>cair na casa do Banco</strong>.</p>`;
+    UI.showModal(`🏦 ${currentPlayer.icon} ${currentPlayer.name} — Status`, bankStatusHTML(currentPlayer) + note, [], true);
+}
+
+// Bloco de STATUS do jogador (saldo, ativos, frota, certificados, ações).
+function bankStatusHTML(p) {
+    const money = p.money.toLocaleString('pt-BR');
+    const loansCount = (p.loans || []).length;
+
+    // Portos e oficinas administrados pelo jogador.
+    const ports = gameState.houses.filter(h => (h.type === 'port' || h.type === 'property') && h.price && h.owner === p.id);
+    const workshops = gameState.houses.filter(h => h.type === 'workshop' && h.owner === p.id);
+
+    // Frota.
+    const fleet = [];
+    if (p.portTugs > 0) fleet.push(`⚓ Portuários: ${p.portTugs}`);
+    if (p.hasOceanTug) fleet.push('🌊 Oceânico');
+    if (p.hasTuglord) fleet.push('⭐ Classe TugLord');
+
+    // Certificados.
+    const safety = CERTIFICATES.filter(c => p.certificates.includes(c));
+    const tech = TECH_CERTIFICATES.filter(c => p.certificates.includes(c));
+
+    // Bolsa de Valores: ações que o jogador administra (possui).
+    const stocks = p.stocks || {};
+    const stockNames = Object.keys(stocks).filter(n => stocks[n] > 0);
+    let stocksHTML = '';
+    if (stockNames.length > 0) {
+        let totalDiv = 0;
+        const rows = stockNames.map(name => {
+            const prop = gameState.houses.find(h => h.name === name);
+            const div = prop && prop.rent ? Math.floor(prop.rent[0] * 0.5) * stocks[name] : 0;
+            totalDiv += div;
+            return `<div style="display:flex; justify-content:space-between; font-size:0.85rem; color:#cbd5e1;">
+                        <span>${name}</span><span>${stocks[name]}× • R$${div.toLocaleString('pt-BR')}/turno</span>
+                    </div>`;
+        }).join('');
+        stocksHTML = `<div class="bank-section">
+            <p class="bank-section-title" style="color:#60a5fa;">📈 Bolsa de Valores (você administra)</p>
+            ${rows}
+            <div style="border-top:1px solid rgba(255,255,255,0.1); margin-top:0.4rem; padding-top:0.4rem; font-weight:700; color:#22c55e; display:flex; justify-content:space-between;">
+                <span>Dividendos/turno</span><span>R$${totalDiv.toLocaleString('pt-BR')}</span>
+            </div>
+        </div>`;
+    } else {
+        stocksHTML = `<div class="bank-section">
+            <p class="bank-section-title" style="color:#60a5fa;">📈 Bolsa de Valores</p>
+            <p style="font-size:0.85rem; color:#94a3b8;">Nenhuma ação administrada.</p>
+        </div>`;
+    }
+
+    // Empréstimos ativos (apenas informativo no status).
+    let loansHTML = '';
+    if (loansCount > 0) {
+        loansHTML = `<div class="bank-section">
+            <p class="bank-section-title" style="color:#f87171;">💳 Empréstimos Ativos</p>
+            ${p.loans.map(l => `<div style="font-size:0.85rem; color:#cbd5e1; display:flex; justify-content:space-between;">
+                <span>Devido</span><span>R$${l.totalDue.toLocaleString('pt-BR')} • vence em ${l.turnsRemaining} ${l.turnsRemaining === 1 ? 'turno' : 'turnos'}</span>
+            </div>`).join('')}
+        </div>`;
+    }
+
+    return `
         <div style="margin-bottom: 1rem; padding: 1rem; background: rgba(59, 130, 246, 0.1); border-radius: 0.5rem; border-left: 4px solid #3b82f6;">
-             <p style="font-weight: 600; color: #60a5fa;">💰 Saldo: R$${currentPlayer.money}</p>
-             <p style="font-size: 0.85rem; color: #94a3b8;">Empréstimos ativos: ${currentPlayer.loans.length}</p>
+            <p style="font-weight: 700; color: #60a5fa; font-size:1.1rem;">💰 Saldo: R$${money}</p>
+            <p style="font-size: 0.85rem; color: #94a3b8;">Empréstimos ativos: ${loansCount}</p>
         </div>
 
-        <div style="margin-bottom: 1rem;">
+        <div class="bank-section">
+            <p class="bank-section-title">📦 Portos (${ports.length})</p>
+            <p style="font-size:0.85rem; color:#94a3b8;">${ports.length ? ports.map(h => h.name).join(', ') : 'Nenhum porto.'}</p>
+        </div>
+
+        ${workshops.length ? `<div class="bank-section">
+            <p class="bank-section-title">🛠️ Oficinas (${workshops.length})</p>
+            <p style="font-size:0.85rem; color:#94a3b8;">${workshops.map(h => h.name).join(', ')}</p>
+        </div>` : ''}
+
+        <div class="bank-section">
+            <p class="bank-section-title">⚓ Frota</p>
+            <p style="font-size:0.85rem; color:#94a3b8;">${fleet.length ? fleet.join(' • ') : 'Sem rebocadores.'}</p>
+        </div>
+
+        <div class="bank-section">
+            <p class="bank-section-title" style="color:#fbbf24;">🎓 Certificados de Segurança (${safety.length}/4)</p>
+            <p style="font-size:0.85rem; color:#94a3b8;">${safety.length ? safety.map(c => CERT_LABELS[c] || c).join(', ') : 'Nenhum.'}</p>
+            <p class="bank-section-title" style="color:#60a5fa; margin-top:0.5rem;">🔧 Certificados Técnicos (${tech.length}/4)</p>
+            <p style="font-size:0.85rem; color:#94a3b8;">${tech.length ? tech.map(c => CERT_LABELS[c] || c).join(', ') : 'Nenhum.'}</p>
+        </div>
+
+        ${stocksHTML}
+        ${loansHTML}
+    `;
+}
+
+// Bloco de AÇÕES de empréstimo (só no terminal ao cair na casa do Banco).
+function bankLoanActionsHTML(currentPlayer) {
+    return `
+        <div class="bank-section" style="margin-top:1rem; border-top:2px solid rgba(255,255,255,0.1); padding-top:1rem;">
              <p style="font-weight: 600; color: #e0e0e0; margin-bottom: 0.5rem;">📋 Empréstimos Disponíveis</p>
              <div style="display: grid; gap: 0.5rem;">
                  <button class="btn-secondary" onclick="takeLoan(5000, 0.10)">💵 R$5.000 (Juros 10% • paga R$5.500 em 5 turnos)</button>
@@ -966,8 +1069,8 @@ export function openBankTerminal() {
         </div>
 
         ${currentPlayer.loans.length > 0 ? `
-        <div style="margin-bottom: 1rem;">
-             <p style="font-weight: 600; color: #f87171; margin-bottom: 0.5rem;">💳 Seus Empréstimos</p>
+        <div class="bank-section">
+             <p style="font-weight: 600; color: #f87171; margin-bottom: 0.5rem;">💳 Pagar Empréstimos</p>
              <div style="display: grid; gap: 0.5rem;">
                  ${currentPlayer.loans.map((l, i) => `
                     <button class="btn-secondary" onclick="payLoan(${i})">
@@ -977,9 +1080,9 @@ export function openBankTerminal() {
              </div>
         </div>
         ` : ''}
-        
+
         ${(currentPlayer.properties.length > 0 || currentPlayer.portTugs > 0) ? `
-        <div>
+        <div class="bank-section">
              <p style="font-weight: 600; color: #fbbf24; margin-bottom: 0.5rem;">🔨 Liquidação Voluntária (50%)</p>
              <div style="display: grid; gap: 0.5rem; max-height: 150px; overflow-y: auto;">
                  ${currentPlayer.properties.map(p => `
@@ -993,7 +1096,6 @@ export function openBankTerminal() {
         </div>
         ` : ''}
     `;
-    UI.showModal('🏦 Terminal Bancário', modalBody, [], true);
 }
 
 export function takeLoan(amount, rate = 0.10) {

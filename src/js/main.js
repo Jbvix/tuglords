@@ -44,6 +44,7 @@ window.performManeuver = Logic.performManeuver;
 window.openStockExchange = Logic.openStockExchange;
 window.buyStock = Logic.buyStock;
 window.openBankTerminal = Logic.openBankTerminal;
+window.openBankStatus = Logic.openBankStatus;
 window.takeLoan = Logic.takeLoan;
 window.payLoan = Logic.payLoan;
 window.liquidateAsset = Logic.liquidateAsset;
