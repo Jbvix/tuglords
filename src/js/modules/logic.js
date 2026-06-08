@@ -1181,6 +1181,55 @@ export function showCardPicker(type) {
         <p style="text-align: center; margin-bottom: 1rem; color: #cbd5e1;">Escolha uma carta para revelar sua sorte!</p>
         <div class="card-row">${cards}</div>`;
     UI.showModal(`🎴 ${label}`, body, [], false);
+
+    // Diagnóstico no console (DevTools): status de abertura e validação visual.
+    console.log(`%c[CARTAS] 🎴 Seletor aberto — "${label}" (${NUM_CARDS} cartas)`,
+        'color:#fbbf24;font-weight:bold');
+    console.table(gameState._cardDraw.map((c, i) => ({
+        carta: i, tipo: c.val >= 0 ? 'SORTE' : 'AZAR', valor: c.val, efeito: c.msg
+    })));
+    requestAnimationFrame(() => validateCardVisibility('Status de visualização', type));
+}
+
+// Validação de console (Chrome DevTools): reporta se as cartas de Sorte/Azar
+// estão de fato renderizadas e visíveis no DOM. Útil para depurar a exibição.
+function validateCardVisibility(stage, type) {
+    try {
+        console.group(`%c[CARTAS] ${stage} — tipo: ${type}`, 'color:#fbbf24;font-weight:bold');
+
+        const modal = document.getElementById('gameModal');
+        const overlay = document.querySelector('.modal-overlay');
+        const cards = modal ? modal.querySelectorAll('.game-card') : [];
+
+        console.log('#gameModal presente:', !!modal);
+        console.log('.modal-overlay presente:', !!overlay,
+            overlay ? `(z-index ${getComputedStyle(overlay).zIndex})` : '');
+        console.log('Cartas no DOM (#gameModal .game-card):', cards.length, '(esperado 5)');
+
+        if (cards.length) {
+            const first = cards[0];
+            const cs = getComputedStyle(first);
+            const r = first.getBoundingClientRect();
+            const inView = r.width > 0 && r.height > 0 &&
+                r.bottom > 0 && r.right > 0 &&
+                r.top < window.innerHeight && r.left < window.innerWidth;
+            console.table({
+                display: cs.display, visibility: cs.visibility, opacity: cs.opacity,
+                largura_px: Math.round(r.width), altura_px: Math.round(r.height),
+                x: Math.round(r.x), y: Math.round(r.y), naViewport: inView
+            });
+            const ok = cs.display !== 'none' && cs.visibility !== 'hidden' &&
+                parseFloat(cs.opacity) > 0 && r.width > 0 && r.height > 0 && inView;
+            console.log(`%c${ok ? '✅ CARTAS VISÍVEIS — renderização OK' : '❌ CARTAS NÃO VISÍVEIS — verifique CSS/layout/z-index'}`,
+                `color:${ok ? '#22c55e' : '#ef4444'};font-weight:bold;font-size:13px`);
+        } else {
+            console.log('%c❌ Nenhuma carta no DOM — showCardPicker não renderizou as cartas',
+                'color:#ef4444;font-weight:bold;font-size:13px');
+        }
+        console.groupEnd();
+    } catch (e) {
+        console.warn('[CARTAS] Falha na validação de console:', e);
+    }
 }
 
 // Revela a carta escolhida (vira com animação), aplica o efeito e fecha o modal.
@@ -1191,8 +1240,11 @@ export function pickCard(index, type) {
     gameState._cardPicked = true;
 
     const effect = draw[index];
+    console.log(`%c[CARTAS] 👆 Carta escolhida: índice ${index} → ${effect.val >= 0 ? 'SORTE' : 'AZAR'} (${effect.msg})`,
+        'color:#fbbf24;font-weight:bold');
     const modal = document.getElementById('gameModal');
     const cards = modal ? modal.querySelectorAll('.game-card') : [];
+    console.log(`[CARTAS] Cartas no modal para revelar: ${cards.length}`);
     cards.forEach((card, i) => {
         card.style.pointerEvents = 'none';
         if (i === index) {
@@ -1205,6 +1257,7 @@ export function pickCard(index, type) {
     });
 
     const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+    const saldoAntes = currentPlayer.money;
     setTimeout(() => {
         if (effect.val > 0) {
             currentPlayer.money += effect.val;
@@ -1215,6 +1268,8 @@ export function pickCard(index, type) {
         } else {
             UI.showNotification(effect.msg);
         }
+        console.log(`%c[CARTAS] 💰 Efeito aplicado: ${effect.msg} | saldo ${saldoAntes} → ${currentPlayer.money}`,
+            'color:#22c55e;font-weight:bold');
         UI.renderPlayersPanel();
     }, 650);
 
@@ -1224,6 +1279,7 @@ export function pickCard(index, type) {
         gameState._cardDraw = null;
         const actionsDiv = document.getElementById('contextualActions');
         if (actionsDiv) actionsDiv.style.display = 'none';
+        console.log('%c[CARTAS] ✔️ Modal fechado — fluxo concluído', 'color:#fbbf24');
     }, 2800);
 }
 
