@@ -42,4 +42,24 @@ distinta do terminal do jogador. Possíveis conteúdos:
 
 ---
 
+## 3. Níveis de jogo — Tabuleiro interno (nível superior de administração)
+
+Implementar **níveis**: além do tabuleiro principal, um **tabuleiro interno**
+que funcione como um **nível superior de administração** — uma camada
+estratégica acima da operação do dia a dia.
+
+**Ideia (a detalhar):**
+- O jogador "sobe de nível" e passa a atuar num **2º tabuleiro** (interno),
+  representando a gestão/administração de mais alto escalão (decisões
+  macro, gestão de portos/frota/banco em escala maior).
+- Definir: como se desbloqueia o nível superior (ex.: ao atingir certos
+  marcos — TugLord Supremo, X portos, capital mínimo); o que muda nas
+  regras/objetivos nesse tabuleiro; e como os dois níveis se conectam
+  (recursos, pontuação, vitória final).
+
+> Conceito inicial — alinhar mecânica, condições de acesso e objetivos do
+> nível superior antes de implementar.
+
+---
+
 _Registrado em 2026-06-08 a pedido do autor (Jossian Brito)._
