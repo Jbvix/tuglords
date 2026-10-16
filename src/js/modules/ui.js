@@ -499,7 +499,14 @@ function getHouseTypeLabel(type) {
 
 export function renderPlayersPanel() {
     const container = document.getElementById('playersContainer');
-    if (!container) return;
+    if (!container) { renderStandings(); return; }
+
+    // Líder (maior patrimônio entre os ativos) para o selo de liderança.
+    const activePlayers = gameState.players.filter(p => !p.isEliminated);
+    let leaderId = null;
+    if (activePlayers.length > 1) {
+        leaderId = activePlayers.reduce((a, b) => netWorthUI(b) > netWorthUI(a) ? b : a).id;
+    }
 
     container.innerHTML = gameState.players.map((player, index) => {
         const portTugsOperational = player.portTugs - player.dockedTugs.port;
@@ -585,12 +592,21 @@ export function renderPlayersPanel() {
                 </div>
             </div>`;
 
+        // Tensão: saldo baixo (perigo) e selo de liderança.
+        const isDanger = !player.isEliminated && player.money < 3000;
+        const isLeader = player.id === leaderId;
+        const cardClasses = ['player-card'];
+        if (index === gameState.currentPlayerIndex) cardClasses.push('active');
+        if (isDanger) cardClasses.push('danger');
+        if (isLeader) cardClasses.push('leader');
+        if (player.isEliminated) cardClasses.push('eliminated');
+
         return `
-        <div class="player-card ${index === gameState.currentPlayerIndex ? 'active' : ''}" 
+        <div class="${cardClasses.join(' ')}"
              style="border-left: 4px solid ${player.color};">
             <div class="player-header">
-                <span class="player-name">${player.icon} ${player.name}</span>
-                <span class="player-money">R$ ${player.money.toLocaleString('pt-BR')}</span>
+                <span class="player-name">${isLeader ? '👑 ' : ''}${player.icon} ${player.name}</span>
+                <span class="player-money">${isDanger ? '⚠️ ' : ''}R$ ${player.money.toLocaleString('pt-BR')}</span>
             </div>
             <div class="tabs-container">
                 <button class="tab-btn active" onclick="switchTab(this, 'fin-${player.id}')">Finanças</button>
@@ -609,6 +625,50 @@ export function renderPlayersPanel() {
         </div>
     `;
     }).join('');
+
+    renderStandings();
+}
+
+// Patrimônio líquido aproximado (caixa + 50% dos ativos − dívidas).
+function netWorthUI(player) {
+    let total = player.money;
+    gameState.houses.forEach(h => {
+        if ((h.type === 'port' || h.type === 'property') && h.price && h.owner === player.id) {
+            total += Math.floor(h.price * 0.5);
+        }
+    });
+    total += (player.portTugs || 0) * 100;
+    if (player.hasOceanTug) total += 250;
+    if (player.hasTuglord) total += 375;
+    (player.loans || []).forEach(l => { total -= l.totalDue; });
+    return total;
+}
+
+// Placar ao vivo: ranking por patrimônio, líder destacado.
+export function renderStandings() {
+    const strip = document.getElementById('standingsStrip');
+    if (!strip) return;
+    if (gameState.phase !== 'playing' || gameState.players.length === 0) {
+        strip.innerHTML = '';
+        return;
+    }
+    const ranked = [...gameState.players].sort((a, b) => netWorthUI(b) - netWorthUI(a));
+    const leaderId = ranked[0] && !ranked[0].isEliminated ? ranked[0].id : null;
+    const activeCount = gameState.players.filter(p => !p.isEliminated).length;
+
+    strip.innerHTML = ranked.map((p, i) => {
+        const isLeader = p.id === leaderId && activeCount > 1;
+        const cls = ['standings-item'];
+        if (isLeader) cls.push('is-leader');
+        if (p.isEliminated) cls.push('is-out');
+        if (p.id === gameState.players[gameState.currentPlayerIndex].id) cls.push('is-turn');
+        return `
+            <div class="${cls.join(' ')}" style="--pcolor:${p.color};" title="${p.name}: R$ ${netWorthUI(p).toLocaleString('pt-BR')}">
+                <span class="standings-rank">${isLeader ? '👑' : (i + 1) + 'º'}</span>
+                <span class="standings-icon">${p.icon}</span>
+                <span class="standings-money">${p.isEliminated ? '💀' : 'R$ ' + netWorthUI(p).toLocaleString('pt-BR')}</span>
+            </div>`;
+    }).join('');
 }
 
 export function updateTurnDisplay() {
@@ -626,6 +686,8 @@ export function updateTurnDisplay() {
         document.documentElement.style.setProperty('--current-color', currentPlayer.color);
         FX.turnBanner(`${currentPlayer.icon} Vez de ${currentPlayer.name}`, currentPlayer.color);
     }
+
+    renderStandings();
 
     document.getElementById('diceDisplay').innerHTML = '⚀ ⚀';
 
