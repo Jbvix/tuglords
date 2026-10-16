@@ -734,7 +734,9 @@ body {
     transition: transform 0.15s ease, opacity 0.4s ease;
 }
 
-.game-card:hover .game-card-inner {
+/* Elevação no hover aplicada ao CARTÃO externo (não ao .game-card-inner) para
+   nunca competir com o transform do flip. */
+.game-card:hover {
     transform: translateY(-4px);
 }
 
@@ -751,19 +753,23 @@ body {
     position: relative;
     width: 100%;
     height: 100%;
-    transition: transform 0.5s;
-    transform-style: preserve-3d;
 }
 
+/* Flip 2D ROBUSTO (sem 3D/preserve-3d/backface): funciona em qualquer
+   navegador, inclusive iOS Safari e dentro de modais com transform/overflow,
+   onde o flip 3D costuma falhar. O cartão "fecha" (scaleX→0) e reabre. */
 .game-card-inner.flipped {
-    transform: rotateY(180deg);
+    animation: card-flip 0.55s ease;
+}
+@keyframes card-flip {
+    0% { transform: scaleX(1); }
+    50% { transform: scaleX(0.04); }
+    100% { transform: scaleX(1); }
 }
 
 .game-card-face {
     position: absolute;
     inset: 0;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
     border-radius: 0.5rem;
     display: flex;
     flex-direction: column;
@@ -779,13 +785,24 @@ body {
     border: 2px solid #60a5fa;
     color: #bfdbfe;
     font-size: 1.6rem;
+    opacity: 1;
 }
 
+/* A frente começa oculta; as faces trocam no MEIO do flip (cartão "de lado",
+   scaleX ~ 0), então a troca não é percebida. Após o flip a frente permanece. */
 .game-card-front {
-    transform: rotateY(180deg);
+    opacity: 0;
     color: #fff;
     gap: 0.25rem;
 }
+.game-card-inner.flipped .game-card-back {
+    animation: card-face-out 0.55s ease forwards;
+}
+.game-card-inner.flipped .game-card-front {
+    animation: card-face-in 0.55s ease forwards;
+}
+@keyframes card-face-out { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@keyframes card-face-in { 0%, 49% { opacity: 0; } 50%, 100% { opacity: 1; } }
 
 .game-card-front.good {
     background: linear-gradient(145deg, #166534, #22c55e);
