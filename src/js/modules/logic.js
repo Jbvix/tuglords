@@ -235,64 +235,80 @@ export function movePlayer(spaces) {
 
     // Modo cinematográfico: tabuleiro inclina, aproxima e a câmera segue o pino.
     const cine = UI.enterCinematic();
-    if (cine) UI.cameraFollow(startPosition);
+    const ORBIT_MS = 1400; // duração do zoom-in 360° no peão
 
-    const moveInterval = setInterval(() => {
-        if (currentStep >= totalSteps) {
-            clearInterval(moveInterval);
+    // A sequência de pulos pelas casas (zoom-out mostrando o tabuleiro).
+    const beginStepping = () => {
+        const moveInterval = setInterval(stepTick, TIMING.moveStep);
+        function stepTick() {
+            if (currentStep >= totalSteps) {
+                clearInterval(moveInterval);
 
-            const finalPosition = currentPlayer.position;
-            const house = gameState.houses[finalPosition];
+                const finalPosition = currentPlayer.position;
+                const house = gameState.houses[finalPosition];
+
+                const currentHouseName = document.getElementById('currentHouseName');
+                if (currentHouseName) currentHouseName.textContent = house.name;
+
+                // Clímax da chegada: pulso na casa de destino + vibração.
+                UI.highlightLanding(finalPosition);
+                FX.haptic(30);
+                UI.showNotification(`${currentPlayer.icon} chegou em ${house.name}!`);
+
+                // Deixa a câmera repousar no destino e então volta à vista normal.
+                if (cine) setTimeout(() => UI.exitCinematic(), 750);
+
+                if (endBtn) endBtn.disabled = false;
+
+                setTimeout(() => showContextualActions(house), TIMING.arrivalPopup);
+                return;
+            }
+
+            currentStep++;
+            // Módulo seguro para posições negativas ao retroceder.
+            currentPlayer.position = (((startPosition + direction * currentStep) % len) + len) % len;
+            Audio.playMove();
+            FX.haptic(8); // tique sutil a cada casa
+
+            const stepHouse = gameState.houses[currentPlayer.position];
+
+            // Passagem pela partida (apenas avançando)
+            if (direction === 1 && currentPlayer.position === 0 && currentStep < totalSteps) {
+                currentPlayer.money += 4000;
+                FX.flash('rgba(34,197,94,0.25)', 300);
+                UI.showNotification(`🏁 ${currentPlayer.name} passou pela Partida! +R$4.000`);
+                UI.renderPlayersPanel();
+            }
+
+            UI.updatePlayerPositions();
+
+            // Câmera segue o pino e ele pula a casa.
+            if (cine) {
+                UI.cameraFollow(currentPlayer.position);
+                UI.hopActivePawn();
+            }
 
             const currentHouseName = document.getElementById('currentHouseName');
-            if (currentHouseName) currentHouseName.textContent = house.name;
-
-            // Clímax da chegada: pulso na casa de destino + vibração.
-            UI.highlightLanding(finalPosition);
-            FX.haptic(30);
-            UI.showNotification(`${currentPlayer.icon} chegou em ${house.name}!`);
-
-            // Deixa a câmera repousar no destino e então volta à vista normal.
-            if (cine) setTimeout(() => UI.exitCinematic(), 750);
-
-            if (endBtn) endBtn.disabled = false;
-
-            setTimeout(() => showContextualActions(house), TIMING.arrivalPopup);
-            return;
+            if (currentHouseName) currentHouseName.textContent = `→ ${stepHouse.name}`;
         }
 
-        currentStep++;
-        // Módulo seguro para posições negativas ao retroceder.
-        currentPlayer.position = (((startPosition + direction * currentStep) % len) + len) % len;
-        Audio.playMove();
-        FX.haptic(8); // tique sutil a cada casa
-
-        const stepHouse = gameState.houses[currentPlayer.position];
-
-        // Passagem pela partida (apenas avançando)
-        if (direction === 1 && currentPlayer.position === 0 && currentStep < totalSteps) {
-            currentPlayer.money += 4000;
-            FX.flash('rgba(34,197,94,0.25)', 300);
-            UI.showNotification(`🏁 ${currentPlayer.name} passou pela Partida! +R$4.000`);
+        setTimeout(() => {
             UI.renderPlayersPanel();
-        }
+        }, totalSteps * TIMING.moveStep + 500);
+    };
 
-        UI.updatePlayerPositions();
-
-        // Câmera segue o pino e ele pula a casa.
-        if (cine) {
-            UI.cameraFollow(currentPlayer.position);
-            UI.hopActivePawn();
-        }
-
-        const currentHouseName = document.getElementById('currentHouseName');
-        if (currentHouseName) currentHouseName.textContent = `→ ${stepHouse.name}`;
-
-    }, TIMING.moveStep);
-
-    setTimeout(() => {
-        UI.renderPlayersPanel();
-    }, totalSteps * TIMING.moveStep + 500);
+    if (cine) {
+        // 1) Zoom-in com giro de 360° no peão...
+        UI.cameraOrbit(startPosition);
+        // 2) ...depois zoom-out para a vista do tabuleiro e começa a pular as casas.
+        setTimeout(() => {
+            UI.endOrbit();
+            UI.cameraFollow(startPosition);
+            beginStepping();
+        }, ORBIT_MS);
+    } else {
+        beginStepping();
+    }
 }
 
 // ========== GAME LOGIC ACTIONS ==========

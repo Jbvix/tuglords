@@ -76,6 +76,19 @@ export function cameraFollow(position) {
     board.style.setProperty('--cam-y', (cy - bh / 2) + 'px');
 }
 
+// Zoom-in com órbita 360° no peão (após rolar os dados, antes de andar).
+export function cameraOrbit(position) {
+    const board = document.querySelector('.board-game');
+    if (!board) return;
+    cameraFollow(position);      // centraliza no peão
+    board.classList.add('orbiting');
+}
+
+export function endOrbit() {
+    const board = document.querySelector('.board-game');
+    if (board) board.classList.remove('orbiting');
+}
+
 // Faz o pino do jogador da vez dar um pulo (um salto por casa).
 export function hopActivePawn() {
     const lift = document.querySelector('.player-pawn.pawn-active .pawn-lift');
