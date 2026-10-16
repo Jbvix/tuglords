@@ -15,6 +15,15 @@
     <!-- Favicon inline (âncora) — evita o 404 de /favicon.ico -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚓</text></svg>">
 
+    <!-- PWA: app instalável e offline -->
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#1e3c72">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="TUGLORDS">
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -64,6 +73,9 @@
                 </button>
                 <button id="btnShareGame" class="btn-secondary" style="font-size: 1.1rem; padding: 1rem;" onclick="shareGame()">
                     📤 Compartilhar
+                </button>
+                <button id="btnInstallPWA" class="btn-secondary" style="font-size: 1.1rem; padding: 1rem; display: none;" onclick="installPWA()">
+                    📲 Instalar App
                 </button>
             </div>
             <p style="margin-top: 3rem; font-size: 0.8rem; color: #64748b;">Versão 19.0 • Por Jossian Brito</p>

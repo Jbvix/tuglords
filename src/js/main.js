@@ -162,3 +162,50 @@ document.addEventListener('DOMContentLoaded', () => {
 // Expose gameState for debugging if needed
 window.gameState = gameState;
 window.FX = FX; // efeitos visuais/táteis (Sprint 6) — útil para debug
+
+// ========== PWA: Service Worker + instalação ==========
+
+// Registra o service worker (app jogável offline).
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then(() => console.log('📲 Service Worker registrado'))
+            .catch((e) => console.warn('SW não registrado:', e && e.message));
+    });
+}
+
+// Captura o evento de instalação e mostra o botão "Instalar App".
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    const btn = document.getElementById('btnInstallPWA');
+    if (btn) btn.style.display = '';
+});
+
+window.installPWA = function installPWA() {
+    const btn = document.getElementById('btnInstallPWA');
+    if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        if (deferredInstallPrompt.userChoice) {
+            deferredInstallPrompt.userChoice.finally(() => {
+                deferredInstallPrompt = null;
+                if (btn) btn.style.display = 'none';
+            });
+        }
+        return;
+    }
+    // iOS/Safari (sem beforeinstallprompt) ou já instalado: instruções.
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const msg = isIOS
+        ? '<p>Para instalar no iPhone/iPad:</p><ol style="padding-left:1.1rem; line-height:1.7;"><li>Toque no botão <strong>Compartilhar</strong> (ícone de caixa com seta).</li><li>Escolha <strong>Adicionar à Tela de Início</strong>.</li></ol>'
+        : '<p>Use o menu do navegador e escolha <strong>Instalar app</strong> / <strong>Adicionar à tela inicial</strong>. Se o app já estiver instalado, abra pelo ícone. ⚓</p>';
+    UI.showModal('📲 Instalar TUGLORDS', msg, [{ text: 'Entendi', onClick: 'closeModal()', class: 'btn-primary' }], true);
+};
+
+// Esconde o botão depois de instalar.
+window.addEventListener('appinstalled', () => {
+    const btn = document.getElementById('btnInstallPWA');
+    if (btn) btn.style.display = 'none';
+    deferredInstallPrompt = null;
+});
