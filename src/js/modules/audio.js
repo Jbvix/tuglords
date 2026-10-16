@@ -116,8 +116,8 @@ export const Audio = {
     _setupMusic() {
         if (this.musicReady || typeof Tone === 'undefined') return;
 
-        // Barramento próprio — presente, mas ainda abaixo dos efeitos sonoros.
-        this.musicBus = new Tone.Volume(-12).toDestination();
+        // Barramento próprio — mais presente (volume aumentado a pedido).
+        this.musicBus = new Tone.Volume(-6).toDestination();
 
         // Pad de acordes (cama harmônica, discreto).
         this.padSynth = new Tone.PolySynth(Tone.Synth).connect(this.musicBus);
