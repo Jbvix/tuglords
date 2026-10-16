@@ -179,41 +179,28 @@ export function rollDice() {
     if (gameState.diceRolled) return;
 
     const diceDisplay = document.getElementById('diceDisplay');
-    const dice = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
 
-    if (diceDisplay) diceDisplay.classList.add('dice-rolling');
+    // Ao lançar, o tabuleiro JÁ entra em modo 3D (inclina) e os dados 3D
+    // rolam no centro do tabuleiro.
+    UI.enterCinematic();
+    UI.renderDice3D(diceDisplay, 1, 1, true); // dois cubos girando
     FX.haptic(15);
 
-    let rolls = 0;
+    let frames = 0;
     const interval = setInterval(() => {
-        const rand1 = Math.floor(Math.random() * 6);
-        const rand2 = Math.floor(Math.random() * 6);
-        if (diceDisplay) diceDisplay.innerHTML = `${dice[rand1]} ${dice[rand2]}`;
         Audio.playDice();
-        rolls++;
+        frames++;
 
-        if (rolls > TIMING.diceFrames) {
+        if (frames > TIMING.diceFrames) {
             clearInterval(interval);
             const final1 = Math.floor(Math.random() * 6) + 1;
             const final2 = Math.floor(Math.random() * 6) + 1;
             const total = final1 + final2;
             const isDouble = final1 === final2;
 
-            if (diceDisplay) {
-                diceDisplay.classList.remove('dice-rolling');
-                diceDisplay.classList.add('dice-reveal');
-                setTimeout(() => diceDisplay.classList.remove('dice-reveal'), 600);
-                diceDisplay.innerHTML = `
-                    <div style="display: flex; gap: 0.5rem; align-items: center; justify-content: center; flex-wrap: wrap;">
-                        <span>${dice[final1 - 1]}</span>
-                        <span>${dice[final2 - 1]}</span>
-                        <span style="font-size: 2rem; color: var(--accent-gold);">= ${total}</span>
-                        ${isDouble ? '<span style="font-size: 0.9rem; color:#22c55e; font-weight:800;">DUPLA! 🎉</span>' : ''}
-                    </div>
-                `;
-            }
+            // Os dados "pousam" no resultado.
+            UI.settleDice3D(diceDisplay, final1, final2, total, isDouble);
             FX.haptic(isDouble ? [40, 40, 40] : 35);
-
             console.log(`🎲 Dados: ${final1} + ${final2} = ${total}`);
 
             // Trava a rolagem e o botão imediatamente, mas dá uma pausa para o

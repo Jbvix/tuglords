@@ -46,8 +46,10 @@ export function enterCinematic() {
     if (reducedMotionUI()) return false;
     const board = document.querySelector('.board-game');
     if (!board) return false;
-    const container = board.closest('.board-container');
-    if (container) container.classList.add('cine-view');
+    // Lente da câmera = só o #visualBoard (recorta o tabuleiro inclinado sem
+    // afetar os controles abaixo).
+    const vb = board.parentElement;
+    if (vb) vb.classList.add('cine-view');
     board.classList.add('cinematic');
     return true;
 }
@@ -58,8 +60,8 @@ export function exitCinematic() {
     board.classList.remove('cinematic');
     board.style.removeProperty('--cam-x');
     board.style.removeProperty('--cam-y');
-    const container = board.closest('.board-container');
-    if (container) container.classList.remove('cine-view');
+    const vb = board.parentElement;
+    if (vb) vb.classList.remove('cine-view');
 }
 
 // Centraliza a "câmera" na casa indicada (translada o tabuleiro).
@@ -82,6 +84,55 @@ export function hopActivePawn() {
     void lift.offsetWidth;
     lift.classList.add('hop');
     setTimeout(() => lift.classList.remove('hop'), 520);
+}
+
+// ========== DADOS 3D (cubos no centro do tabuleiro) ==========
+
+// Rotação que traz a face N para frente.
+function dieShow(n) {
+    return ({
+        1: 'rotateX(0deg) rotateY(0deg)',
+        2: 'rotateX(-90deg)',
+        3: 'rotateY(-90deg)',
+        4: 'rotateY(90deg)',
+        5: 'rotateX(90deg)',
+        6: 'rotateY(180deg)'
+    })[n] || 'rotateX(0deg) rotateY(0deg)';
+}
+
+// Células (grade 3x3, 0..8) com ponto para cada valor.
+function diePips(n) {
+    const map = {
+        1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8],
+        5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8]
+    };
+    const on = map[n] || [];
+    let s = '';
+    for (let i = 0; i < 9; i++) s += `<span class="die-pip${on.includes(i) ? ' on' : ''}"></span>`;
+    return s;
+}
+
+function dieHTML(value, rolling) {
+    const faces = [1, 2, 3, 4, 5, 6].map(f => `<div class="die-face f${f}">${diePips(f)}</div>`).join('');
+    const style = rolling ? '' : ` style="transform:${dieShow(value)}"`;
+    return `<div class="die-scene"><div class="die-tilt"><div class="die-cube${rolling ? ' rolling' : ''}"${style}>${faces}</div></div></div>`;
+}
+
+// Renderiza dois dados 3D no contêiner (normalmente #diceDisplay, no HUD central).
+export function renderDice3D(container, d1 = 1, d2 = 1, rolling = false) {
+    if (!container) return;
+    container.innerHTML = `<div class="dice3d-wrap">${dieHTML(d1, rolling)}${dieHTML(d2, rolling)}</div>`;
+}
+
+// Faz os dados "pousarem" no resultado e mostra o total.
+export function settleDice3D(container, v1, v2, total, isDouble) {
+    if (!container) return;
+    const cubes = container.querySelectorAll('.die-cube');
+    if (cubes[0]) { cubes[0].classList.remove('rolling'); cubes[0].style.transform = dieShow(v1); }
+    if (cubes[1]) { cubes[1].classList.remove('rolling'); cubes[1].style.transform = dieShow(v2); }
+    const wrap = container.querySelector('.dice3d-wrap');
+    if (wrap) wrap.insertAdjacentHTML('beforeend',
+        `<span class="dice-total">= ${total}${isDouble ? ' <b>DUPLA! 🎉</b>' : ''}</span>`);
 }
 
 // Retorna o elemento da célula (casa ou canto) para uma posição do tabuleiro.
@@ -756,7 +807,7 @@ export function updateTurnDisplay() {
 
     renderStandings();
 
-    document.getElementById('diceDisplay').innerHTML = '⚀ ⚀';
+    renderDice3D(document.getElementById('diceDisplay'), 1, 1, false);
 
     gameState.diceRolled = false;
     const rollBtn = document.getElementById('rollDiceBtn');
