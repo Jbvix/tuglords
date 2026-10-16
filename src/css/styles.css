@@ -1382,3 +1382,90 @@ body {
     }
 }
 /* Confetes e flash cobrem a viewport inteira em qualquer tamanho; sem custo de layout. */
+
+/* ===================================================================== */
+/* SPRINT 6 — PILAR B: VISUAL DO TABULEIRO                               */
+/* ===================================================================== */
+
+/* ---- Peões como rebocadores (SVG colorido) ---- */
+/* Sobrescreve o visual de "bolinha" dos sprints anteriores, mantendo um
+   tamanho responsivo próprio. */
+.player-pawn {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    width: 15px;
+    height: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.65));
+    z-index: 5;
+}
+.player-pawn svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+.player-pawn.pawn-active {
+    animation: pawn-bob 1s ease-in-out infinite;
+    filter: drop-shadow(0 0 4px var(--accent-gold)) drop-shadow(0 1px 2px rgba(0,0,0,0.6));
+}
+@keyframes pawn-bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+}
+@media (min-width: 480px) { .player-pawn { width: 18px; height: 18px; } }
+@media (min-width: 768px) { .player-pawn { width: 20px; height: 20px; } }
+@media (min-width: 1024px) { .player-pawn { width: 24px; height: 24px; } }
+
+/* ---- Faixa de cor da região (agrupamento estilo "bairro") ---- */
+.region-band {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    opacity: 0.95;
+    z-index: 1;
+    pointer-events: none;
+}
+@media (min-width: 768px) { .region-band { height: 4px; } }
+
+/* ---- Casa pintada na cor do dono ---- */
+.house-icon {
+    position: relative;
+    z-index: 1;
+}
+.board-house.owned::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--owner-color, transparent);
+    opacity: 0.20;
+    pointer-events: none;
+    z-index: 0;
+}
+.board-house.owned {
+    box-shadow: inset 0 0 0 1.5px var(--owner-color, transparent),
+                inset 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
+/* ---- Água ambiente ao fundo (sutil, sem prejudicar leitura) ---- */
+body::before {
+    content: '';
+    position: fixed;
+    inset: -20%;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 20% 25%, rgba(59, 130, 246, 0.18), transparent 42%),
+        radial-gradient(circle at 80% 72%, rgba(14, 165, 233, 0.15), transparent 46%);
+    animation: water-drift 20s ease-in-out infinite alternate;
+}
+@keyframes water-drift {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(3%, -3%) scale(1.05); }
+}

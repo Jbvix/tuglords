@@ -1,5 +1,16 @@
-import { gameState, CERTIFICATES, TECH_CERTIFICATES, CERT_LABELS } from './state.js';
+import { gameState, CERTIFICATES, TECH_CERTIFICATES, CERT_LABELS, REGION_COLORS } from './state.js';
 import { FX } from './effects.js';
+
+// SVG de rebocador colorido (peão do jogador). Vetorial, escala em qualquer tela.
+export function tugboatSVG(color) {
+    return `<svg viewBox="0 0 24 24" width="100%" height="100%" aria-hidden="true">
+        <path d="M2 15h20l-2 4H4z" fill="${color}"/>
+        <rect x="6" y="9" width="10" height="5" rx="1" fill="${color}"/>
+        <rect x="9" y="5" width="5" height="4" rx="1" fill="${color}"/>
+        <rect x="15.5" y="6" width="1.6" height="7" rx="0.6" fill="${color}"/>
+        <circle cx="11.5" cy="11" r="1" fill="rgba(255,255,255,0.85)"/>
+    </svg>`;
+}
 
 // Retorna o elemento da célula (casa ou canto) para uma posição do tabuleiro.
 function getCellElement(position) {
@@ -249,8 +260,13 @@ function escapeAttr(str) {
 // leitura por leitores de tela), já que as labels visuais ficam ocultas.
 function houseCell(house, col, row) {
     const priceLabel = house.price ? ` — R$ ${house.price.toLocaleString('pt-BR')}` : '';
-    const label = escapeAttr(`${house.name}${priceLabel}`);
+    const regionLabel = house.region ? ` (${house.region})` : '';
+    const label = escapeAttr(`${house.name}${priceLabel}${regionLabel}`);
     let h = `<div class="board-house" data-position="${house.pos}" style="grid-column: ${col}; grid-row: ${row};" onclick="selectHouse(${house.pos})" title="${label}" aria-label="${label}">`;
+    // Faixa de cor da região (agrupamento estilo "bairro" para portos).
+    if (house.region && REGION_COLORS[house.region]) {
+        h += `<div class="region-band" style="background: ${REGION_COLORS[house.region]};"></div>`;
+    }
     h += `<div class="house-icon">${house.icon}</div>`;
     h += `<div class="house-name">${house.name}</div>`;
     if (house.price) h += `<div class="house-price">R$ ${house.price}</div>`;
@@ -337,8 +353,10 @@ export function updatePlayerPositions() {
         // Remover ownership anterior
         const oldOwnerBar = houseEl.querySelector('.owner-bar');
         if (oldOwnerBar) oldOwnerBar.remove();
+        houseEl.classList.remove('owned');
+        houseEl.style.removeProperty('--owner-color');
 
-        // Se tem dono, adicionar indicador
+        // Se tem dono: barra + pintura da célula na cor do dono
         if (house && house.owner !== undefined) {
             const owner = gameState.players.find(p => p.id === house.owner);
             if (owner) {
@@ -352,9 +370,12 @@ export function updatePlayerPositions() {
                     height: 4px;
                     background: ${owner.color};
                     box-shadow: 0 0 8px ${owner.color};
+                    z-index: 2;
                 `;
                 ownerBar.title = `Dono: ${owner.name}`;
                 houseEl.style.position = 'relative';
+                houseEl.style.setProperty('--owner-color', owner.color);
+                houseEl.classList.add('owned');
                 houseEl.insertBefore(ownerBar, houseEl.firstChild);
             }
         }
@@ -384,8 +405,12 @@ export function updatePlayerPositions() {
         if (houseEl) {
             const pawn = document.createElement('div');
             pawn.className = 'player-pawn';
-            pawn.style.background = player.color;
+            pawn.innerHTML = tugboatSVG(player.color);
             pawn.title = player.name; // Mantém o tooltip com o nome
+            // Destaca o rebocador do jogador da vez (leve salto).
+            if (player === gameState.players[gameState.currentPlayerIndex]) {
+                pawn.classList.add('pawn-active');
+            }
             houseEl.appendChild(pawn);
         }
 
