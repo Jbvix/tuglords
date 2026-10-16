@@ -12,6 +12,7 @@ const server = http.createServer((req, res) => {
         '.js': 'text/javascript',
         '.css': 'text/css',
         '.json': 'application/json',
+        '.webmanifest': 'application/manifest+json',
         '.png': 'image/png',
         '.jpg': 'image/jpg',
         '.gif': 'image/gif',
