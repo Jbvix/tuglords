@@ -181,6 +181,20 @@ export function openPanel(panelId, button) {
     }
 }
 
+// Exibe uma fala do narrador/comentarista no banner do topo.
+export function showCommentary(text) {
+    if (!text) return;
+    const el = document.getElementById('commentaryText');
+    const banner = document.getElementById('commentaryBanner');
+    if (!el) return;
+    el.textContent = text;
+    if (banner) {
+        banner.classList.remove('pop');
+        void banner.offsetWidth; // reinicia a animação
+        banner.classList.add('pop');
+    }
+}
+
 export function showManual() {
     document.getElementById('presentationScreen').style.display = 'none';
     document.getElementById('manualScreen').style.display = 'flex';

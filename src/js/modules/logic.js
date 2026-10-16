@@ -2,6 +2,12 @@ import { gameState, TRAINING_QUESTIONS, CERTIFICATES, CERT_LABELS, CERTIFIED_FEE
 import * as UI from './ui.js';
 import { Audio } from './audio.js';
 import { FX } from './effects.js';
+import { pickComment } from './commentary.js';
+
+// Narrador: mostra uma fala humorada do evento no banner do topo.
+function commentate(event, ctx) {
+    UI.showCommentary(pickComment(event, ctx));
+}
 
 // ========== TEMPOS DE ANIMAÇÃO ==========
 // Centralizados para ajuste fácil do ritmo do turno. Pensados para dar tempo
@@ -173,6 +179,8 @@ export function startGame() {
     // Garante o fundo musical (idempotente — já deve estar tocando desde a
     // tela inicial, mas reforça caso o áudio só inicialize agora).
     Audio.startMusic();
+
+    commentate('start');
 }
 
 export function rollDice() {
@@ -201,6 +209,9 @@ export function rollDice() {
             // Os dados "pousam" no resultado.
             UI.settleDice3D(diceDisplay, final1, final2, total, isDouble);
             FX.haptic(isDouble ? [40, 40, 40] : 35);
+
+            const roller = gameState.players[gameState.currentPlayerIndex];
+            commentate(isDouble ? 'double' : 'roll', { player: roller.name });
             console.log(`🎲 Dados: ${final1} + ${final2} = ${total}`);
 
             // Trava a rolagem e o botão imediatamente, mas dá uma pausa para o
@@ -277,6 +288,7 @@ export function movePlayer(spaces) {
                 currentPlayer.money += 4000;
                 FX.flash('rgba(34,197,94,0.25)', 300);
                 UI.showNotification(`🏁 ${currentPlayer.name} passou pela Partida! +R$4.000`);
+                commentate('pass', { player: currentPlayer.name });
                 UI.renderPlayersPanel();
             }
 
@@ -480,6 +492,7 @@ export function buyProperty(space) {
     currentPlayer.properties.push(space.name);
 
     UI.showNotification(`✅ ${space.name} adquirido!`);
+    commentate('buy', { player: currentPlayer.name, porto: space.name });
     Audio.playSuccess();
     FX.flash('rgba(34,197,94,0.22)', 300);
     FX.haptic([25, 30]);
@@ -548,6 +561,12 @@ export function handleMandatoryPayment(player, amount, reason, recipient = null)
         UI.showNotification(`💸 ${player.name} pagou R$${fmt(amount)} (${reason})`);
         Audio.playMoney();
 
+        // Narrador: comenta conforme o motivo do pagamento.
+        const r = (reason || '').toLowerCase();
+        if (r.includes('aluguel')) commentate('rent', { player: player.name, owner: recipient ? recipient.name : 'o dono' });
+        else if (r.includes('imposto') || r.includes('taxa')) commentate('tax', { player: player.name });
+        else if (r.includes('docagem')) commentate('dock', { player: player.name });
+
         // Drama proporcional: pagamentos pesados (>=2k ou >=25% do caixa) sacodem a tela.
         const heavy = amount >= 2000 || amount >= player.money * 0.25;
         if (heavy) {
@@ -557,6 +576,10 @@ export function handleMandatoryPayment(player, amount, reason, recipient = null)
         } else {
             FX.haptic(20);
         }
+
+        // Alerta de maré baixa no caixa.
+        if (player.money < 3000) commentate('lowcash', { player: player.name });
+
         UI.renderPlayersPanel();
         return true;
     } else {
@@ -664,6 +687,7 @@ export function declareBankruptcy(player, creditor) {
     FX.shake();
     FX.flash('rgba(239,68,68,0.45)', 500);
     FX.haptic([60, 50, 60, 50, 120]);
+    commentate('bankrupt', { player: player.name });
     UI.showModal('💔 Falência', `
         <div style="text-align:center;">
             <div style="font-size:3.5rem; margin-bottom:0.5rem;">💔⚓</div>
@@ -688,6 +712,7 @@ export function declareWinner(winner) {
     FX.flash('rgba(251,191,36,0.3)', 450);
     FX.haptic([40, 60, 40, 60, 200]);
     Audio.playSuccess();
+    commentate('win', { player: winner.name });
     UI.showModal('🏆 Vitória!', `
         <div style="text-align: center;">
             <div class="fx-trophy" style="font-size: 4.5rem; margin-bottom: 0.5rem;">🏆</div>
@@ -713,6 +738,7 @@ export function calculateRent(space, owner) {
 }
 
 export function triggerOceanEvent() {
+    commentate('ocean', { player: gameState.players[gameState.currentPlayerIndex].name });
     const event = OCEAN_EVENTS[Math.floor(Math.random() * OCEAN_EVENTS.length)];
 
     let buttons = [];
@@ -828,6 +854,7 @@ export function buyTraining(name, price, certificate) {
 }
 
 export function presentExam(certificate, trainingName, isFree) {
+    commentate('cert', { player: gameState.players[gameState.currentPlayerIndex].name });
     const questions = TRAINING_QUESTIONS[certificate];
     const exam = questions[Math.floor(Math.random() * questions.length)];
     const shuffledOptions = [...exam.options].sort(() => Math.random() - 0.5);
@@ -1212,6 +1239,7 @@ export function drawCard(type) {
 // As cartas são exibidas num MODAL (sempre visível, sobre o tabuleiro) para
 // garantir que apareçam em qualquer layout/tema/navegador.
 export function showCardPicker(type) {
+    commentate('luck', { player: gameState.players[gameState.currentPlayerIndex].name });
     const NUM_CARDS = 5;
     gameState._cardDraw = Array.from({ length: NUM_CARDS },
         () => CARD_DECK[Math.floor(Math.random() * CARD_DECK.length)]);
@@ -1310,6 +1338,7 @@ export function showContextualActions(house) {
                 class: 'btn-secondary'
             });
         } else if (owner.id === currentPlayer.id) {
+            commentate('own', { player: currentPlayer.name });
             body = `<p style="color: #22c55e;">✅ Você é o dono deste porto!</p>`;
             buttons.push({ text: 'Continuar', onClick: `closeModal()`, class: 'btn-primary' });
         } else {
