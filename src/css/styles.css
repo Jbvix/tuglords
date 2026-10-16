@@ -1826,3 +1826,164 @@ body::before {
         margin-right: auto;
     }
 }
+
+/* ===================================================================== */
+/* SPLASH CINEMATOGRÁFICO (abertura)                                     */
+/* ===================================================================== */
+.splash {
+    position: fixed;
+    inset: 0;
+    z-index: 5000;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+        radial-gradient(120% 80% at 50% 20%, #2a5298 0%, #16284a 55%, #0b1628 100%);
+    opacity: 1;
+    transition: opacity 0.6s ease;
+}
+.splash.hide { opacity: 0; pointer-events: none; }
+
+/* ---- Mar com ondas agitadas ---- */
+.splash-sea {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 46%;
+    pointer-events: none;
+}
+.splash-wave {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 200%;
+    height: 100%;
+    background-repeat: repeat-x;
+    background-position: 0 bottom;
+    background-size: 50% 100%;
+}
+.splash-wave.w1 {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 160' preserveAspectRatio='none'%3E%3Cpath d='M0,80 C150,150 350,20 600,80 850,140 1050,20 1200,80 L1200,160 L0,160 Z' fill='%231e3c72'/%3E%3C/svg%3E");
+    opacity: 0.9;
+    animation: splash-wave-move 5s linear infinite, splash-wave-bob 2.1s ease-in-out infinite;
+}
+.splash-wave.w2 {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 160' preserveAspectRatio='none'%3E%3Cpath d='M0,90 C200,30 400,150 600,90 800,30 1000,150 1200,90 L1200,160 L0,160 Z' fill='%232a5298'/%3E%3C/svg%3E");
+    opacity: 0.8;
+    animation: splash-wave-move 3.4s linear infinite reverse, splash-wave-bob 1.7s ease-in-out infinite;
+}
+.splash-wave.w3 {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 160' preserveAspectRatio='none'%3E%3Cpath d='M0,100 C150,60 350,140 600,100 850,60 1050,140 1200,100 L1200,160 L0,160 Z' fill='%233b82f6'/%3E%3C/svg%3E");
+    opacity: 0.55;
+    animation: splash-wave-move 2.4s linear infinite, splash-wave-bob 1.3s ease-in-out infinite;
+}
+@keyframes splash-wave-move {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+@keyframes splash-wave-bob {
+    0%, 100% { margin-bottom: 0; }
+    50% { margin-bottom: 14px; }
+}
+
+/* ---- Cena que balança (sobe/desce nas ondas) ---- */
+.splash-stage {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    perspective: 700px;
+    animation: splash-stage-bob 2.6s ease-in-out infinite;
+}
+@keyframes splash-stage-bob {
+    0%, 100% { transform: translateY(0) rotate(-1.6deg); }
+    50% { transform: translateY(-16px) rotate(1.6deg); }
+}
+
+.splash-anchor {
+    font-size: 5.5rem;
+    line-height: 1;
+    filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.5));
+    animation: splash-anchor-in 1.9s ease both;
+}
+@keyframes splash-anchor-in {
+    0% { transform: scale(2.4); opacity: 0; }
+    55% { opacity: 0.3; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.splash-title {
+    font-size: 3.4rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: var(--accent-gold);
+    text-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
+    transform-origin: center 30%;
+    animation: splash-title-zoom 2.3s cubic-bezier(0.18, 0.75, 0.2, 1) both;
+}
+@keyframes splash-title-zoom {
+    0% { transform: scale(6.5) translateX(-10%); opacity: 0; }
+    14% { opacity: 1; }
+    100% { transform: scale(1) translateX(0); opacity: 1; }
+}
+
+.splash-sub {
+    color: #cbd5e1;
+    font-size: 1.05rem;
+    margin-top: 0.2rem;
+    opacity: 0;
+    animation: splash-sub-in 2.6s ease both;
+}
+@keyframes splash-sub-in {
+    0%, 45% { opacity: 0; transform: translateY(6px); }
+    100% { opacity: 0.9; transform: translateY(0); }
+}
+
+.splash-pawn {
+    width: 46px;
+    height: 70px;
+    margin-top: 1rem;
+    transform-style: preserve-3d;
+    opacity: 0;
+    animation: splash-pawn-in 1.6s ease both;
+    animation-delay: 2.7s;
+}
+.splash-pawn svg { width: 100%; height: 100%; display: block; }
+@keyframes splash-pawn-in {
+    0% { transform: translateY(44px) rotateY(0deg); opacity: 0; }
+    25% { opacity: 1; }
+    100% { transform: translateY(0) rotateY(360deg); opacity: 1; }
+}
+
+.splash-skip {
+    position: absolute;
+    bottom: 1.1rem;
+    right: 1.1rem;
+    z-index: 3;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #e2e8f0;
+    padding: 0.5rem 0.9rem;
+    border-radius: 0.6rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+.splash-skip:hover { background: rgba(255, 255, 255, 0.2); }
+
+@media (min-width: 768px) {
+    .splash-anchor { font-size: 7rem; }
+    .splash-title { font-size: 4.6rem; }
+    .splash-sub { font-size: 1.25rem; }
+    .splash-pawn { width: 56px; height: 86px; }
+}
+
+/* Movimento reduzido: sem animações (o JS também fecha o splash na hora). */
+@media (prefers-reduced-motion: reduce) {
+    .splash-wave, .splash-stage, .splash-anchor, .splash-title, .splash-sub, .splash-pawn {
+        animation: none !important;
+    }
+}

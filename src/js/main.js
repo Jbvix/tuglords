@@ -81,8 +81,38 @@ window.closeAllPanels = UI.closeAllPanels;
 
 // Initialize Game
 // Initialize Game
+// Splash cinematográfico de abertura: zoom-out do título sobre a âncora,
+// ondas agitadas subindo/descendo, o peão dá um 360° e fecha, revelando a
+// tela inicial. Pula com clique/botão e respeita prefers-reduced-motion.
+function runSplash() {
+    const splash = document.getElementById('splashScreen');
+    if (!splash) return;
+
+    const pawn = document.getElementById('splashPawn');
+    if (pawn && UI.pinSVG) pawn.innerHTML = UI.pinSVG('#fbbf24');
+
+    let closed = false;
+    const close = () => {
+        if (closed) return;
+        closed = true;
+        splash.classList.add('hide');
+        setTimeout(() => splash.remove(), 650);
+    };
+
+    const skip = document.getElementById('splashSkip');
+    if (skip) skip.addEventListener('click', (e) => { e.stopPropagation(); close(); });
+    splash.addEventListener('click', close);
+
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) { close(); return; }
+
+    setTimeout(close, 5200); // duração total da cena
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     console.log("🚀 [MAIN] DOMContentLoaded fired");
+
+    runSplash();
 
     // Only render board background, don't add players yet
     try {
