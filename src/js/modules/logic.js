@@ -246,6 +246,10 @@ export function movePlayer(spaces) {
     if (rollBtn) rollBtn.disabled = true;
     if (endBtn) endBtn.disabled = true;
 
+    // Modo cinematográfico: tabuleiro inclina, aproxima e a câmera segue o pino.
+    const cine = UI.enterCinematic();
+    if (cine) UI.cameraFollow(startPosition);
+
     const moveInterval = setInterval(() => {
         if (currentStep >= totalSteps) {
             clearInterval(moveInterval);
@@ -260,6 +264,9 @@ export function movePlayer(spaces) {
             UI.highlightLanding(finalPosition);
             FX.haptic(30);
             UI.showNotification(`${currentPlayer.icon} chegou em ${house.name}!`);
+
+            // Deixa a câmera repousar no destino e então volta à vista normal.
+            if (cine) setTimeout(() => UI.exitCinematic(), 750);
 
             if (endBtn) endBtn.disabled = false;
 
@@ -284,6 +291,12 @@ export function movePlayer(spaces) {
         }
 
         UI.updatePlayerPositions();
+
+        // Câmera segue o pino e ele pula a casa.
+        if (cine) {
+            UI.cameraFollow(currentPlayer.position);
+            UI.hopActivePawn();
+        }
 
         const currentHouseName = document.getElementById('currentHouseName');
         if (currentHouseName) currentHouseName.textContent = `→ ${stepHouse.name}`;

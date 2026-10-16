@@ -1,7 +1,7 @@
 import { gameState, CERTIFICATES, TECH_CERTIFICATES, CERT_LABELS, REGION_COLORS } from './state.js';
 import { FX } from './effects.js';
 
-// SVG de rebocador colorido (peão do jogador). Vetorial, escala em qualquer tela.
+// SVG de rebocador colorido (mantido para compatibilidade/uso avulso).
 export function tugboatSVG(color) {
     return `<svg viewBox="0 0 24 24" width="100%" height="100%" aria-hidden="true">
         <path d="M2 15h20l-2 4H4z" fill="${color}"/>
@@ -12,16 +12,82 @@ export function tugboatSVG(color) {
     </svg>`;
 }
 
+let _pinSeq = 0;
+// Pino de tabuleiro tradicional (cabeça esférica + corpo flangeado + base),
+// sombreado com gradiente vertical para leitura em 3D. viewBox alto (pino em pé).
+export function pinSVG(color) {
+    const id = 'pin' + (_pinSeq++);
+    return `<svg viewBox="0 0 40 72" width="100%" height="100%" aria-hidden="true" style="overflow:visible;">
+        <defs>
+            <linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#ffffff" stop-opacity="0.6"/>
+                <stop offset="0.4" stop-color="${color}"/>
+                <stop offset="1" stop-color="#000000" stop-opacity="0.45"/>
+            </linearGradient>
+        </defs>
+        <ellipse cx="20" cy="68" rx="13" ry="3.5" fill="rgba(0,0,0,0.35)"/>
+        <path d="M9 66 Q7 52 15 46 Q8 41 11 31 Q13 25 20 25 Q27 25 29 31 Q32 41 25 46 Q33 52 31 66 Z" fill="${color}"/>
+        <circle cx="20" cy="16" r="11" fill="${color}"/>
+        <path d="M9 66 Q7 52 15 46 Q8 41 11 31 Q13 25 20 25 Q27 25 29 31 Q32 41 25 46 Q33 52 31 66 Z" fill="url(#${id})"/>
+        <circle cx="20" cy="16" r="11" fill="url(#${id})"/>
+        <ellipse cx="16" cy="12" rx="3.2" ry="4.2" fill="#ffffff" opacity="0.55"/>
+    </svg>`;
+}
+
+function reducedMotionUI() {
+    return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+// ========== CÂMERA CINEMATOGRÁFICA (Sprint 7) ==========
+// Durante o movimento, inclina o tabuleiro quase na horizontal, aproxima e faz
+// a "câmera" seguir o pino que pula casa a casa. Puro CSS 3D (sem engine).
+
+export function enterCinematic() {
+    if (reducedMotionUI()) return false;
+    const board = document.querySelector('.board-game');
+    if (!board) return false;
+    const container = board.closest('.board-container');
+    if (container) container.classList.add('cine-view');
+    board.classList.add('cinematic');
+    return true;
+}
+
+export function exitCinematic() {
+    const board = document.querySelector('.board-game');
+    if (!board) return;
+    board.classList.remove('cinematic');
+    board.style.removeProperty('--cam-x');
+    board.style.removeProperty('--cam-y');
+    const container = board.closest('.board-container');
+    if (container) container.classList.remove('cine-view');
+}
+
+// Centraliza a "câmera" na casa indicada (translada o tabuleiro).
+export function cameraFollow(position) {
+    const board = document.querySelector('.board-game');
+    const cell = getCellElement(position);
+    if (!board || !cell) return;
+    const bw = board.clientWidth, bh = board.clientHeight;
+    const cx = cell.offsetLeft + cell.offsetWidth / 2;
+    const cy = cell.offsetTop + cell.offsetHeight / 2;
+    board.style.setProperty('--cam-x', (cx - bw / 2) + 'px');
+    board.style.setProperty('--cam-y', (cy - bh / 2) + 'px');
+}
+
+// Faz o pino do jogador da vez dar um pulo (um salto por casa).
+export function hopActivePawn() {
+    const lift = document.querySelector('.player-pawn.pawn-active .pawn-lift');
+    if (!lift) return;
+    lift.classList.remove('hop');
+    void lift.offsetWidth;
+    lift.classList.add('hop');
+    setTimeout(() => lift.classList.remove('hop'), 520);
+}
+
 // Retorna o elemento da célula (casa ou canto) para uma posição do tabuleiro.
+// Casas e cantos possuem data-position, então uma única busca resolve ambos.
 function getCellElement(position) {
-    const direct = document.querySelector(`.board-house[data-position="${position}"]`);
-    if (direct) return direct;
-    // Cantos não têm data-position; mapeia pela grade.
-    const map = { 0: ['10', '10'], 9: ['1', '10'], 18: ['1', '1'], 27: ['10', '1'] };
-    const coord = map[position];
-    if (!coord) return null;
-    return Array.from(document.querySelectorAll('.board-corner')).find(c =>
-        c.style.gridColumn === coord[0] && c.style.gridRow === coord[1]) || null;
+    return document.querySelector(`[data-position="${position}"]`);
 }
 
 // Pulso de "aterrissagem" na casa de destino após o movimento.
@@ -405,9 +471,10 @@ export function updatePlayerPositions() {
         if (houseEl) {
             const pawn = document.createElement('div');
             pawn.className = 'player-pawn';
-            pawn.innerHTML = tugboatSVG(player.color);
+            // Camadas: stand (fica em pé no 3D) > lift (pulo) > pino.
+            pawn.innerHTML = `<div class="pawn-stand"><div class="pawn-lift">${pinSVG(player.color)}</div></div>`;
             pawn.title = player.name; // Mantém o tooltip com o nome
-            // Destaca o rebocador do jogador da vez (leve salto).
+            // Destaca o pino do jogador da vez.
             if (player === gameState.players[gameState.currentPlayerIndex]) {
                 pawn.classList.add('pawn-active');
             }
