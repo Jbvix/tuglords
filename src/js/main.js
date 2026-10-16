@@ -63,6 +63,8 @@ window.showVictoryInfo = Logic.showVictoryInfo;
 window.exitGame = Logic.exitGame;
 window.toggleAudio = Logic.toggleAudio;
 window.showManualModal = UI.showManualModal;
+window.shareGame = Logic.shareGame;
+window.copyShareLink = Logic.copyShareLink;
 
 // Navigation
 window.showManual = UI.showManual;

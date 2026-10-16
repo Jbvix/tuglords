@@ -1724,3 +1724,58 @@ export function exitGame() {
     ], true);
 }
 
+// ========== COMPARTILHAMENTO ==========
+
+const SHARE_URL = 'https://tuglords.netlify.app';
+const SHARE_TEXT = '⚓ Venha jogar TUGLORDS — domine os mares e o mercado portuário!';
+
+// Usa a API nativa de compartilhamento (celular) quando disponível; senão abre
+// um modal com WhatsApp / Telegram / X e opção de copiar o link.
+export function shareGame() {
+    if (navigator.share) {
+        navigator.share({ title: 'TUGLORDS', text: SHARE_TEXT, url: SHARE_URL }).catch(() => {});
+        return;
+    }
+    const enc = encodeURIComponent;
+    const wa = `https://wa.me/?text=${enc(SHARE_TEXT + ' ' + SHARE_URL)}`;
+    const tg = `https://t.me/share/url?url=${enc(SHARE_URL)}&text=${enc(SHARE_TEXT)}`;
+    const tw = `https://twitter.com/intent/tweet?text=${enc(SHARE_TEXT)}&url=${enc(SHARE_URL)}`;
+    const body = `
+        <p style="color:#cbd5e1; text-align:center; margin-top:0;">Chame a tripulação para jogar! ⚓</p>
+        <div style="display:grid; gap:0.5rem;">
+            <button class="btn-secondary" onclick="window.open('${wa}','_blank','noopener')">💬 WhatsApp</button>
+            <button class="btn-secondary" onclick="window.open('${tg}','_blank','noopener')">✈️ Telegram</button>
+            <button class="btn-secondary" onclick="window.open('${tw}','_blank','noopener')">𝕏 Twitter / X</button>
+            <button class="btn-primary" onclick="copyShareLink()">🔗 Copiar link</button>
+        </div>`;
+    UI.showModal('📤 Compartilhar', body, [], true);
+}
+
+export function copyShareLink() {
+    const done = () => UI.showNotification('🔗 Link copiado!');
+    const fallback = () => {
+        try {
+            const ta = document.createElement('textarea');
+            ta.value = SHARE_URL;
+            ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            document.execCommand('copy');
+            ta.remove();
+            done();
+        } catch (e) {
+            UI.showNotification('Copie: ' + SHARE_URL);
+        }
+    };
+    try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(SHARE_URL).then(done).catch(fallback);
+        } else {
+            fallback();
+        }
+    } catch (e) {
+        fallback();
+    }
+}
+
