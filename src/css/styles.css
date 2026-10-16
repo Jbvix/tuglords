@@ -1733,53 +1733,34 @@ body::before {
 }
 
 /* ===================================================================== */
-/* SPRINT 7.2 — ZOOM-IN 360° NO PEÃO (após rolar os dados)               */
+/* SPRINT 7.2 — ZOOM-IN + PIRUETA DO PEÃO (após rolar os dados)          */
 /* ===================================================================== */
 
-/* Órbita: translada para o peão (via --cam), aproxima (scale) e gira 360°
-   ao redor dele; depois volta à vista de follow (zoom-out) para pular as casas. */
+/* O tabuleiro NÃO gira (isso tombava os pinos). Em vez disso, só damos um
+   ZOOM-IN aproximando o peão da vez (centralizado via --cam); a transição
+   padrão de .board-game anima o zoom suavemente. */
 .board-game.cinematic.orbiting {
-    animation: board-orbit 1.4s ease-in-out;
-}
-@keyframes board-orbit {
-    0% {
-        transform: perspective(1100px) rotateX(58deg) scale(1.3) rotateY(0deg)
-            translate(calc(-1 * var(--cam-x, 0px)), calc(-1 * var(--cam-y, 0px)));
-    }
-    20% {
-        transform: perspective(800px) rotateX(46deg) scale(2.6) rotateY(80deg)
-            translate(calc(-1 * var(--cam-x, 0px)), calc(-1 * var(--cam-y, 0px)));
-    }
-    50% {
-        transform: perspective(800px) rotateX(46deg) scale(2.6) rotateY(200deg)
-            translate(calc(-1 * var(--cam-x, 0px)), calc(-1 * var(--cam-y, 0px)));
-    }
-    80% {
-        transform: perspective(800px) rotateX(46deg) scale(2.6) rotateY(320deg)
-            translate(calc(-1 * var(--cam-x, 0px)), calc(-1 * var(--cam-y, 0px)));
-    }
-    100% {
-        transform: perspective(1100px) rotateX(58deg) scale(1.3) rotateY(360deg)
-            translate(calc(-1 * var(--cam-x, 0px)), calc(-1 * var(--cam-y, 0px)));
-    }
+    transform:
+        perspective(900px)
+        rotateX(58deg)
+        scale(2.5)
+        translate(calc(-1 * var(--cam-x, 0px)), calc(-1 * var(--cam-y, 0px)));
 }
 
-/* Os pinos contra-giram em sincronia para continuar encarando a câmera
-   durante a órbita (não ficam de lado). */
-.board-game.cinematic.orbiting .pawn-stand {
-    animation: pin-counter-orbit 1.4s ease-in-out;
+/* Só o PEÃO DA VEZ faz a pirueta: fica EM PÉ (rotateX(-58deg) mantém de pé) e
+   gira 360° no próprio eixo vertical (rotateY). Os demais pinos ficam parados. */
+.board-game.cinematic.orbiting .player-pawn.pawn-active .pawn-stand {
+    animation: pawn-pirouette 1.4s ease-in-out;
 }
-@keyframes pin-counter-orbit {
+@keyframes pawn-pirouette {
     0%   { transform: rotateX(-58deg) rotateY(0deg); }
-    20%  { transform: rotateX(-46deg) rotateY(-80deg); }
-    50%  { transform: rotateX(-46deg) rotateY(-200deg); }
-    80%  { transform: rotateX(-46deg) rotateY(-320deg); }
-    100% { transform: rotateX(-58deg) rotateY(-360deg); }
+    100% { transform: rotateX(-58deg) rotateY(360deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .board-game.cinematic.orbiting,
-    .board-game.cinematic.orbiting .pawn-stand { animation: none; }
+    .board-game.cinematic.orbiting .player-pawn.pawn-active .pawn-stand {
+        animation: none;
+    }
 }
 
 /* ===================================================================== */
