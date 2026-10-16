@@ -1,6 +1,7 @@
 import { gameState, TRAINING_QUESTIONS, CERTIFICATES, CERT_LABELS, CERTIFIED_FEE_MULTIPLIER, CARD_DECK, OCEAN_EVENTS, playerColors, playerIcons } from './state.js';
 import * as UI from './ui.js';
 import { Audio } from './audio.js';
+import { FX } from './effects.js';
 
 // ========== TEMPOS DE ANIMAÇÃO ==========
 // Centralizados para ajuste fácil do ritmo do turno. Pensados para dar tempo
@@ -180,6 +181,9 @@ export function rollDice() {
     const diceDisplay = document.getElementById('diceDisplay');
     const dice = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
 
+    if (diceDisplay) diceDisplay.classList.add('dice-rolling');
+    FX.haptic(15);
+
     let rolls = 0;
     const interval = setInterval(() => {
         const rand1 = Math.floor(Math.random() * 6);
@@ -193,16 +197,22 @@ export function rollDice() {
             const final1 = Math.floor(Math.random() * 6) + 1;
             const final2 = Math.floor(Math.random() * 6) + 1;
             const total = final1 + final2;
+            const isDouble = final1 === final2;
 
             if (diceDisplay) {
+                diceDisplay.classList.remove('dice-rolling');
+                diceDisplay.classList.add('dice-reveal');
+                setTimeout(() => diceDisplay.classList.remove('dice-reveal'), 600);
                 diceDisplay.innerHTML = `
                     <div style="display: flex; gap: 0.5rem; align-items: center; justify-content: center; flex-wrap: wrap;">
                         <span>${dice[final1 - 1]}</span>
                         <span>${dice[final2 - 1]}</span>
                         <span style="font-size: 2rem; color: var(--accent-gold);">= ${total}</span>
+                        ${isDouble ? '<span style="font-size: 0.9rem; color:#22c55e; font-weight:800;">DUPLA! 🎉</span>' : ''}
                     </div>
                 `;
             }
+            FX.haptic(isDouble ? [40, 40, 40] : 35);
 
             console.log(`🎲 Dados: ${final1} + ${final2} = ${total}`);
 
@@ -236,8 +246,6 @@ export function movePlayer(spaces) {
     if (rollBtn) rollBtn.disabled = true;
     if (endBtn) endBtn.disabled = true;
 
-    UI.showNotification(`🎲 ${direction === 1 ? 'Avançando' : 'Retrocedendo'} ${totalSteps} casas...`);
-
     const moveInterval = setInterval(() => {
         if (currentStep >= totalSteps) {
             clearInterval(moveInterval);
@@ -248,7 +256,10 @@ export function movePlayer(spaces) {
             const currentHouseName = document.getElementById('currentHouseName');
             if (currentHouseName) currentHouseName.textContent = house.name;
 
-            UI.showNotification(`✅ ${currentPlayer.icon} chegou em ${house.name}!`);
+            // Clímax da chegada: pulso na casa de destino + vibração.
+            UI.highlightLanding(finalPosition);
+            FX.haptic(30);
+            UI.showNotification(`${currentPlayer.icon} chegou em ${house.name}!`);
 
             if (endBtn) endBtn.disabled = false;
 
@@ -260,13 +271,15 @@ export function movePlayer(spaces) {
         // Módulo seguro para posições negativas ao retroceder.
         currentPlayer.position = (((startPosition + direction * currentStep) % len) + len) % len;
         Audio.playMove();
+        FX.haptic(8); // tique sutil a cada casa
 
         const stepHouse = gameState.houses[currentPlayer.position];
 
         // Passagem pela partida (apenas avançando)
         if (direction === 1 && currentPlayer.position === 0 && currentStep < totalSteps) {
             currentPlayer.money += 4000;
-            UI.showNotification(`🏁 ${currentPlayer.name} passou pela Partida! +R$4000`);
+            FX.flash('rgba(34,197,94,0.25)', 300);
+            UI.showNotification(`🏁 ${currentPlayer.name} passou pela Partida! +R$4.000`);
             UI.renderPlayersPanel();
         }
 
@@ -452,6 +465,8 @@ export function buyProperty(space) {
 
     UI.showNotification(`✅ ${space.name} adquirido!`);
     Audio.playSuccess();
+    FX.flash('rgba(34,197,94,0.22)', 300);
+    FX.haptic([25, 30]);
     UI.renderPlayersPanel();
     UI.updatePlayerPositions(); // Updates ownership view
 
@@ -516,6 +531,16 @@ export function handleMandatoryPayment(player, amount, reason, recipient = null)
         if (recipient) recipient.money += amount;
         UI.showNotification(`💸 ${player.name} pagou R$${fmt(amount)} (${reason})`);
         Audio.playMoney();
+
+        // Drama proporcional: pagamentos pesados (>=2k ou >=25% do caixa) sacodem a tela.
+        const heavy = amount >= 2000 || amount >= player.money * 0.25;
+        if (heavy) {
+            FX.shake();
+            FX.flash('rgba(239,68,68,0.28)', 350);
+            FX.haptic([30, 40, 30]);
+        } else {
+            FX.haptic(20);
+        }
         UI.renderPlayersPanel();
         return true;
     } else {
@@ -620,7 +645,16 @@ export function declareBankruptcy(player, creditor) {
     player.loans = [];
     player.stocks = {};
 
-    UI.showModal('💔 Falência', `<p>${player.name} foi eliminado!</p>`);
+    FX.shake();
+    FX.flash('rgba(239,68,68,0.45)', 500);
+    FX.haptic([60, 50, 60, 50, 120]);
+    UI.showModal('💔 Falência', `
+        <div style="text-align:center;">
+            <div style="font-size:3.5rem; margin-bottom:0.5rem;">💔⚓</div>
+            <p style="font-size:1.1rem;"><strong>${player.name}</strong> afundou!</p>
+            <p style="color:#94a3b8;">Eliminado da disputa pelo domínio portuário.</p>
+        </div>
+    `);
 
     UI.updatePlayerPositions();
     UI.renderPlayersPanel();
@@ -634,11 +668,17 @@ export function declareBankruptcy(player, creditor) {
 
 export function declareWinner(winner) {
     gameState.phase = 'ended';
+    FX.confetti(3000);
+    FX.flash('rgba(251,191,36,0.3)', 450);
+    FX.haptic([40, 60, 40, 60, 200]);
+    Audio.playSuccess();
     UI.showModal('🏆 Vitória!', `
         <div style="text-align: center;">
-            <h1>${winner.icon} ${winner.name} Venceu!</h1>
-            <p>TugLord Supremo!</p>
-            <button class="btn-primary" onclick="location.reload()">Nova Partida</button>
+            <div class="fx-trophy" style="font-size: 4.5rem; margin-bottom: 0.5rem;">🏆</div>
+            <h1 style="color: var(--accent-gold); margin: 0;">${winner.icon} ${winner.name}</h1>
+            <p style="font-size: 1.15rem; font-weight: 800; color:#fbbf24; letter-spacing:0.5px;">TUGLORD SUPREMO!</p>
+            <p style="color:#94a3b8;">Dominou os mares e o mercado portuário. 👑</p>
+            <button class="btn-primary" style="width:100%; margin-top:1rem;" onclick="location.reload()">⚓ Nova Partida</button>
         </div>
     `, [], false);
 }

@@ -1,4 +1,27 @@
 import { gameState, CERTIFICATES, TECH_CERTIFICATES, CERT_LABELS } from './state.js';
+import { FX } from './effects.js';
+
+// Retorna o elemento da célula (casa ou canto) para uma posição do tabuleiro.
+function getCellElement(position) {
+    const direct = document.querySelector(`.board-house[data-position="${position}"]`);
+    if (direct) return direct;
+    // Cantos não têm data-position; mapeia pela grade.
+    const map = { 0: ['10', '10'], 9: ['1', '10'], 18: ['1', '1'], 27: ['10', '1'] };
+    const coord = map[position];
+    if (!coord) return null;
+    return Array.from(document.querySelectorAll('.board-corner')).find(c =>
+        c.style.gridColumn === coord[0] && c.style.gridRow === coord[1]) || null;
+}
+
+// Pulso de "aterrissagem" na casa de destino após o movimento.
+export function highlightLanding(position) {
+    const cell = getCellElement(position);
+    if (!cell) return;
+    cell.classList.remove('just-arrived');
+    void cell.offsetWidth;
+    cell.classList.add('just-arrived');
+    setTimeout(() => cell.classList.remove('just-arrived'), 1100);
+}
 
 // ========== UI FUNCTIONS ==========
 
@@ -572,6 +595,12 @@ export function updateTurnDisplay() {
     if (nameEl) nameEl.textContent = `${currentPlayer.icon} ${currentPlayer.name}`;
     if (turnEl) turnEl.textContent = currentPlayer.name;
     if (roundEl) roundEl.textContent = `Rodada ${gameState.currentRound}`;
+
+    // Banner épico de troca de turno na cor do jogador + tema da vez.
+    if (gameState.phase === 'playing') {
+        document.documentElement.style.setProperty('--current-color', currentPlayer.color);
+        FX.turnBanner(`${currentPlayer.icon} Vez de ${currentPlayer.name}`, currentPlayer.color);
+    }
 
     document.getElementById('diceDisplay').innerHTML = '⚀ ⚀';
 

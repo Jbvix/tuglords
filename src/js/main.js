@@ -2,6 +2,7 @@ import * as Logic from './modules/logic.js';
 import * as UI from './modules/ui.js';
 import { gameState } from './modules/state.js';
 import { Audio } from './modules/audio.js';
+import { FX } from './modules/effects.js';
 
 // Attach Logic functions to window for HTML onclick handlers
 window.addPlayer = Logic.addPlayer;
@@ -128,3 +129,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Expose gameState for debugging if needed
 window.gameState = gameState;
+window.FX = FX; // efeitos visuais/táteis (Sprint 6) — útil para debug
