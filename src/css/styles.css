@@ -734,7 +734,9 @@ body {
     transition: transform 0.15s ease, opacity 0.4s ease;
 }
 
-.game-card:hover .game-card-inner {
+/* Elevação no hover aplicada ao CARTÃO externo (não ao .game-card-inner) para
+   nunca competir com o transform do flip. */
+.game-card:hover {
     transform: translateY(-4px);
 }
 
@@ -751,19 +753,23 @@ body {
     position: relative;
     width: 100%;
     height: 100%;
-    transition: transform 0.5s;
-    transform-style: preserve-3d;
 }
 
+/* Flip 2D ROBUSTO (sem 3D/preserve-3d/backface): funciona em qualquer
+   navegador, inclusive iOS Safari e dentro de modais com transform/overflow,
+   onde o flip 3D costuma falhar. O cartão "fecha" (scaleX→0) e reabre. */
 .game-card-inner.flipped {
-    transform: rotateY(180deg);
+    animation: card-flip 0.55s ease;
+}
+@keyframes card-flip {
+    0% { transform: scaleX(1); }
+    50% { transform: scaleX(0.04); }
+    100% { transform: scaleX(1); }
 }
 
 .game-card-face {
     position: absolute;
     inset: 0;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
     border-radius: 0.5rem;
     display: flex;
     flex-direction: column;
@@ -779,13 +785,24 @@ body {
     border: 2px solid #60a5fa;
     color: #bfdbfe;
     font-size: 1.6rem;
+    opacity: 1;
 }
 
+/* A frente começa oculta; as faces trocam no MEIO do flip (cartão "de lado",
+   scaleX ~ 0), então a troca não é percebida. Após o flip a frente permanece. */
 .game-card-front {
-    transform: rotateY(180deg);
+    opacity: 0;
     color: #fff;
     gap: 0.25rem;
 }
+.game-card-inner.flipped .game-card-back {
+    animation: card-face-out 0.55s ease forwards;
+}
+.game-card-inner.flipped .game-card-front {
+    animation: card-face-in 0.55s ease forwards;
+}
+@keyframes card-face-out { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@keyframes card-face-in { 0%, 49% { opacity: 0; } 50%, 100% { opacity: 1; } }
 
 .game-card-front.good {
     background: linear-gradient(145deg, #166534, #22c55e);
@@ -1236,5 +1253,718 @@ body {
         animation-iteration-count: 1 !important;
         transition-duration: 0.001ms !important;
         scroll-behavior: auto !important;
+    }
+}
+/* ===================================================================== */
+/* SPRINT 6 — EMOÇÃO & IMERSÃO                                           */
+/* ===================================================================== */
+
+/* ---- Flash de tela cheia (perigo / conquista) ---- */
+.fx-flash {
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.12s ease-out;
+}
+.fx-flash.show {
+    opacity: 1;
+}
+
+/* ---- Tremor de tela ---- */
+@keyframes fx-shake {
+    0%, 100% { transform: translate(0, 0); }
+    15% { transform: translate(-7px, 3px) rotate(-0.4deg); }
+    30% { transform: translate(6px, -4px) rotate(0.4deg); }
+    45% { transform: translate(-6px, 2px); }
+    60% { transform: translate(5px, 3px) rotate(0.3deg); }
+    75% { transform: translate(-4px, -2px); }
+}
+.fx-shake {
+    animation: fx-shake 0.55s cubic-bezier(.36,.07,.19,.97);
+}
+
+/* ---- Dados: rolagem e revelação ---- */
+@keyframes fx-dice-jitter {
+    0%, 100% { transform: translateY(0) rotate(0); }
+    25% { transform: translateY(-6px) rotate(-8deg); }
+    50% { transform: translateY(0) rotate(6deg); }
+    75% { transform: translateY(-4px) rotate(-4deg); }
+}
+.dice-rolling {
+    animation: fx-dice-jitter 0.25s linear infinite;
+}
+@keyframes fx-dice-pop {
+    0% { transform: scale(0.6); opacity: 0.3; }
+    55% { transform: scale(1.35); opacity: 1; }
+    100% { transform: scale(1); }
+}
+.dice-reveal {
+    animation: fx-dice-pop 0.5s cubic-bezier(.17,.89,.32,1.49);
+}
+
+/* ---- Pulso de aterrissagem na casa de destino ---- */
+@keyframes fx-landing {
+    0% { box-shadow: 0 0 0 0 rgba(251,191,36,0.9); }
+    100% { box-shadow: 0 0 0 14px rgba(251,191,36,0); }
+}
+.board-house.just-arrived,
+.board-corner.just-arrived {
+    animation: fx-landing 0.9s ease-out;
+    z-index: 6;
+}
+
+/* ---- Banner de troca de turno ---- */
+.fx-turn-banner {
+    position: fixed;
+    top: 38%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    z-index: 2400;
+    pointer-events: none;
+    padding: 0.9rem 2rem;
+    border-radius: 1rem;
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: #0b1220;
+    background: var(--banner-color, #fbbf24);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    border: 3px solid rgba(255, 255, 255, 0.85);
+    opacity: 0;
+    white-space: nowrap;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+}
+@keyframes fx-banner-in {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+    20% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+    35% { transform: translate(-50%, -50%) scale(1); }
+    80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.95); }
+}
+.fx-turn-banner.show {
+    animation: fx-banner-in 1.7s ease-in-out forwards;
+}
+
+/* ---- Confetes ---- */
+.fx-confetti {
+    position: fixed;
+    inset: 0;
+    z-index: 2900;
+    pointer-events: none;
+    overflow: hidden;
+}
+.fx-confetti-piece {
+    position: absolute;
+    top: -5vh;
+    width: 9px;
+    height: 9px;
+    border-radius: 2px;
+    animation-name: fx-confetti-fall;
+    animation-timing-function: linear;
+    animation-iteration-count: 1;
+}
+@keyframes fx-confetti-fall {
+    0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0.9; }
+}
+
+/* ---- Troféu pulsante na vitória ---- */
+@keyframes fx-trophy-bounce {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-10px) scale(1.12); }
+}
+.fx-trophy {
+    display: inline-block;
+    animation: fx-trophy-bounce 1.2s ease-in-out infinite;
+}
+
+/* ---- Responsividade dos efeitos (Sprint 6) ---- */
+.fx-turn-banner {
+    max-width: 90vw;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.15;
+}
+@media (max-width: 420px) {
+    .fx-turn-banner {
+        font-size: 1.05rem;
+        padding: 0.7rem 1.2rem;
+        top: 42%;
+    }
+}
+@media (min-width: 1024px) {
+    .fx-turn-banner {
+        font-size: 1.6rem;
+    }
+}
+/* Confetes e flash cobrem a viewport inteira em qualquer tamanho; sem custo de layout. */
+
+/* ===================================================================== */
+/* SPRINT 6 — PILAR B: VISUAL DO TABULEIRO                               */
+/* ===================================================================== */
+
+/* ---- Peões como PINOS tradicionais (SVG sombreado, em pé) ---- */
+/* Estrutura em camadas: .player-pawn (posição) > .pawn-stand (fica em pé no 3D)
+   > .pawn-lift (pulo) > svg (pino). */
+.player-pawn {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    width: 18px;
+    height: 28px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    overflow: visible;
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.55));
+    z-index: 6;
+}
+.pawn-stand,
+.pawn-lift {
+    width: 100%;
+    height: 100%;
+    display: block;
+    transform-origin: bottom center;
+}
+.player-pawn svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+.player-pawn.pawn-active {
+    filter: drop-shadow(0 0 5px var(--accent-gold)) drop-shadow(0 2px 2px rgba(0, 0, 0, 0.55));
+}
+/* Leve balanço do pino do jogador da vez (parado). */
+.player-pawn.pawn-active .pawn-lift {
+    animation: pawn-bob 1.1s ease-in-out infinite;
+}
+@keyframes pawn-bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10%); }
+}
+@media (min-width: 480px) { .player-pawn { width: 22px; height: 34px; } }
+@media (min-width: 768px) { .player-pawn { width: 26px; height: 40px; } }
+@media (min-width: 1024px) { .player-pawn { width: 30px; height: 46px; } }
+
+/* ---- Faixa de cor da região (agrupamento estilo "bairro") ---- */
+.region-band {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    opacity: 0.95;
+    z-index: 1;
+    pointer-events: none;
+}
+@media (min-width: 768px) { .region-band { height: 4px; } }
+
+/* ---- Casa pintada na cor do dono ---- */
+.house-icon {
+    position: relative;
+    z-index: 1;
+}
+.board-house.owned::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--owner-color, transparent);
+    opacity: 0.20;
+    pointer-events: none;
+    z-index: 0;
+}
+.board-house.owned {
+    box-shadow: inset 0 0 0 1.5px var(--owner-color, transparent),
+                inset 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
+/* ---- Água ambiente ao fundo (sutil, sem prejudicar leitura) ---- */
+body::before {
+    content: '';
+    position: fixed;
+    inset: -20%;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 20% 25%, rgba(59, 130, 246, 0.18), transparent 42%),
+        radial-gradient(circle at 80% 72%, rgba(14, 165, 233, 0.15), transparent 46%);
+    animation: water-drift 20s ease-in-out infinite alternate;
+}
+@keyframes water-drift {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(3%, -3%) scale(1.05); }
+}
+
+/* ===================================================================== */
+/* SPRINT 6 — PILAR C: INTERATIVIDADE & TENSÃO                           */
+/* ===================================================================== */
+
+/* ---- Placar ao vivo (ranking por patrimônio) ---- */
+.standings-strip {
+    display: flex;
+    gap: 0.4rem;
+    padding: 0.45rem 0.6rem;
+    overflow-x: auto;
+    background: rgba(0, 0, 0, 0.28);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.standings-strip::-webkit-scrollbar { display: none; }
+.standings-strip:empty { display: none; }
+
+.standings-item {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.28rem 0.55rem;
+    border-radius: 0.5rem;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 2px solid var(--pcolor, #94a3b8);
+    font-size: 0.72rem;
+    white-space: nowrap;
+    flex: 0 0 auto;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.standings-item.is-turn {
+    outline: 2px solid var(--pcolor, #fbbf24);
+    outline-offset: 1px;
+    transform: translateY(-1px);
+}
+.standings-item.is-leader {
+    background: rgba(251, 191, 36, 0.16);
+    border-color: rgba(251, 191, 36, 0.5);
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.35);
+}
+.standings-item.is-out { opacity: 0.45; }
+.standings-rank { font-weight: 800; color: var(--accent-gold); }
+.standings-money { font-weight: 700; color: #e2e8f0; }
+@media (min-width: 768px) {
+    .standings-strip { justify-content: center; }
+    .standings-item { font-size: 0.8rem; padding: 0.35rem 0.7rem; }
+}
+
+/* ---- Alertas de tensão nos cards de jogador ---- */
+@keyframes card-danger-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.0); }
+    50% { box-shadow: 0 0 14px 2px rgba(239, 68, 68, 0.6); }
+}
+.player-card.danger {
+    border-color: rgba(239, 68, 68, 0.55);
+    animation: card-danger-pulse 1.5s ease-in-out infinite;
+}
+.player-card.leader {
+    box-shadow: 0 0 16px rgba(251, 191, 36, 0.35);
+}
+.player-card.eliminated {
+    opacity: 0.5;
+    filter: grayscale(0.6);
+}
+
+/* ===================================================================== */
+/* SPRINT 7 — CÂMERA CINEMATOGRÁFICA (pinos 3D que correm as casas)       */
+/* ===================================================================== */
+
+/* Transição suave da "câmera" (vale para entrar, seguir e voltar). */
+.board-game {
+    transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center center;
+    will-change: transform;
+}
+
+/* Viewport da câmera: recorta o tabuleiro inclinado/ampliado sem empurrar
+   o layout (transform não reflui) e sem sobrepor os controles abaixo. */
+#visualBoard.cine-view {
+    overflow: hidden;
+}
+
+/* Estado cinematográfico: tabuleiro quase na horizontal + aproximação + pan. */
+.board-game.cinematic {
+    transform:
+        perspective(1100px)
+        rotateX(58deg)
+        scale(1.3)
+        translate(calc(-1 * var(--cam-x, 0px)), calc(-1 * var(--cam-y, 0px)));
+    transform-style: preserve-3d;
+}
+
+/* Cadeia preserve-3d para compor as rotações dos pinos no espaço 3D. */
+.board-game.cinematic .board-house,
+.board-game.cinematic .board-corner,
+.board-game.cinematic .house-players,
+.board-game.cinematic .player-pawn,
+.board-game.cinematic .pawn-stand {
+    transform-style: preserve-3d;
+}
+
+/* Durante o cinematográfico as casas não recortam o pino que fica em pé. */
+.board-game.cinematic .board-house,
+.board-game.cinematic .board-corner {
+    overflow: visible;
+}
+
+/* Pinos ficam em PÉ (contra-rotação para encarar a câmera) e ganham presença. */
+.board-game.cinematic .pawn-stand {
+    transform: rotateX(-58deg);
+}
+/* IMPORTANTE: 'filter' achata o contexto 3D (preserve-3d), o que deitaria o
+   pino. Por isso removemos o filter do .player-pawn no cinematográfico e
+   colocamos a sombra na camada interna .pawn-lift (abaixo da rotação). */
+.board-game.cinematic .player-pawn {
+    z-index: 30;
+    filter: none;
+}
+.board-game.cinematic .pawn-lift {
+    filter: drop-shadow(0 7px 5px rgba(0, 0, 0, 0.5));
+}
+.board-game.cinematic .player-pawn.pawn-active .pawn-lift {
+    filter: drop-shadow(0 0 5px var(--accent-gold)) drop-shadow(0 7px 5px rgba(0, 0, 0, 0.5));
+}
+
+/* Pulo do pino a cada casa (no espaço já "em pé", então sobe na direção da tela). */
+@keyframes pawn-hop {
+    0% { transform: translateY(0); }
+    45% { transform: translateY(-55%); }
+    100% { transform: translateY(0); }
+}
+.pawn-lift.hop {
+    animation: pawn-hop 0.5s ease;
+}
+
+/* Acessibilidade: sem cinematográfico quando o usuário prefere menos movimento
+   (o JS já evita ativar; isto é reforço caso a classe seja aplicada). */
+@media (prefers-reduced-motion: reduce) {
+    .board-game.cinematic {
+        transform: none;
+    }
+    .board-game.cinematic .pawn-stand {
+        transform: none;
+    }
+    .pawn-lift.hop {
+        animation: none;
+    }
+}
+
+/* ===================================================================== */
+/* SPRINT 7.1 — DADOS 3D (ficam abaixo do tabuleiro, com os botões)       */
+/* ===================================================================== */
+
+/* ---- Dados 3D (cubos com faces e pontos) ---- */
+.dice3d-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
+    flex-wrap: wrap;
+}
+.die-scene {
+    --ds: 34px;
+    width: var(--ds);
+    height: var(--ds);
+    perspective: calc(var(--ds) * 7);
+}
+@media (min-width: 768px) { .die-scene { --ds: 44px; } }
+.die-tilt {
+    width: 100%;
+    height: 100%;
+    transform: rotateX(-22deg) rotateY(22deg);
+    transform-style: preserve-3d;
+}
+.die-cube {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.25);
+}
+.die-cube.rolling {
+    animation: die-tumble 0.55s linear infinite;
+    transition: none;
+}
+@keyframes die-tumble {
+    0% { transform: rotateX(0) rotateY(0) rotateZ(0); }
+    100% { transform: rotateX(360deg) rotateY(300deg) rotateZ(120deg); }
+}
+.die-face {
+    position: absolute;
+    width: var(--ds);
+    height: var(--ds);
+    background: linear-gradient(145deg, #ffffff, #dbe2ea);
+    border-radius: 7px;
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.18);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    padding: 12%;
+    box-sizing: border-box;
+}
+.die-pip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.die-pip.on::after {
+    content: '';
+    width: 70%;
+    height: 70%;
+    background: #15233b;
+    border-radius: 50%;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.45);
+}
+.die-face.f1 { transform: translateZ(calc(var(--ds) / 2)); }
+.die-face.f6 { transform: rotateY(180deg) translateZ(calc(var(--ds) / 2)); }
+.die-face.f3 { transform: rotateY(90deg) translateZ(calc(var(--ds) / 2)); }
+.die-face.f4 { transform: rotateY(-90deg) translateZ(calc(var(--ds) / 2)); }
+.die-face.f2 { transform: rotateX(90deg) translateZ(calc(var(--ds) / 2)); }
+.die-face.f5 { transform: rotateX(-90deg) translateZ(calc(var(--ds) / 2)); }
+.dice-total {
+    font-size: 1.25rem;
+    font-weight: 900;
+    color: var(--accent-gold);
+    margin-left: 0.3rem;
+}
+.dice-total b { color: #22c55e; font-size: 0.8rem; }
+
+@media (prefers-reduced-motion: reduce) {
+    .die-cube.rolling { animation: none; }
+}
+
+/* ===================================================================== */
+/* SPRINT 7.2 — ZOOM-IN + PIRUETA DO PEÃO (após rolar os dados)          */
+/* ===================================================================== */
+
+/* O tabuleiro NÃO gira (isso tombava os pinos). Em vez disso, só damos um
+   ZOOM-IN aproximando o peão da vez (centralizado via --cam); a transição
+   padrão de .board-game anima o zoom suavemente. */
+.board-game.cinematic.orbiting {
+    transform:
+        perspective(900px)
+        rotateX(58deg)
+        scale(2.5)
+        translate(calc(-1 * var(--cam-x, 0px)), calc(-1 * var(--cam-y, 0px)));
+}
+
+/* Só o PEÃO DA VEZ faz a pirueta: fica EM PÉ (rotateX(-58deg) mantém de pé) e
+   gira 360° no próprio eixo vertical (rotateY). Os demais pinos ficam parados. */
+.board-game.cinematic.orbiting .player-pawn.pawn-active .pawn-stand {
+    animation: pawn-pirouette 1.4s ease-in-out;
+}
+@keyframes pawn-pirouette {
+    0%   { transform: rotateX(-58deg) rotateY(0deg); }
+    100% { transform: rotateX(-58deg) rotateY(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .board-game.cinematic.orbiting .player-pawn.pawn-active .pawn-stand {
+        animation: none;
+    }
+}
+
+/* ===================================================================== */
+/* NARRADOR / COMENTARISTA DO JOGO                                       */
+/* ===================================================================== */
+.commentary-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.4rem 0.6rem 0;
+    padding: 0.55rem 0.8rem;
+    background: linear-gradient(90deg, rgba(251, 191, 36, 0.16), rgba(15, 23, 42, 0.5));
+    border: 1px solid rgba(251, 191, 36, 0.35);
+    border-left: 4px solid var(--accent-gold);
+    border-radius: 0.6rem;
+    color: #f8fafc;
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.25;
+    min-height: 2.4rem;
+}
+.commentary-mic {
+    font-size: 1.15rem;
+    flex: 0 0 auto;
+    animation: mic-wiggle 3s ease-in-out infinite;
+}
+@keyframes mic-wiggle {
+    0%, 92%, 100% { transform: rotate(0); }
+    94% { transform: rotate(-12deg); }
+    97% { transform: rotate(12deg); }
+}
+.commentary-text { flex: 1; }
+@keyframes commentary-pop {
+    0% { transform: scale(0.98); opacity: 0.45; }
+    55% { transform: scale(1.015); }
+    100% { transform: scale(1); opacity: 1; }
+}
+.commentary-banner.pop { animation: commentary-pop 0.4s ease; }
+@media (min-width: 768px) {
+    .commentary-banner {
+        font-size: 0.95rem;
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+/* ===================================================================== */
+/* SPLASH CINEMATOGRÁFICO (abertura)                                     */
+/* ===================================================================== */
+.splash {
+    position: fixed;
+    inset: 0;
+    z-index: 5000;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+        radial-gradient(120% 80% at 50% 20%, #2a5298 0%, #16284a 55%, #0b1628 100%);
+    opacity: 1;
+    transition: opacity 0.6s ease;
+}
+.splash.hide { opacity: 0; pointer-events: none; }
+
+/* ---- Mar com ondas agitadas ---- */
+.splash-sea {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 46%;
+    pointer-events: none;
+}
+.splash-wave {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 200%;
+    height: 100%;
+    background-repeat: repeat-x;
+    background-position: 0 bottom;
+    background-size: 50% 100%;
+}
+.splash-wave.w1 {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 160' preserveAspectRatio='none'%3E%3Cpath d='M0,80 C150,150 350,20 600,80 850,140 1050,20 1200,80 L1200,160 L0,160 Z' fill='%231e3c72'/%3E%3C/svg%3E");
+    opacity: 0.9;
+    animation: splash-wave-move 5s linear infinite, splash-wave-bob 2.1s ease-in-out infinite;
+}
+.splash-wave.w2 {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 160' preserveAspectRatio='none'%3E%3Cpath d='M0,90 C200,30 400,150 600,90 800,30 1000,150 1200,90 L1200,160 L0,160 Z' fill='%232a5298'/%3E%3C/svg%3E");
+    opacity: 0.8;
+    animation: splash-wave-move 3.4s linear infinite reverse, splash-wave-bob 1.7s ease-in-out infinite;
+}
+.splash-wave.w3 {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 160' preserveAspectRatio='none'%3E%3Cpath d='M0,100 C150,60 350,140 600,100 850,60 1050,140 1200,100 L1200,160 L0,160 Z' fill='%233b82f6'/%3E%3C/svg%3E");
+    opacity: 0.55;
+    animation: splash-wave-move 2.4s linear infinite, splash-wave-bob 1.3s ease-in-out infinite;
+}
+@keyframes splash-wave-move {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+@keyframes splash-wave-bob {
+    0%, 100% { margin-bottom: 0; }
+    50% { margin-bottom: 14px; }
+}
+
+/* ---- Cena que balança (sobe/desce nas ondas) ---- */
+.splash-stage {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    perspective: 700px;
+    animation: splash-stage-bob 2.6s ease-in-out infinite;
+}
+@keyframes splash-stage-bob {
+    0%, 100% { transform: translateY(0) rotate(-1.6deg); }
+    50% { transform: translateY(-16px) rotate(1.6deg); }
+}
+
+.splash-anchor {
+    font-size: 5.5rem;
+    line-height: 1;
+    filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.5));
+    animation: splash-anchor-in 1.9s ease both;
+}
+@keyframes splash-anchor-in {
+    0% { transform: scale(2.4); opacity: 0; }
+    55% { opacity: 0.3; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.splash-title {
+    font-size: 3.4rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: var(--accent-gold);
+    text-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
+    transform-origin: center 30%;
+    animation: splash-title-zoom 2.3s cubic-bezier(0.18, 0.75, 0.2, 1) both;
+}
+@keyframes splash-title-zoom {
+    0% { transform: scale(6.5) translateX(-10%); opacity: 0; }
+    14% { opacity: 1; }
+    100% { transform: scale(1) translateX(0); opacity: 1; }
+}
+
+.splash-sub {
+    color: #cbd5e1;
+    font-size: 1.05rem;
+    margin-top: 0.2rem;
+    opacity: 0;
+    animation: splash-sub-in 2.6s ease both;
+}
+@keyframes splash-sub-in {
+    0%, 45% { opacity: 0; transform: translateY(6px); }
+    100% { opacity: 0.9; transform: translateY(0); }
+}
+
+.splash-pawn {
+    width: 46px;
+    height: 70px;
+    margin-top: 1rem;
+    transform-style: preserve-3d;
+    opacity: 0;
+    animation: splash-pawn-in 1.6s ease both;
+    animation-delay: 2.7s;
+}
+.splash-pawn svg { width: 100%; height: 100%; display: block; }
+@keyframes splash-pawn-in {
+    0% { transform: translateY(44px) rotateY(0deg); opacity: 0; }
+    25% { opacity: 1; }
+    100% { transform: translateY(0) rotateY(360deg); opacity: 1; }
+}
+
+.splash-skip {
+    position: absolute;
+    bottom: 1.1rem;
+    right: 1.1rem;
+    z-index: 3;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #e2e8f0;
+    padding: 0.5rem 0.9rem;
+    border-radius: 0.6rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+.splash-skip:hover { background: rgba(255, 255, 255, 0.2); }
+
+@media (min-width: 768px) {
+    .splash-anchor { font-size: 7rem; }
+    .splash-title { font-size: 4.6rem; }
+    .splash-sub { font-size: 1.25rem; }
+    .splash-pawn { width: 56px; height: 86px; }
+}
+
+/* Movimento reduzido: sem animações (o JS também fecha o splash na hora). */
+@media (prefers-reduced-motion: reduce) {
+    .splash-wave, .splash-stage, .splash-anchor, .splash-title, .splash-sub, .splash-pawn {
+        animation: none !important;
     }
 }

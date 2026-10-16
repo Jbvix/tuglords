@@ -1,6 +1,13 @@
 import { gameState, TRAINING_QUESTIONS, CERTIFICATES, CERT_LABELS, CERTIFIED_FEE_MULTIPLIER, CARD_DECK, OCEAN_EVENTS, playerColors, playerIcons } from './state.js';
 import * as UI from './ui.js';
 import { Audio } from './audio.js';
+import { FX } from './effects.js';
+import { pickComment } from './commentary.js';
+
+// Narrador: mostra uma fala humorada do evento no banner do topo.
+function commentate(event, ctx) {
+    UI.showCommentary(pickComment(event, ctx));
+}
 
 // ========== TEMPOS DE ANIMAÇÃO ==========
 // Centralizados para ajuste fácil do ritmo do turno. Pensados para dar tempo
@@ -172,38 +179,39 @@ export function startGame() {
     // Garante o fundo musical (idempotente — já deve estar tocando desde a
     // tela inicial, mas reforça caso o áudio só inicialize agora).
     Audio.startMusic();
+
+    commentate('start');
 }
 
 export function rollDice() {
     if (gameState.diceRolled) return;
 
     const diceDisplay = document.getElementById('diceDisplay');
-    const dice = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
 
-    let rolls = 0;
+    // Ao lançar, o tabuleiro JÁ entra em modo 3D (inclina) e os dados 3D
+    // rolam no centro do tabuleiro.
+    UI.enterCinematic();
+    UI.renderDice3D(diceDisplay, 1, 1, true); // dois cubos girando
+    FX.haptic(15);
+
+    let frames = 0;
     const interval = setInterval(() => {
-        const rand1 = Math.floor(Math.random() * 6);
-        const rand2 = Math.floor(Math.random() * 6);
-        if (diceDisplay) diceDisplay.innerHTML = `${dice[rand1]} ${dice[rand2]}`;
         Audio.playDice();
-        rolls++;
+        frames++;
 
-        if (rolls > TIMING.diceFrames) {
+        if (frames > TIMING.diceFrames) {
             clearInterval(interval);
             const final1 = Math.floor(Math.random() * 6) + 1;
             const final2 = Math.floor(Math.random() * 6) + 1;
             const total = final1 + final2;
+            const isDouble = final1 === final2;
 
-            if (diceDisplay) {
-                diceDisplay.innerHTML = `
-                    <div style="display: flex; gap: 0.5rem; align-items: center; justify-content: center; flex-wrap: wrap;">
-                        <span>${dice[final1 - 1]}</span>
-                        <span>${dice[final2 - 1]}</span>
-                        <span style="font-size: 2rem; color: var(--accent-gold);">= ${total}</span>
-                    </div>
-                `;
-            }
+            // Os dados "pousam" no resultado.
+            UI.settleDice3D(diceDisplay, final1, final2, total, isDouble);
+            FX.haptic(isDouble ? [40, 40, 40] : 35);
 
+            const roller = gameState.players[gameState.currentPlayerIndex];
+            commentate(isDouble ? 'double' : 'roll', { player: roller.name });
             console.log(`🎲 Dados: ${final1} + ${final2} = ${total}`);
 
             // Trava a rolagem e o botão imediatamente, mas dá uma pausa para o
@@ -236,50 +244,83 @@ export function movePlayer(spaces) {
     if (rollBtn) rollBtn.disabled = true;
     if (endBtn) endBtn.disabled = true;
 
-    UI.showNotification(`🎲 ${direction === 1 ? 'Avançando' : 'Retrocedendo'} ${totalSteps} casas...`);
+    // Modo cinematográfico: tabuleiro inclina, aproxima e a câmera segue o pino.
+    const cine = UI.enterCinematic();
+    const ORBIT_MS = 1400; // duração do zoom-in 360° no peão
 
-    const moveInterval = setInterval(() => {
-        if (currentStep >= totalSteps) {
-            clearInterval(moveInterval);
+    // A sequência de pulos pelas casas (zoom-out mostrando o tabuleiro).
+    const beginStepping = () => {
+        const moveInterval = setInterval(stepTick, TIMING.moveStep);
+        function stepTick() {
+            if (currentStep >= totalSteps) {
+                clearInterval(moveInterval);
 
-            const finalPosition = currentPlayer.position;
-            const house = gameState.houses[finalPosition];
+                const finalPosition = currentPlayer.position;
+                const house = gameState.houses[finalPosition];
+
+                const currentHouseName = document.getElementById('currentHouseName');
+                if (currentHouseName) currentHouseName.textContent = house.name;
+
+                // Clímax da chegada: pulso na casa de destino + vibração.
+                UI.highlightLanding(finalPosition);
+                FX.haptic(30);
+                UI.showNotification(`${currentPlayer.icon} chegou em ${house.name}!`);
+
+                // Deixa a câmera repousar no destino e então volta à vista normal.
+                if (cine) setTimeout(() => UI.exitCinematic(), 750);
+
+                if (endBtn) endBtn.disabled = false;
+
+                setTimeout(() => showContextualActions(house), TIMING.arrivalPopup);
+                return;
+            }
+
+            currentStep++;
+            // Módulo seguro para posições negativas ao retroceder.
+            currentPlayer.position = (((startPosition + direction * currentStep) % len) + len) % len;
+            Audio.playMove();
+            FX.haptic(8); // tique sutil a cada casa
+
+            const stepHouse = gameState.houses[currentPlayer.position];
+
+            // Passagem pela partida (apenas avançando)
+            if (direction === 1 && currentPlayer.position === 0 && currentStep < totalSteps) {
+                currentPlayer.money += 4000;
+                FX.flash('rgba(34,197,94,0.25)', 300);
+                UI.showNotification(`🏁 ${currentPlayer.name} passou pela Partida! +R$4.000`);
+                commentate('pass', { player: currentPlayer.name });
+                UI.renderPlayersPanel();
+            }
+
+            UI.updatePlayerPositions();
+
+            // Câmera segue o pino e ele pula a casa.
+            if (cine) {
+                UI.cameraFollow(currentPlayer.position);
+                UI.hopActivePawn();
+            }
 
             const currentHouseName = document.getElementById('currentHouseName');
-            if (currentHouseName) currentHouseName.textContent = house.name;
-
-            UI.showNotification(`✅ ${currentPlayer.icon} chegou em ${house.name}!`);
-
-            if (endBtn) endBtn.disabled = false;
-
-            setTimeout(() => showContextualActions(house), TIMING.arrivalPopup);
-            return;
+            if (currentHouseName) currentHouseName.textContent = `→ ${stepHouse.name}`;
         }
 
-        currentStep++;
-        // Módulo seguro para posições negativas ao retroceder.
-        currentPlayer.position = (((startPosition + direction * currentStep) % len) + len) % len;
-        Audio.playMove();
-
-        const stepHouse = gameState.houses[currentPlayer.position];
-
-        // Passagem pela partida (apenas avançando)
-        if (direction === 1 && currentPlayer.position === 0 && currentStep < totalSteps) {
-            currentPlayer.money += 4000;
-            UI.showNotification(`🏁 ${currentPlayer.name} passou pela Partida! +R$4000`);
+        setTimeout(() => {
             UI.renderPlayersPanel();
-        }
+        }, totalSteps * TIMING.moveStep + 500);
+    };
 
-        UI.updatePlayerPositions();
-
-        const currentHouseName = document.getElementById('currentHouseName');
-        if (currentHouseName) currentHouseName.textContent = `→ ${stepHouse.name}`;
-
-    }, TIMING.moveStep);
-
-    setTimeout(() => {
-        UI.renderPlayersPanel();
-    }, totalSteps * TIMING.moveStep + 500);
+    if (cine) {
+        // 1) Zoom-in com giro de 360° no peão...
+        UI.cameraOrbit(startPosition);
+        // 2) ...depois zoom-out para a vista do tabuleiro e começa a pular as casas.
+        setTimeout(() => {
+            UI.endOrbit();
+            UI.cameraFollow(startPosition);
+            beginStepping();
+        }, ORBIT_MS);
+    } else {
+        beginStepping();
+    }
 }
 
 // ========== GAME LOGIC ACTIONS ==========
@@ -451,7 +492,10 @@ export function buyProperty(space) {
     currentPlayer.properties.push(space.name);
 
     UI.showNotification(`✅ ${space.name} adquirido!`);
+    commentate('buy', { player: currentPlayer.name, porto: space.name });
     Audio.playSuccess();
+    FX.flash('rgba(34,197,94,0.22)', 300);
+    FX.haptic([25, 30]);
     UI.renderPlayersPanel();
     UI.updatePlayerPositions(); // Updates ownership view
 
@@ -516,6 +560,26 @@ export function handleMandatoryPayment(player, amount, reason, recipient = null)
         if (recipient) recipient.money += amount;
         UI.showNotification(`💸 ${player.name} pagou R$${fmt(amount)} (${reason})`);
         Audio.playMoney();
+
+        // Narrador: comenta conforme o motivo do pagamento.
+        const r = (reason || '').toLowerCase();
+        if (r.includes('aluguel')) commentate('rent', { player: player.name, owner: recipient ? recipient.name : 'o dono' });
+        else if (r.includes('imposto') || r.includes('taxa')) commentate('tax', { player: player.name });
+        else if (r.includes('docagem')) commentate('dock', { player: player.name });
+
+        // Drama proporcional: pagamentos pesados (>=2k ou >=25% do caixa) sacodem a tela.
+        const heavy = amount >= 2000 || amount >= player.money * 0.25;
+        if (heavy) {
+            FX.shake();
+            FX.flash('rgba(239,68,68,0.28)', 350);
+            FX.haptic([30, 40, 30]);
+        } else {
+            FX.haptic(20);
+        }
+
+        // Alerta de maré baixa no caixa.
+        if (player.money < 3000) commentate('lowcash', { player: player.name });
+
         UI.renderPlayersPanel();
         return true;
     } else {
@@ -620,7 +684,17 @@ export function declareBankruptcy(player, creditor) {
     player.loans = [];
     player.stocks = {};
 
-    UI.showModal('💔 Falência', `<p>${player.name} foi eliminado!</p>`);
+    FX.shake();
+    FX.flash('rgba(239,68,68,0.45)', 500);
+    FX.haptic([60, 50, 60, 50, 120]);
+    commentate('bankrupt', { player: player.name });
+    UI.showModal('💔 Falência', `
+        <div style="text-align:center;">
+            <div style="font-size:3.5rem; margin-bottom:0.5rem;">💔⚓</div>
+            <p style="font-size:1.1rem;"><strong>${player.name}</strong> afundou!</p>
+            <p style="color:#94a3b8;">Eliminado da disputa pelo domínio portuário.</p>
+        </div>
+    `);
 
     UI.updatePlayerPositions();
     UI.renderPlayersPanel();
@@ -634,11 +708,18 @@ export function declareBankruptcy(player, creditor) {
 
 export function declareWinner(winner) {
     gameState.phase = 'ended';
+    FX.confetti(3000);
+    FX.flash('rgba(251,191,36,0.3)', 450);
+    FX.haptic([40, 60, 40, 60, 200]);
+    Audio.playSuccess();
+    commentate('win', { player: winner.name });
     UI.showModal('🏆 Vitória!', `
         <div style="text-align: center;">
-            <h1>${winner.icon} ${winner.name} Venceu!</h1>
-            <p>TugLord Supremo!</p>
-            <button class="btn-primary" onclick="location.reload()">Nova Partida</button>
+            <div class="fx-trophy" style="font-size: 4.5rem; margin-bottom: 0.5rem;">🏆</div>
+            <h1 style="color: var(--accent-gold); margin: 0;">${winner.icon} ${winner.name}</h1>
+            <p style="font-size: 1.15rem; font-weight: 800; color:#fbbf24; letter-spacing:0.5px;">TUGLORD SUPREMO!</p>
+            <p style="color:#94a3b8;">Dominou os mares e o mercado portuário. 👑</p>
+            <button class="btn-primary" style="width:100%; margin-top:1rem;" onclick="location.reload()">⚓ Nova Partida</button>
         </div>
     `, [], false);
 }
@@ -657,6 +738,7 @@ export function calculateRent(space, owner) {
 }
 
 export function triggerOceanEvent() {
+    commentate('ocean', { player: gameState.players[gameState.currentPlayerIndex].name });
     const event = OCEAN_EVENTS[Math.floor(Math.random() * OCEAN_EVENTS.length)];
 
     let buttons = [];
@@ -772,6 +854,7 @@ export function buyTraining(name, price, certificate) {
 }
 
 export function presentExam(certificate, trainingName, isFree) {
+    commentate('cert', { player: gameState.players[gameState.currentPlayerIndex].name });
     const questions = TRAINING_QUESTIONS[certificate];
     const exam = questions[Math.floor(Math.random() * questions.length)];
     const shuffledOptions = [...exam.options].sort(() => Math.random() - 0.5);
@@ -1156,6 +1239,7 @@ export function drawCard(type) {
 // As cartas são exibidas num MODAL (sempre visível, sobre o tabuleiro) para
 // garantir que apareçam em qualquer layout/tema/navegador.
 export function showCardPicker(type) {
+    commentate('luck', { player: gameState.players[gameState.currentPlayerIndex].name });
     const NUM_CARDS = 5;
     gameState._cardDraw = Array.from({ length: NUM_CARDS },
         () => CARD_DECK[Math.floor(Math.random() * CARD_DECK.length)]);
@@ -1254,6 +1338,7 @@ export function showContextualActions(house) {
                 class: 'btn-secondary'
             });
         } else if (owner.id === currentPlayer.id) {
+            commentate('own', { player: currentPlayer.name });
             body = `<p style="color: #22c55e;">✅ Você é o dono deste porto!</p>`;
             buttons.push({ text: 'Continuar', onClick: `closeModal()`, class: 'btn-primary' });
         } else {

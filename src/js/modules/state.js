@@ -1,3 +1,28 @@
+// ===== Agrupamento de portos por região (cores de "bairro", estilo Monopoly) =====
+export const REGION_COLORS = {
+    norte: '#10b981',     // verde
+    nordeste: '#f59e0b',  // âmbar
+    sudeste: '#ef4444',   // vermelho
+    sul: '#3b82f6'        // azul
+};
+
+const PORT_REGIONS = {
+    'Porto de Fortaleza': 'nordeste',
+    'Porto de Salvador': 'nordeste',
+    'Porto de Suape': 'nordeste',
+    'Porto de Santos': 'sudeste',
+    'Porto de Vitória': 'sudeste',
+    'Porto de Macaé': 'sudeste',
+    'Porto do Açu': 'sudeste',
+    'Porto de Itajaí': 'sul',
+    'Porto de Rio Grande': 'sul',
+    'Porto de Paranaguá': 'sul',
+    'Porto de Manaus': 'norte',
+    'Porto de Belém': 'norte',
+    'Porto de São Luís': 'norte',
+    'Porto de Vila do Conde': 'norte'
+};
+
 export const gameState = {
     players: [],
     currentPlayerIndex: 0,
@@ -47,7 +72,7 @@ export const gameState = {
         { name: 'Porto de São Luís', type: 'port', price: 10000, rent: [1000, 2000, 3800, 6000, 8800, 12000], icon: '🚤', actions: ['buy'] },
         { name: 'Taxa Portuária', type: 'tax', price: 2000, icon: '💸', actions: ['pay'] },
         { name: 'Porto de Vila do Conde', type: 'port', price: 9500, rent: [950, 1900, 3600, 5800, 8500, 11500], icon: '🚢', actions: ['buy'] }
-    ].map((h, i) => ({ ...h, pos: i }))
+    ].map((h, i) => ({ ...h, pos: i, region: PORT_REGIONS[h.name] }))
 };
 
 // Certificados de SEGURANÇA — OBRIGATÓRIOS para a vitória, rebocador oceânico

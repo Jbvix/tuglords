@@ -110,64 +110,106 @@ export const Audio = {
     },
 
     // Monta os instrumentos e a sequência do fundo musical (uma única vez).
-    // A reprodução em si é controlada pelo Tone.Transport em start/stopMusic.
+    // Trilha de AVENTURA MARÍTIMA animada: 124 BPM, baixo pulsante, arpejo,
+    // batida (bumbo + chimbal) e melodia marcante. A reprodução é controlada
+    // pelo Tone.Transport em start/stopMusic.
     _setupMusic() {
         if (this.musicReady || typeof Tone === 'undefined') return;
 
-        // Barramento próprio em volume baixo — fica abaixo dos efeitos sonoros.
-        this.musicBus = new Tone.Volume(-16).toDestination();
+        // Barramento próprio — mais presente (volume aumentado a pedido).
+        this.musicBus = new Tone.Volume(-6).toDestination();
 
-        // Pad de acordes: clima oceânico, ataque/relaxamento suaves.
+        // Pad de acordes (cama harmônica, discreto).
         this.padSynth = new Tone.PolySynth(Tone.Synth).connect(this.musicBus);
         this.padSynth.set({
-            oscillator: { type: "sine" },
-            envelope: { attack: 0.8, decay: 0.4, sustain: 0.6, release: 2.5 }
+            oscillator: { type: "sawtooth" },
+            envelope: { attack: 0.15, decay: 0.3, sustain: 0.4, release: 0.6 }
         });
-        this.padSynth.volume.value = -6;
+        this.padSynth.volume.value = -14;
 
-        // Baixo: sustenta a fundação harmônica.
+        // Baixo pulsante (colcheias) — motor rítmico.
         this.bassSynth = new Tone.Synth({
-            oscillator: { type: "triangle" },
-            envelope: { attack: 0.1, decay: 0.3, sustain: 0.7, release: 1.5 }
+            oscillator: { type: "sawtooth" },
+            envelope: { attack: 0.01, decay: 0.18, sustain: 0.2, release: 0.1 }
         }).connect(this.musicBus);
-        this.bassSynth.volume.value = -4;
+        this.bassSynth.volume.value = -3;
 
-        // Melodia: leve, à frente do pad.
+        // Arpejo rápido (semicolcheias) — brilho e energia.
+        this.arpSynth = new Tone.Synth({
+            oscillator: { type: "triangle" },
+            envelope: { attack: 0.005, decay: 0.08, sustain: 0, release: 0.08 }
+        }).connect(this.musicBus);
+        this.arpSynth.volume.value = -14;
+
+        // Melodia marcante à frente.
         this.leadSynth = new Tone.Synth({
-            oscillator: { type: "triangle" },
-            envelope: { attack: 0.05, decay: 0.2, sustain: 0.2, release: 0.8 }
+            oscillator: { type: "sawtooth" },
+            envelope: { attack: 0.01, decay: 0.15, sustain: 0.25, release: 0.2 }
         }).connect(this.musicBus);
-        this.leadSynth.volume.value = -10;
+        this.leadSynth.volume.value = -8;
 
-        // Progressão de 4 compassos em Lá menor (i – VI – III – VII): calma e marítima.
+        // Bateria: bumbo (four-on-the-floor) + chimbal nas contratempos.
+        this.kickSynth = new Tone.MembraneSynth({
+            octaves: 6, pitchDecay: 0.05,
+            envelope: { attack: 0.001, decay: 0.3, sustain: 0 }
+        }).connect(this.musicBus);
+        this.kickSynth.volume.value = -4;
+
+        this.hatSynth = new Tone.NoiseSynth({
+            noise: { type: "white" },
+            envelope: { attack: 0.001, decay: 0.03, sustain: 0 }
+        }).connect(this.musicBus);
+        this.hatSynth.volume.value = -20;
+
+        // Progressão Am – F – C – G (4 compassos), clássica e empolgante.
         const chords = [
-            ["A3", "C4", "E4"], // Am
-            ["F3", "A3", "C4"], // F
-            ["C4", "E4", "G4"], // C
-            ["G3", "B3", "D4"]  // G
+            ["A3", "C4", "E4"], ["F3", "A3", "C4"],
+            ["C4", "E4", "G4"], ["G3", "B3", "D4"]
         ];
-        const bassNotes = ["A2", "F2", "C3", "G2"];
-        let bar = 0;
+        const roots = ["A1", "F1", "C2", "G1"];
+        const fifths = ["E2", "C2", "G2", "D2"];
 
+        // Padrões pré-computados (4 compassos) — evitam disputa de estado.
+        const bass = [];
+        chords.forEach((c, b) => bass.push(roots[b], roots[b], fifths[b], roots[b], roots[b], fifths[b], roots[b], fifths[b]));
+        const arp = [];
+        chords.forEach(c => arp.push(c[0], c[1], c[2], c[1], c[2], c[1], c[0], c[1], c[0], c[1], c[2], c[1], c[2], c[1], c[0], c[2]));
+        const melody = [
+            "A4", null, "C5", "E5", "A5", null, "E5", "C5",
+            "F4", null, "A4", "C5", "F5", null, "C5", "A4",
+            "C5", "E5", "G5", null, "E5", "C5", "E5", null,
+            "G4", "B4", "D5", "G5", "D5", "B4", "G4", null
+        ];
+
+        let bar = 0;
         this.chordLoop = new Tone.Loop((time) => {
-            const i = bar % chords.length;
-            this.padSynth.triggerAttackRelease(chords[i], "1m", time, 0.5);
-            this.bassSynth.triggerAttackRelease(bassNotes[i], "2n", time, 0.7);
+            this.padSynth.triggerAttackRelease(chords[bar % 4], "2n", time, 0.3);
             bar++;
         }, "1m").start(0);
 
-        // Melodia em colcheias sobre os 4 compassos (null = pausa).
-        const melody = [
-            "E4", null, "A4", null, "C5", null, "B4", null,
-            "C5", null, "A4", null, "G4", null, "E4", null,
-            "E4", null, "G4", null, "C5", null, "E5", null,
-            "D5", null, "B4", null, "G4", null, "B4", "D5"
-        ];
-        this.melodySeq = new Tone.Sequence((time, note) => {
-            if (note) this.leadSynth.triggerAttackRelease(note, "8n", time, 0.6);
+        this.kickLoop = new Tone.Loop((time) => {
+            this.kickSynth.triggerAttackRelease("C1", "8n", time, 0.9);
+        }, "4n").start(0);
+
+        let hb = 0;
+        this.hatLoop = new Tone.Loop((time) => {
+            if (hb % 2 === 1) this.hatSynth.triggerAttackRelease("16n", time, 0.35);
+            hb++;
+        }, "8n").start(0);
+
+        this.bassSeq = new Tone.Sequence((time, n) => {
+            if (n) this.bassSynth.triggerAttackRelease(n, "8n", time, 0.85);
+        }, bass, "8n").start(0);
+
+        this.arpSeq = new Tone.Sequence((time, n) => {
+            if (n) this.arpSynth.triggerAttackRelease(n, "16n", time, 0.4);
+        }, arp, "16n").start(0);
+
+        this.melodySeq = new Tone.Sequence((time, n) => {
+            if (n) this.leadSynth.triggerAttackRelease(n, "8n", time, 0.55);
         }, melody, "8n").start(0);
 
-        Tone.Transport.bpm.value = 76;
+        Tone.Transport.bpm.value = 124;
         this.musicReady = true;
     },
 

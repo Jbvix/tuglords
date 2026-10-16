@@ -24,6 +24,22 @@
 </head>
 
 <body>
+    <!-- ========== SPLASH CINEMATOGRÁFICO ========== -->
+    <div id="splashScreen" class="splash" role="img" aria-label="Abertura TugLords">
+        <div class="splash-sea">
+            <div class="splash-wave w1"></div>
+            <div class="splash-wave w2"></div>
+            <div class="splash-wave w3"></div>
+        </div>
+        <div class="splash-stage">
+            <div class="splash-anchor">⚓</div>
+            <div class="splash-title">TUGLORDS</div>
+            <div class="splash-sub">Domínio Portuário</div>
+            <div class="splash-pawn" id="splashPawn"></div>
+        </div>
+        <button class="splash-skip" id="splashSkip" type="button">Pular ⏭</button>
+    </div>
+
     <!-- ========== TELA DE APRESENTAÇÃO ========== -->
     <div id="presentationScreen" class="setup-screen">
         <div class="setup-container" style="text-align: center;">
@@ -137,6 +153,15 @@
             </div>
         </div>
 
+        <!-- Placar ao vivo (ranking por patrimônio) -->
+        <div id="standingsStrip" class="standings-strip" aria-label="Placar ao vivo"></div>
+
+        <!-- Narrador / comentarista do jogo -->
+        <div id="commentaryBanner" class="commentary-banner" aria-live="polite">
+            <span class="commentary-mic">🎙️</span>
+            <span id="commentaryText" class="commentary-text">Bem-vindos ao TugLords! Que comecem as manobras! ⚓</span>
+        </div>
+
         <!-- Main Container -->
         <div class="game-container">
 
@@ -157,40 +182,36 @@
             <!-- Center - Game Board -->
             <div class="game-board-wrapper">
                 <div class="board-container">
-                    <!-- Visual Board - CENTRALIZADO -->
+                    <!-- Tabuleiro (logo TUGLORDS no centro preservado) -->
                     <div id="visualBoard" style="width: 100%; display: flex; justify-content: center;"></div>
 
-                    <!-- Game Controls - COMPACTO -->
-                    <div style="text-align: center; padding: 0.5rem; width: 100%; margin-top: 0;">
-                        <h2 style="font-size: 1.25rem; font-weight: 900; margin-bottom: 0.5rem; text-align: center;">
+                    <!-- Controles ABAIXO do tabuleiro (dados 3D + botões) -->
+                    <div style="text-align: center; padding: 0.5rem; width: 100%;">
+                        <h2 style="font-size: 1.25rem; font-weight: 900; margin-bottom: 0.4rem;">
                             🎲 Turno de <span id="currentTurnPlayer">Jogador</span>
                         </h2>
 
-                        <!-- Dice Display - CENTRALIZADO -->
+                        <!-- Dados 3D -->
                         <div id="diceDisplay"
-                            style="font-size: 2.5rem; margin: 0.5rem 0; display: flex; justify-content: center; align-items: center; gap: 0.5rem;">
+                            style="margin: 0.4rem 0 0.6rem; display: flex; justify-content: center; align-items: center; gap: 0.6rem; min-height: 48px;">
                             ⚀ ⚀
                         </div>
 
-                        <!-- Dice Button - CENTRALIZADO HORIZONTALMENTE -->
-                        <div
-                            style="margin-bottom: 0.75rem; display: flex; justify-content: center; align-items: center;">
-                            <button id="rollDiceBtn" class="btn-primary" onclick="rollDice()"
-                                style="font-size: 0.875rem; margin: 0 auto;">
+                        <div style="margin-bottom: 0.6rem; display: flex; justify-content: center;">
+                            <button id="rollDiceBtn" class="btn-primary" onclick="rollDice()" style="font-size: 0.875rem;">
                                 🎲 Jogar Dados
                             </button>
                         </div>
 
-                        <!-- Current Position Info - REDUZIDO -->
                         <div id="positionInfo"
-                            style="background: rgba(255,255,255,0.1); border-radius: 0.5rem; padding: 0.75rem; margin-bottom: 0.75rem;">
+                            style="background: rgba(255,255,255,0.1); border-radius: 0.5rem; padding: 0.6rem; margin-bottom: 0.6rem;">
                             <p id="currentHouseName"
                                 style="font-size: 1rem; color: var(--accent-gold); margin: 0; font-weight: 700;">
                                 Casa Inicial
                             </p>
                         </div>
 
-                        <!-- Contextual Actions (aparecem baseado na casa) - CENTRALIZADO -->
+                        <!-- Contextual Actions (aparecem baseado na casa) -->
                         <div id="contextualActions" style="display: none; justify-content: center;">
                             <div
                                 style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; max-width: 400px;">
@@ -198,8 +219,7 @@
                             </div>
                         </div>
 
-                        <!-- End Turn Button - CENTRALIZADO -->
-                        <div style="margin-top: 0.5rem; display: flex; justify-content: center;">
+                        <div style="margin-top: 0.3rem; display: flex; justify-content: center;">
                             <button id="endTurnBtn" class="btn-secondary" onclick="endTurn()"
                                 style="max-width: 220px; font-size: 0.875rem;">
                                 ➡️ Finalizar Turno
