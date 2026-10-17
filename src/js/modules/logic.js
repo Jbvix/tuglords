@@ -3,6 +3,13 @@ import * as UI from './ui.js';
 import { Audio } from './audio.js';
 import { FX } from './effects.js';
 import { pickComment } from './commentary.js';
+import { submitScore, fetchTopScores } from './ranking.js';
+
+// Escapa texto para inserção segura como conteúdo HTML (apelidos vêm do banco).
+function escapeHtml(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
 
 // Narrador: mostra uma fala humorada do evento no banner do topo.
 function commentate(event, ctx) {
@@ -719,7 +726,8 @@ export function declareWinner(winner) {
             <h1 style="color: var(--accent-gold); margin: 0;">${winner.icon} ${winner.name}</h1>
             <p style="font-size: 1.15rem; font-weight: 800; color:#fbbf24; letter-spacing:0.5px;">TUGLORD SUPREMO!</p>
             <p style="color:#94a3b8;">Dominou os mares e o mercado portuário. 👑</p>
-            <button class="btn-primary" style="width:100%; margin-top:1rem;" onclick="location.reload()">⚓ Nova Partida</button>
+            <button class="btn-primary" style="width:100%; margin-top:1rem;" onclick="promptSubmitScore(gameState.players.find(p => p.id === ${winner.id}))">🏆 Enviar ao Ranking</button>
+            <button class="btn-secondary" style="width:100%; margin-top:0.5rem;" onclick="location.reload()">⚓ Nova Partida</button>
         </div>
     `, [], false);
 }
@@ -1722,6 +1730,69 @@ export function exitGame() {
         { text: 'Sair sem Salvar', onClick: 'location.reload();', class: 'btn-secondary' },
         { text: 'Cancelar', onClick: 'closeModal();', class: 'btn-secondary' }
     ], true);
+}
+
+// ========== RANKING ONLINE ==========
+
+// Abre o modal do ranking e carrega os melhores placares.
+export async function showOnlineRanking() {
+    if (UI.closeAllPanels) UI.closeAllPanels();
+    UI.showModal('🏆 Ranking Online', '<p style="text-align:center;color:#94a3b8;">Carregando ranking... ⚓</p>', [], true);
+    try {
+        const rows = await fetchTopScores(20);
+        if (!rows || rows.length === 0) {
+            UI.showModal('🏆 Ranking Online',
+                '<p style="text-align:center;color:#94a3b8;">Ainda não há placares. Vença uma partida e seja o primeiro! 🥇</p>',
+                [{ text: 'Fechar', onClick: 'closeModal()', class: 'btn-primary' }], true);
+            return;
+        }
+        const list = rows.map((r, i) => {
+            const pos = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}º`;
+            return `<div style="display:flex;align-items:center;gap:0.6rem;padding:0.5rem 0.6rem;border-radius:0.5rem;background:rgba(255,255,255,0.05);margin-bottom:0.4rem;">
+                <span style="font-weight:800;width:34px;text-align:center;color:var(--accent-gold);">${pos}</span>
+                <span style="flex:1;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(r.nickname)}</span>
+                <span style="color:#22c55e;font-weight:800;white-space:nowrap;">R$ ${Number(r.score).toLocaleString('pt-BR')}</span>
+            </div>`;
+        }).join('');
+        UI.showModal('🏆 Ranking Online',
+            `<div style="max-height:58vh;overflow-y:auto;">${list}</div>`,
+            [{ text: 'Fechar', onClick: 'closeModal()', class: 'btn-primary' }], true);
+    } catch (e) {
+        UI.showModal('🏆 Ranking Online',
+            '<p style="text-align:center;color:#f87171;">Não foi possível carregar o ranking. Verifique sua conexão e tente de novo.</p>',
+            [{ text: 'Fechar', onClick: 'closeModal()', class: 'btn-primary' }], true);
+    }
+}
+
+// Pede o apelido do vencedor e oferece enviar o placar ao ranking.
+export function promptSubmitScore(winner) {
+    const w = winner || gameState.players[gameState.currentPlayerIndex];
+    const nick = w && w.name ? w.name : 'Jogador';
+    const score = w ? netWorth(w) : 0;
+    const rounds = gameState.currentRound;
+    const body = `
+        <p style="color:#cbd5e1;margin-top:0;">Eternize sua conquista no ranking online! 🏆</p>
+        <p style="color:#94a3b8;font-size:0.9rem;">Patrimônio: <strong style="color:#22c55e;">R$ ${fmt(score)}</strong> · Rodada ${rounds}</p>
+        <input id="rankNick" maxlength="24" value="${escapeHtml(nick)}" placeholder="Seu apelido"
+            style="width:100%;box-sizing:border-box;padding:0.6rem 0.75rem;border-radius:0.5rem;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:#e0e0e0;font-size:1rem;margin:0.4rem 0;" />`;
+    UI.showModal('🏆 Enviar ao Ranking', body, [
+        { text: '📤 Enviar placar', onClick: `submitMyScore(${score}, ${rounds})`, class: 'btn-primary' },
+        { text: 'Agora não', onClick: 'closeModal()', class: 'btn-secondary' }
+    ], true);
+}
+
+export async function submitMyScore(score, rounds) {
+    const input = document.getElementById('rankNick');
+    const nickname = (input && input.value.trim()) || 'Anônimo';
+    UI.closeModal();
+    try {
+        await submitScore({ nickname, score, rounds, won: true });
+        UI.showNotification('🏆 Placar enviado ao ranking!');
+        Audio.playSuccess();
+        setTimeout(showOnlineRanking, 500);
+    } catch (e) {
+        UI.showNotification('❌ Falha ao enviar (sem conexão?)');
+    }
 }
 
 // ========== COMPARTILHAMENTO ==========

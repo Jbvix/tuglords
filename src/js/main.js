@@ -65,6 +65,9 @@ window.toggleAudio = Logic.toggleAudio;
 window.showManualModal = UI.showManualModal;
 window.shareGame = Logic.shareGame;
 window.copyShareLink = Logic.copyShareLink;
+window.showOnlineRanking = Logic.showOnlineRanking;
+window.promptSubmitScore = Logic.promptSubmitScore;
+window.submitMyScore = Logic.submitMyScore;
 
 // Navigation
 window.showManual = UI.showManual;
