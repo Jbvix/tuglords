@@ -4,7 +4,7 @@
    - estáticos mesmo-origem: stale-while-revalidate (serve do cache e atualiza);
    - CDNs/externos: passam direto pela rede (áudio degrada sem Tone.js). */
 
-const CACHE = 'tuglords-v1';
+const CACHE = 'tuglords-v2';
 
 const CORE = [
   '/',
@@ -18,6 +18,7 @@ const CORE = [
   '/src/js/modules/audio.js',
   '/src/js/modules/effects.js',
   '/src/js/modules/commentary.js',
+  '/src/js/modules/ranking.js',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/apple-touch-icon.png'
