@@ -39,12 +39,12 @@ export const gameState = {
         { name: 'Banco', type: 'bank', icon: '🏦', actions: ['loan'] },
         { name: 'Loja de Rebocadores', type: 'tug_purchase', price: 10000, tugType: 'port', icon: '🛒', actions: ['buy'] }, // Added Shop
         { name: 'Carta Surpresa', type: 'surprise', icon: '🎁', actions: [] },
-        { name: 'SCHOTTEL', type: 'workshop', price: 8000, serviceFee: 1500, certificate: 'azimuth', icon: '🛠️', actions: ['buy'] },
+        { name: 'SCHOREL', type: 'workshop', price: 8000, serviceFee: 1500, certificate: 'azimuth', icon: '🛠️', actions: ['buy'] },
         { name: 'Canto Sorte', type: 'corner', icon: '🍀', actions: [] }, // Index 9
         // Side 2 (Left)
         { name: 'Porto de Salvador', type: 'port', price: 9000, rent: [900, 1800, 3500, 5500, 8000, 11000], icon: '⛵', actions: ['buy'] },
         { name: 'Evento Oceânico', type: 'event', icon: '🌊', actions: [] },
-        { name: 'CAT', type: 'workshop', price: 9000, serviceFee: 1800, certificate: 'diesel', icon: '🏭', actions: ['buy'] },
+        { name: 'KAT', type: 'workshop', price: 9000, serviceFee: 1800, certificate: 'diesel', icon: '🏭', actions: ['buy'] },
         { name: 'Porto de Vitória', type: 'port', price: 8500, rent: [850, 1700, 3200, 5200, 7800, 10500], icon: '🚤', actions: ['buy'] },
         { name: 'Universidade do Mar', type: 'university', icon: '🎓', actions: [] },
         { name: 'Porto de Macaé', type: 'port', price: 11000, rent: [1100, 2200, 4000, 6500, 9500, 13000], icon: '⛴️', actions: ['buy'] },
@@ -55,7 +55,7 @@ export const gameState = {
         // Side 3 (Top)
         { name: 'Porto de Itajaí', type: 'port', price: 9500, rent: [950, 1900, 3600, 5800, 8500, 11500], icon: '🛥️', actions: ['buy'] },
         { name: 'Evento Oceânico', type: 'event', icon: '🌊', actions: [] },
-        { name: 'MTU', type: 'workshop', price: 8500, serviceFee: 1600, certificate: 'highspeed', icon: '🔧', actions: ['buy'] },
+        { name: 'MDU', type: 'workshop', price: 8500, serviceFee: 1600, certificate: 'highspeed', icon: '🔧', actions: ['buy'] },
         { name: 'Porto de Rio Grande', type: 'port', price: 9000, rent: [900, 1800, 3500, 5500, 8000, 11000], icon: '🚤', actions: ['buy'] },
         { name: 'Bolsa de Valores', type: 'stock_exchange', icon: '📈', actions: ['invest'] },
         { name: 'Porto de Paranaguá', type: 'port', price: 10500, rent: [1050, 2100, 3900, 6200, 9000, 12500], icon: '⛴️', actions: ['buy'] },
@@ -80,7 +80,7 @@ export const gameState = {
 export const CERTIFICATES = ['fire', 'rescue', 'collision', 'abandon'];
 
 // Certificados TÉCNICOS — OPCIONAIS (bônus). Concedidos pelas oficinas
-// (SCHOTTEL/CAT/MTU) e pelo Treinamento, mediante exame técnico da área.
+// (SCHOREL/KAT/MDU) e pelo Treinamento, mediante exame técnico da área.
 export const TECH_CERTIFICATES = ['azimuth', 'diesel', 'highspeed', 'maneuver'];
 
 // Bônus dos certificados técnicos: uma oficina cujo DONO possui o certificado
@@ -188,10 +188,10 @@ export const TRAINING_QUESTIONS = {
     ],
 
     // ===== CERTIFICADOS TÉCNICOS (Oficinas/Treinamento) — OPCIONAIS =====
-    // SCHOTTEL — Propulsão Azimutal (Rudderpropeller / Z-drive)
+    // SCHOREL — Propulsão Azimutal (Rudderpropeller / Z-drive)
     azimuth: [
         {
-            question: "O que é um propulsor azimutal (Rudderpropeller), especialidade da SCHOTTEL?",
+            question: "O que é um propulsor azimutal (Rudderpropeller), especialidade da SCHOREL?",
             options: [
                 "Uma hélice de passo fixo em eixo único",
                 "Um propulsor que gira 360° fornecendo empuxo em qualquer direção",
@@ -221,7 +221,7 @@ export const TRAINING_QUESTIONS = {
             correct: "Na popa"
         }
     ],
-    // CAT (Caterpillar) — Motores Diesel marítimos
+    // KAT (Caterpillar) — Motores Diesel marítimos
     diesel: [
         {
             question: "Qual é o ciclo de funcionamento dos motores marítimos Caterpillar?",
@@ -254,10 +254,10 @@ export const TRAINING_QUESTIONS = {
             correct: "Circuito de arrefecimento (água)"
         }
     ],
-    // MTU — Motores diesel de alta rotação (Series 2000/4000)
+    // MDU — Motores diesel de alta rotação (Series 2000/4000)
     highspeed: [
         {
-            question: "Os motores mtu (Series 2000/4000) são classificados como diesel de qual categoria?",
+            question: "Os motores mdu (Series 2000/4000) são classificados como diesel de qual categoria?",
             options: [
                 "Baixa rotação a vapor",
                 "Alta rotação (high-speed)",
