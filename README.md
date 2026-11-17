@@ -41,6 +41,14 @@ Além de ser o último jogador não-falido, vence quem reunir: **4 certificados 
 
 ---
 
+## 📺 TugLords Clássico (TV)
+
+A versão para TV (pinos 3D, controle remoto, quiz) publicada em
+tuglords-tv.netlify.app fica na pasta [`tv-classico/`](tv-classico/).
+Veja o [CHANGELOG](CHANGELOG.md) para a origem das cópias publicadas.
+
+---
+
 ## 🌊 Sobre o Projeto
 
 **TUGLORDS** é um jogo de tabuleiro estratégico digital ambientado no competitivo mundo dos rebocadores marítimos brasileiros. Inspirado nos clássicos jogos de gestão econômica, TUGLORDS combina mecânicas de estratégia, gestão financeira e aleatoriedade controlada para criar uma experiência imersiva no universo náutico.
