@@ -1,0 +1,352 @@
+/* ====================================================================
+   TUGLORDS TV: layout 10 pés para 1920x1080 (LG webOS)
+   ==================================================================== */
+html { font-size: 20px; }
+body.tv { width: 1920px; height: 1080px; overflow: hidden; cursor: default; }
+
+/* Sem compartilhar/instalar na TV */
+#btnShareGame, #btnInstallPWA, [onclick^="shareGame"], [onclick^="installPWA"] { display: none !important; }
+
+/* Desfoque e sombras pesadas fora (GPU fraca da TV) */
+body.tv * { backdrop-filter: none !important; }
+
+/* ---------- Foco ---------- */
+.tv-focus {
+    outline: 6px solid #fbbf24 !important;
+    outline-offset: 4px !important;
+    box-shadow: 0 0 0 4px rgba(0,0,0,.6), 0 0 28px 6px rgba(251,191,36,.75) !important;
+    position: relative;
+    z-index: 7;
+}
+button.tv-focus, .tv-key.tv-focus { transform: scale(1.05); }
+:focus { outline: none; }
+.board-house.tv-focus, .board-corner.tv-focus { outline-offset: 0 !important; z-index: 8; }
+input.tv-editing { outline: 6px solid #22c55e !important; }
+
+/* ---------- Telas iniciais ---------- */
+#setupScreen, #presentationScreen, #manualScreen { height: 1080px; overflow-y: auto; box-sizing: border-box; }
+.setup-screen .setup-container { max-width: 1760px; width: 1760px; box-sizing: border-box; }
+.setup-screen button { min-height: 64px; font-size: 1.2rem !important; padding: .9rem 1.6rem !important; }
+.setup-actions { max-width: 520px !important; }
+#manualScreen .manual-content { max-height: 640px !important; font-size: 1.1rem; }
+.player-setup-list { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.player-setup-card { min-height: 90px; gap: .8rem; }
+.player-name-input { font-size: 1.25rem !important; min-height: 56px; width: 100%; }
+.player-setup-info { flex: 1 1 auto; min-width: 0; }
+#orderResults .order-item { font-size: 1.2rem; }
+#orderResults button { margin-top: 1rem; }
+.tv-reroll { min-height: 56px !important; font-size: 1rem !important; padding: .5rem 1rem !important; white-space: nowrap; }
+.btn-remove { min-width: 56px; min-height: 56px; font-size: 1.3rem; }
+.splash-skip { font-size: 1.4rem; padding: 1rem 2rem; }
+
+/* ---------- Tela do jogo: 3 colunas ---------- */
+#gameScreen { height: 1080px; overflow: hidden; }
+#gameScreen .standings-strip { padding: 8px 48px 0; }
+#gameScreen .commentary-banner { margin: 8px 48px 0; font-size: 1.05rem; }
+body.tv .game-container { display: flex; flex-direction: row !important; align-items: stretch;
+    gap: 24px; padding: 12px 48px 24px;
+    max-width: none; height: 950px; min-height: 0;
+    box-sizing: border-box;
+}
+body.tv #panelPlayers { order: 1; flex: 0 0 430px; width: 430px;
+    max-height: none; height: 100%;
+    position: relative; transform: none !important;
+}
+body.tv #panelPlayers .panel-content { max-height: 820px; overflow-y: auto; }
+body.tv #panelPlayers .panel-close, body.tv .panel-handle { display: none; }
+body.tv .game-board-wrapper { order: 2; flex: 1 1 auto; display: flex; align-items: center; justify-content: center;
+    min-width: 0;
+}
+body.tv .board-container { width: 100%; padding: 0; background: transparent; box-shadow: none; }
+body.tv .board-game { width: 880px; max-width: 880px; height: 880px; padding: 14px; gap: 6px; }
+body.tv .house-icon { font-size: 2rem; }
+body.tv .board-corner { font-size: 2.4rem; }
+body.tv .player-pawn { width: 36px; height: 54px; }
+body.tv .player-card { font-size: 1.05rem; }
+
+/* Coluna direita: turno, dados, ações e legenda do controle */
+.tv-side { order: 3; flex: 0 0 440px; width: 440px; display: flex; flex-direction: column;
+    gap: 16px; height: 100%;
+}
+.tv-turn { flex: 1 1 auto; overflow-y: auto;
+    background: rgba(15, 23, 42, .55); border-radius: 18px; padding: 22px !important;
+    border: 1px solid rgba(255,255,255,.08);
+}
+.tv-turn h2 { font-size: 1.5rem !important; }
+.tv-turn button { min-height: 64px; font-size: 1.2rem !important; width: 100%; max-width: none !important; }
+.tv-turn #rollDiceBtn { font-size: 1.4rem !important; }
+.tv-turn #diceDisplay { min-height: 110px !important; }
+.tv-turn .die-scene { --ds: 72px; }
+.tv-turn #contextualActions > div { max-width: none !important; grid-template-columns: 1fr !important; }
+.tv-turn #currentHouseName { font-size: 1.3rem !important; }
+.tv-legend { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.tv-key { display: flex; align-items: center; gap: 10px;
+    min-height: 58px; padding: 0 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,.15);
+    background: rgba(15,23,42,.7); color: #e2e8f0; font: 700 1.05rem 'Inter', sans-serif; cursor: pointer;
+}
+.tv-key i { width: 26px; height: 26px; border-radius: 6px; display: inline-block; flex: none; }
+.k-red i { background: #ef4444; } .k-green i { background: #22c55e; } .k-yellow i { background: #facc15; } .k-blue i { background: #3b82f6; }
+
+/* Banco lateral do desktop fica escondido (a tecla amarela abre o terminal) */
+body.tv #panelBank { display: none !important; }
+
+/* Menu (tecla azul) vira janela central */
+body.tv #panelMenu {
+    position: fixed !important; top: 50% !important; left: 50% !important; right: auto !important; bottom: auto !important;
+    width: 620px; max-height: 860px; display: none; transform: translate(-50%, -50%) !important;
+    z-index: 2100; border-radius: 20px;
+}
+body.tv #panelMenu.active { display: block; }
+body.tv #panelMenu button { min-height: 62px; font-size: 1.2rem; }
+body.tv .panel-overlay.active { z-index: 2050; }
+
+/* Modais maiores */
+body.tv .modal-overlay .modal, body.tv .modal-overlay > div { max-width: 1100px; font-size: 1.1rem; }
+body.tv .modal-overlay button { min-height: 60px; font-size: 1.15rem; }
+
+/* Notificações */
+body.tv .notification { font-size: 1.2rem; }
+
+/* ---------- Confirmação de saída ---------- */
+.tv-exit { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 6000;
+    background: rgba(2, 6, 23, .82); display: flex; align-items: center; justify-content: center; }
+.tv-exit-box { background: #1e3a5f; border: 2px solid #fbbf24; border-radius: 22px; padding: 44px 56px; text-align: center; color: #fff; min-width: 720px; }
+.tv-exit-box h2 { font-size: 2.2rem; margin: 0 0 12px; }
+.tv-exit-box p { font-size: 1.3rem; color: #cbd5e1; margin: 0 0 30px; }
+.tv-exit-actions { display: flex; gap: 20px; justify-content: center; }
+.tv-exit-actions button { min-height: 70px; min-width: 200px; font-size: 1.3rem; }
+
+/* ---------- Pinos 3D ---------- */
+#pins3d { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 45; }
+body.pins3d .player-pawn { -webkit-filter: none !important; filter: none !important; }
+body.pins3d .player-pawn svg { visibility: hidden; }
+.player-setup-info .player-name-input { -webkit-box-flex: 1; -webkit-flex: 1 1 auto; flex: 1 1 auto; width: auto; min-width: 0; }
+.player-setup-card .player-roll-result { min-width: 60px; }
+.player-setup-list { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+.player-setup-card { min-width: 0; }
+.player-setup-card .player-name-input { width: 380px !important; max-width: 380px; -webkit-box-flex: 0; -webkit-flex: none; flex: none; }
+.player-setup-card .player-roll-result { -webkit-box-flex: 0; -webkit-flex: none; flex: none; margin-left: auto; }
+.player-setup-card .player-name-input { width: 330px !important; max-width: 330px; }
+.player-setup-info { -webkit-box-flex: 0 !important; -webkit-flex: none !important; flex: none !important; }
+.setup-actions button { white-space: nowrap; }
+.player-setup-card { padding-right: .6rem !important; gap: .6rem !important; }
+
+/* Botão Pular do splash: canto inferior direito, dentro da área segura de 5% */
+body.tv #splashSkip.splash-skip {
+    position: fixed !important;
+    top: auto !important; left: auto !important;
+    right: 96px !important;   /* 5% de 1920 */
+    bottom: 54px !important;  /* 5% de 1080 */
+    margin: 0 !important;
+    -webkit-transform: none; transform: none;
+    z-index: 9999;
+    min-width: 200px; min-height: 64px;
+    padding: 0 28px !important;
+    font-size: 1.4rem !important; line-height: 64px;
+    background: rgba(15, 23, 42, .78);
+    border: 2px solid rgba(255, 255, 255, .35);
+    border-radius: 14px;
+}
+body.tv #splashSkip.splash-skip.tv-focus,
+body.tv #splashSkip.splash-skip:focus {
+    outline: 6px solid #fbbf24 !important; outline-offset: 4px !important;
+    box-shadow: 0 0 0 4px rgba(0,0,0,.6), 0 0 28px 6px rgba(251,191,36,.75) !important;
+    -webkit-transform: none !important; transform: none !important;
+}
+
+/* Setup: um jogador por linha, largura total, linhas compactas e iguais (sem flex gap) */
+body.tv #playerSetupList.player-setup-list {
+    display: block !important;
+    width: 1100px; max-width: 1100px; margin: 0 auto 18px auto;
+}
+body.tv #playerSetupList .player-setup-card {
+    display: -webkit-box; display: -webkit-flex; display: flex;
+    -webkit-box-align: center; -webkit-align-items: center; align-items: center;
+    width: 100%; box-sizing: border-box;
+    height: 90px; min-height: 90px; max-height: 90px;
+    margin: 0 0 12px 0; padding: 0 16px !important;
+    gap: 0 !important;
+}
+body.tv #playerSetupList .player-setup-card > * { margin-right: 14px; }
+body.tv #playerSetupList .player-setup-card > *:last-child { margin-right: 0; }
+body.tv #playerSetupList .player-setup-info {
+    display: -webkit-box; display: -webkit-flex; display: flex;
+    -webkit-box-align: center; -webkit-align-items: center; align-items: center;
+    -webkit-box-flex: 1 !important; -webkit-flex: 1 1 auto !important; flex: 1 1 auto !important;
+    min-width: 0; gap: 0 !important;
+}
+body.tv #playerSetupList .player-setup-info > span { margin-right: 14px; font-size: 2.2rem !important; }
+body.tv #playerSetupList .player-name-input {
+    -webkit-box-flex: 1; -webkit-flex: 1 1 auto; flex: 1 1 auto;
+    width: auto !important; max-width: none !important; min-width: 0; height: 60px;
+}
+body.tv #playerSetupList .player-roll-result { width: 80px; min-width: 80px; margin-left: 0; text-align: center; font-size: 1.3rem; }
+body.tv #playerSetupList .tv-reroll { width: 170px; }
+body.tv #playerSetupList .btn-remove { width: 60px; height: 60px; }
+body.tv #setupScreen .setup-actions {
+    display: block !important; width: 1100px; max-width: 1100px !important; margin: 0 auto !important; text-align: center;
+}
+body.tv #setupScreen .setup-actions button { display: inline-block; width: 420px; margin: 0 12px; gap: 0; }
+body.tv #setupScreen .setup-header { margin-bottom: 14px; }
+body.tv #orderResults { width: 1100px; margin: 0 auto; }
+
+/* ===== Área segura 5% (96px laterais, 54px topo/base) e escala ===== */
+html, body.tv { overflow: hidden !important; margin: 0; }
+body.tv { position: relative; min-height: 0 !important; max-width: 1920px; max-height: 1080px; }
+body.tv #gameScreen {
+    position: absolute; top: 0; left: 0; width: 1920px; height: 1080px;
+    padding: 54px 96px; box-sizing: border-box; overflow: hidden;
+}
+body.tv #gameScreen .standings-strip { padding: 0 !important; margin: 0 0 8px 0; height: 40px; overflow: hidden; white-space: nowrap; text-align: center; }
+body.tv #gameScreen .commentary-banner { margin: 0 0 12px 0 !important; height: 44px; box-sizing: border-box; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; max-width: 1728px; }
+body.tv .game-container {
+    width: 1728px !important; height: 860px !important; padding: 0 !important; margin: 0 !important;
+    gap: 0 !important; overflow: hidden;
+}
+body.tv #panelPlayers { -webkit-box-flex: 0; -webkit-flex: 0 0 400px; flex: 0 0 400px; width: 400px; height: 860px; margin-right: 22px; box-sizing: border-box; }
+body.tv #panelPlayers .panel-content { max-height: 790px; }
+body.tv .game-board-wrapper { -webkit-box-flex: 0; -webkit-flex: 0 0 860px; flex: 0 0 860px; width: 860px; height: 860px; margin-right: 22px; overflow: hidden; }
+body.tv .board-game { width: 850px !important; max-width: 850px !important; height: 850px !important; box-sizing: border-box; }
+body.tv .tv-side { -webkit-box-flex: 0; -webkit-flex: 0 0 424px; flex: 0 0 424px; width: 424px; height: 860px; gap: 0 !important; box-sizing: border-box; }
+body.tv .tv-turn { margin-bottom: 14px; box-sizing: border-box; }
+body.tv .tv-legend { gap: 0 !important; }
+body.tv .tv-legend .tv-key { margin: 0 0 10px 0; }
+body.tv .tv-legend .tv-key:nth-child(odd) { margin-right: 10px; }
+.tv-diag { margin: 16px 0 0; font-size: .8rem; color: #94a3b8; text-align: center; opacity: .8; }
+
+/* Topo: placar numa linha própria, narrador centralizado abaixo (sem sobrepor) */
+body.tv #gameScreen .standings-strip {
+    position: static !important; display: block !important; width: 1728px; height: 40px;
+    margin: 0 0 8px 0 !important; text-align: center; overflow: hidden; white-space: nowrap;
+    -webkit-transform: none !important; transform: none !important;
+}
+body.tv #gameScreen .standings-strip > * { display: inline-block; vertical-align: middle; margin: 0 5px; }
+body.tv #gameScreen .commentary-banner {
+    position: static !important; display: block !important;
+    width: 1100px !important; max-width: 1100px !important; margin: 0 auto 12px auto !important;
+    text-align: center; line-height: 44px; padding: 0 20px !important;
+    -webkit-transform: none !important; transform: none !important;
+}
+body.tv #gameScreen .commentary-banner > * { display: inline; vertical-align: middle; }
+
+/* Coluna direita sempre dentro da área segura */
+body.tv .tv-side, body.tv .tv-side * { box-sizing: border-box; }
+body.tv .tv-turn { width: 424px; max-width: 424px; overflow-x: hidden; }
+body.tv .tv-turn > * { max-width: 100%; }
+body.tv .tv-turn h2 { white-space: normal !important; word-wrap: break-word; overflow-wrap: break-word; font-size: 1.35rem !important; line-height: 1.25; }
+body.tv .tv-turn button, body.tv .tv-legend .tv-key { max-width: 100%; }
+body.tv .tv-legend .tv-key { width: 207px; }
+
+/* Grupo das 3 colunas centralizado com margens iguais */
+body.tv .game-container {
+    -webkit-box-pack: center !important; -webkit-justify-content: center !important; justify-content: center !important;
+    margin-left: auto !important; margin-right: auto !important;
+}
+body.tv #gameScreen { left: 0 !important; right: auto !important; margin: 0 !important; -webkit-transform: none !important; transform: none !important; }
+
+/* Foco dentro de janelas/menu: sem crescer e sem vazar por baixo do cabeçalho */
+body.tv .modal-overlay button.tv-focus, body.tv #panelMenu button.tv-focus,
+body.tv .sliding-panel button.tv-focus, body.tv .tv-exit button.tv-focus {
+    -webkit-transform: none !important; transform: none !important;
+    outline: 5px solid #fbbf24 !important; outline-offset: -5px !important;
+    box-shadow: 0 0 18px 2px rgba(251,191,36,.6) !important;
+}
+body.tv #panelMenu .panel-content { padding-top: 16px !important; padding-bottom: 16px !important; overflow-y: auto; max-height: 700px; }
+body.tv .modal-overlay .modal-body, body.tv .modal-overlay .modal-content { padding-top: 14px; }
+
+/* Desempenho na TV: tabuleiro fixo, sem balanço contínuo e casas sem sombras/filtros pesados */
+body.tv .board-game {
+    will-change: transform;
+    -webkit-transition: -webkit-transform .45s ease-out !important; transition: transform .45s ease-out !important;
+}
+body.tv .player-pawn.pawn-active .pawn-lift:not(.hop) { -webkit-animation: none !important; animation: none !important; }
+body.tv .board-house, body.tv .board-corner {
+    box-shadow: none !important; -webkit-filter: none !important; filter: none !important;
+    -webkit-transition: none !important; transition: none !important;
+}
+body.tv .board-house.owned { box-shadow: inset 0 0 0 2px var(--owner-color, transparent) !important; }
+
+/* Crédito discreto no canto inferior esquerdo (margem de baixo, fora dos painéis) */
+.tv-credito {
+    position: fixed; left: 96px; bottom: 16px; z-index: 5500;
+    font: 500 17px/1 'Inter', sans-serif; color: #fff; opacity: .4;
+    pointer-events: none; -webkit-user-select: none; user-select: none; white-space: nowrap;
+}
+
+/* Fundo azul garantido (com o body escalado o fundo não pode depender da propagação) */
+html { background: #1e3c72 !important; }
+body.tv { width: 1920px !important; height: 1080px !important; background: linear-gradient(135deg, #1e3c72, #2a5298) !important; }
+
+/* ===== Topo limpo (tv8): sem cabeçalho antigo, placar inteiro + narrador ===== */
+body.tv .mobile-header, body.tv #gameScreen > .mobile-header { display: none !important; }
+body.tv #gameScreen .standings-strip {
+    display: block !important; position: static !important;
+    width: 1728px !important; height: 48px !important; margin: 0 0 8px 0 !important; padding: 4px 0 !important;
+    box-sizing: border-box; background: none !important; border: 0 !important; box-shadow: none !important;
+    overflow: visible !important; text-align: center; white-space: nowrap; line-height: normal;
+}
+body.tv #gameScreen .standings-strip .standings-item {
+    display: -webkit-inline-box; display: -webkit-inline-flex; display: inline-flex;
+    -webkit-box-align: center; -webkit-align-items: center; align-items: center;
+    vertical-align: top; height: 38px; box-sizing: border-box; margin: 0 6px !important;
+    padding: 0 14px !important; font-size: 1rem !important; gap: 0 !important;
+    -webkit-transform: none !important; transform: none !important;
+    background: rgba(15, 23, 42, .7);
+}
+body.tv #gameScreen .standings-item > * { margin-right: 6px; }
+body.tv #gameScreen .standings-item > *:last-child { margin-right: 0; }
+body.tv .game-container { height: 852px !important; }
+body.tv #panelPlayers, body.tv .game-board-wrapper, body.tv .tv-side { height: 852px !important; }
+body.tv #panelPlayers .panel-content { max-height: 780px !important; }
+
+/* ===== Câmera (tv9): Drone segue o peão em close, Vista de cima sem close ===== */
+body.tv .board-game.cinematic.cam-drone {
+    -webkit-transform: perspective(1000px) rotateX(52deg) scale(1.9) translate(calc(-1 * var(--cam-x, 0px)), calc(-1 * var(--cam-y, 0px)));
+            transform: perspective(1000px) rotateX(52deg) scale(1.9) translate(calc(-1 * var(--cam-x, 0px)), calc(-1 * var(--cam-y, 0px)));
+}
+/* descida do drone antes dos pulos (sem passar do quadro) */
+body.tv .board-game.cinematic.cam-drone.orbiting {
+    -webkit-transform: perspective(1000px) rotateX(46deg) scale(2.15) translate(calc(-1 * var(--cam-x, 0px)), calc(-1 * var(--cam-y, 0px)));
+            transform: perspective(1000px) rotateX(46deg) scale(2.15) translate(calc(-1 * var(--cam-x, 0px)), calc(-1 * var(--cam-y, 0px)));
+}
+body.tv .board-game.cinematic.cam-top,
+body.tv .board-game.cinematic.cam-drone.cam-intro,
+body.tv .board-game.cinematic.cam-top.orbiting {
+    -webkit-transform: perspective(1400px) rotateX(34deg) scale(.9);
+            transform: perspective(1400px) rotateX(34deg) scale(.9);
+}
+body.tv .board-game.cinematic.cam-drone .pawn-stand { -webkit-transform: rotateX(-52deg); transform: rotateX(-52deg); }
+body.tv .board-game.cinematic.cam-drone.cam-intro .pawn-stand,
+body.tv .board-game.cinematic.cam-top .pawn-stand { -webkit-transform: rotateX(-34deg); transform: rotateX(-34deg); }
+body.tv .board-game.cinematic.cam-drone.orbiting .player-pawn.pawn-active .pawn-stand,
+body.tv .board-game.cinematic.cam-top.orbiting .player-pawn.pawn-active .pawn-stand { -webkit-animation: none; animation: none; }
+body.tv .board-game { -webkit-transition: -webkit-transform .45s cubic-bezier(.33,0,.2,1) !important; transition: transform .45s cubic-bezier(.33,0,.2,1) !important; }
+.tv-cam-aviso {
+    position: fixed; left: 50%; top: 120px; z-index: 6000; -webkit-transform: translateX(-50%); transform: translateX(-50%);
+    padding: 12px 28px; border-radius: 14px; background: rgba(15,23,42,.85); color: #fff;
+    font: 700 28px/1 'Inter', sans-serif; opacity: 0; -webkit-transition: opacity .25s; transition: opacity .25s; pointer-events: none;
+}
+.tv-cam-aviso.on { opacity: 1; }
+
+body.tv .tv-legend .tv-key.k-menu { width: 424px; grid-column: 1 / span 2; margin-right: 0 !important; -webkit-box-pack: center; -webkit-justify-content: center; justify-content: center; }
+body.tv .tv-legend .tv-key.k-menu i { background: none; font-style: normal; font-size: 24px; line-height: 26px; text-align: center; }
+
+/* ===== tv13: legenda em flex (Chromium 53 sem grid) com espaço para o anel de foco inteiro ===== */
+body.tv .tv-legend {
+    display: -webkit-box !important; display: -webkit-flex !important; display: flex !important;
+    -webkit-flex-wrap: wrap; flex-wrap: wrap; -webkit-box-pack: justify; -webkit-justify-content: space-between; justify-content: space-between;
+    padding: 14px 12px 4px 12px; overflow: visible !important; -webkit-flex-shrink: 0; flex-shrink: 0;
+}
+body.tv .tv-legend .tv-key { width: 190px !important; margin: 0 0 20px 0 !important; -webkit-box-flex: 0; -webkit-flex: 0 0 190px; flex: 0 0 190px; }
+body.tv .tv-legend .tv-key.k-menu { width: 400px !important; -webkit-flex: 0 0 400px; flex: 0 0 400px; margin-bottom: 14px !important; }
+body.tv .tv-legend .tv-key.k-menu i { display: -webkit-inline-box; display: -webkit-inline-flex; display: inline-flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center; width: auto; height: auto; }
+body.tv .tv-side { overflow: visible !important; }
+body.tv .tv-turn { padding: 14px 12px !important; }
+body.tv .sliding-panel .panel-content, body.tv #panelMenu .panel-content { padding-left: 16px !important; padding-right: 16px !important; }
+.tv-ico { display: inline-block; vertical-align: middle; -webkit-flex-shrink: 0; flex-shrink: 0; }
+body.tv .tv-cam-aviso .tv-ico { width: 30px; height: 30px; vertical-align: -5px; }
+/* anel cabe inteiro na coluna (sem scale que empurrava o contorno para fora) */
+body.tv .tv-legend .tv-key.tv-focus { -webkit-transform: none !important; transform: none !important; }
+body.tv .tv-legend { padding: 14px 16px 4px 16px !important; }
+body.tv .tv-legend .tv-key { width: 186px !important; -webkit-flex: 0 0 186px; flex: 0 0 186px; }
+body.tv .tv-legend .tv-key.k-menu { width: 392px !important; -webkit-flex: 0 0 392px; flex: 0 0 392px; }

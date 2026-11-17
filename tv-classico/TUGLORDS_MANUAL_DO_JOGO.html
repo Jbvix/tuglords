@@ -1,0 +1,1789 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TUGLORDS - Manual do Jogo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            padding: 3rem 2rem;
+            text-align: center;
+            border-radius: 1rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+        }
+
+        header h1 {
+            font-size: 4rem;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            font-size: 1.3rem;
+            color: #dbeafe;
+        }
+
+        nav {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            margin-bottom: 2rem;
+            position: sticky;
+            top: 1rem;
+            z-index: 100;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        nav a {
+            color: #60a5fa;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        nav a:hover {
+            background: #3b82f6;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        section {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        h2 {
+            color: #60a5fa;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 3px solid #3b82f6;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        h3 {
+            color: #93c5fd;
+            font-size: 1.8rem;
+            margin: 2rem 0 1rem 0;
+        }
+
+        h4 {
+            color: #bfdbfe;
+            font-size: 1.3rem;
+            margin: 1.5rem 0 0.75rem 0;
+        }
+
+        .card {
+            background: rgba(15, 23, 42, 0.6);
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-radius: 0.75rem;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .highlight {
+            background: rgba(59, 130, 246, 0.2);
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.25rem;
+            color: #93c5fd;
+            font-weight: 600;
+        }
+
+        .example {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid #10b981;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0.5rem;
+        }
+
+        .warning {
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid #ef4444;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0.5rem;
+        }
+
+        .info {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid #f59e0b;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        th {
+            background: #1e40af;
+            padding: 1rem;
+            text-align: left;
+            color: white;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        tr:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .icon {
+            font-size: 2rem;
+        }
+
+        ul, ol {
+            margin-left: 2rem;
+            margin-top: 0.5rem;
+        }
+
+        li {
+            margin: 0.5rem 0;
+        }
+
+        code {
+            background: rgba(59, 130, 246, 0.2);
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            color: #93c5fd;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: #3b82f6;
+            color: white;
+            border-radius: 1rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 0.25rem;
+        }
+
+        .badge.success {
+            background: #10b981;
+        }
+
+        .badge.danger {
+            background: #ef4444;
+        }
+
+        .badge.warning {
+            background: #f59e0b;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: #94a3b8;
+            margin-top: 3rem;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2.5rem;
+            }
+
+            nav ul {
+                flex-direction: column;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚓ TUGLORDS ⚓</h1>
+            <p>O Jogo de Tabuleiro de Rebocadores e Estratégia Marítima</p>
+            <p style="margin-top: 1rem; font-size: 1rem; color: #bfdbfe;">Versão 19.0 - Manual Completo</p>
+        </header>
+
+        <nav>
+            <ul>
+                <li><a href="#introducao">🎯 Introdução</a></li>
+                <li><a href="#objetivo">🏆 Objetivo</a></li>
+                <li><a href="#componentes">📦 Componentes</a></li>
+                <li><a href="#preparacao">🚀 Preparação</a></li>
+                <li><a href="#jogabilidade">🎮 Jogabilidade</a></li>
+                <li><a href="#propriedades">🏢 Propriedades</a></li>
+                <li><a href="#rebocadores">🚢 Rebocadores</a></li>
+                <li><a href="#certificados">🎓 Certificados</a></li>
+                <li><a href="#banco">🏦 Sistema Bancário</a></li>
+                <li><a href="#bolsa">📈 Bolsa de Valores</a></li>
+                <li><a href="#eventos">🌊 Eventos Oceânicos</a></li>
+                <li><a href="#falencia">⚖️ Falência</a></li>
+                <li><a href="#estrategias">💡 Estratégias</a></li>
+            </ul>
+        </nav>
+
+        <!-- INTRODUÇÃO -->
+        <section id="introducao">
+            <h2><span class="icon">🎯</span> Introdução</h2>
+            
+            <p>Bem-vindo ao <strong>TUGLORDS</strong>, o jogo de tabuleiro estratégico ambientado no competitivo mundo dos rebocadores marítimos brasileiros!</p>
+            
+            <div class="card">
+                <h4>🌊 Sobre o Jogo</h4>
+                <p>Em TUGLORDS, você assume o papel de um armador de rebocadores, competindo para construir o império marítimo mais lucrativo do Brasil. Compre portos estratégicos, expanda sua frota, obtenha certificações profissionais e domine os mares!</p>
+            </div>
+
+            <div class="grid">
+                <div class="card">
+                    <h4>👥 Jogadores</h4>
+                    <p><span class="highlight">2 a 6 jogadores</span></p>
+                    <p>Competição estratégica multiplayer</p>
+                </div>
+
+                <div class="card">
+                    <h4>⏱️ Duração</h4>
+                    <p><span class="highlight">30-60 minutos</span></p>
+                    <p>Partidas dinâmicas e competitivas</p>
+                </div>
+
+                <div class="card">
+                    <h4>🎲 Complexidade</h4>
+                    <p><span class="highlight">Média</span></p>
+                    <p>Fácil de aprender, difícil de dominar</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- OBJETIVO -->
+        <section id="objetivo">
+            <h2><span class="icon">🏆</span> Objetivo do Jogo</h2>
+            
+            <div class="card">
+                <h3>🎯 Como Vencer</h3>
+                <p>O objetivo é <strong>ser o último jogador ativo no jogo</strong>. Você vence eliminando todos os adversários através de:</p>
+                
+                <ul>
+                    <li><strong>Domínio Econômico:</strong> Construa um império de propriedades e rebocadores que gere renda passiva através de aluguéis</li>
+                    <li><strong>Gestão Financeira:</strong> Administre seu capital, empréstimos e investimentos com sabedoria</li>
+                    <li><strong>Falência Adversária:</strong> Force seus oponentes à falência cobrando aluguéis altos</li>
+                    <li><strong>Resistência:</strong> Sobreviva às tempestades econômicas e eventos oceânicos</li>
+                </ul>
+            </div>
+
+            <div class="warning">
+                <h4>⚠️ Condições de Eliminação</h4>
+                <p>Um jogador é eliminado quando:</p>
+                <ul>
+                    <li>Não consegue pagar uma dívida obrigatória (aluguel, taxas, multas)</li>
+                    <li>Mesmo liquidando TODOS os ativos, ainda não tem dinheiro suficiente</li>
+                    <li>Declara falência (bankruptcy stage 2)</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- COMPONENTES -->
+        <section id="componentes">
+            <h2><span class="icon">📦</span> Componentes do Jogo</h2>
+
+            <h3>🗺️ Tabuleiro</h3>
+            <div class="card">
+                <p><strong>36 casas</strong> dispostas em circuito fechado, incluindo:</p>
+                <ul>
+                    <li><span class="badge">20</span> Propriedades (Portos e Oficinas)</li>
+                    <li><span class="badge">6</span> Casas de Rebocadores</li>
+                    <li><span class="badge">4</span> Casas de Treinamento</li>
+                    <li><span class="badge">6</span> Casas Especiais (Banco, Bolsa, Eventos, etc.)</li>
+                </ul>
+            </div>
+
+            <h3>🎲 Peças e Tokens</h3>
+            <table>
+                <tr>
+                    <th>Componente</th>
+                    <th>Quantidade</th>
+                    <th>Função</th>
+                </tr>
+                <tr>
+                    <td>🎲 Dados (2)</td>
+                    <td>2</td>
+                    <td>Movimento (soma = 2 a 12 casas)</td>
+                </tr>
+                <tr>
+                    <td>⚓ Tokens de Jogador</td>
+                    <td>6</td>
+                    <td>Identificação no tabuleiro</td>
+                </tr>
+                <tr>
+                    <td>💰 Dinheiro Inicial</td>
+                    <td>-</td>
+                    <td>F$ 1,5 mi por jogador</td>
+                </tr>
+                <tr>
+                    <td>🏪 Propriedades</td>
+                    <td>20</td>
+                    <td>Portos e Oficinas</td>
+                </tr>
+                <tr>
+                    <td>🚢 Rebocadores</td>
+                    <td>Ilimitado</td>
+                    <td>3 tipos (Porto, Oceânico, TugLord)</td>
+                </tr>
+                <tr>
+                    <td>🎓 Certificados</td>
+                    <td>4 tipos</td>
+                    <td>Treinamentos profissionais</td>
+                </tr>
+                <tr>
+                    <td>🍀 Cartas de Sorte</td>
+                    <td>14</td>
+                    <td>Eventos aleatórios</td>
+                </tr>
+            </table>
+
+            <h3>💵 Sistema Monetário</h3>
+            <div class="card">
+                <p>A moeda do jogo é o <span class="highlight">Farolin (F$)</span></p>
+                <ul>
+                    <li><strong>Saldo Inicial:</strong> F$ 1,5 mi por jogador</li>
+                    <li><strong>Salário (Partida):</strong> F$ 200 mil ao passar/parar</li>
+                    <li><strong>Frete do Rebocador Oceânico:</strong> quem tem Rebocador Oceânico recebe F$ 3 mi cada vez que passa ou para na Largada (F$ 4,5 mi na reta final)</li>
+                    <li><strong>Empréstimos:</strong> desativados nesta versão (TugLords v2). Sem caixa, venda ativos ao Banco por 70% do preço de loja, incluindo o TugLord.</li>
+                    <li><strong>Valores de Propriedades:</strong> F$ 60 mil a F$ 1,1 mi</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- PREPARAÇÃO -->
+        <section id="preparacao">
+            <h2><span class="icon">🚀</span> Preparação do Jogo</h2>
+
+            <h3>1️⃣ Configuração Inicial</h3>
+            <div class="card">
+                <ol>
+                    <li><strong>Adicione os Jogadores:</strong> De 2 a 6 jogadores
+                        <ul>
+                            <li>Cada jogador escolhe um nome e cor</li>
+                            <li>Todos recebem F$ 1,5 mi inicial</li>
+                            <li>Todos começam na casa PARTIDA (posição 0)</li>
+                        </ul>
+                    </li>
+                    <li><strong>Organize o Tabuleiro:</strong>
+                        <ul>
+                            <li>Todas as propriedades começam sem dono</li>
+                            <li>Embaralhe as cartas de Sorte</li>
+                            <li>Prepare os dados</li>
+                        </ul>
+                    </li>
+                    <li><strong>Determine a Ordem:</strong>
+                        <ul>
+                            <li>Cada jogador rola os dados uma vez</li>
+                            <li>Maior valor joga primeiro</li>
+                            <li>Turnos seguem no sentido horário</li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+
+            <h3>2️⃣ Estrutura Inicial do Jogador</h3>
+            <table>
+                <tr>
+                    <th>Atributo</th>
+                    <th>Valor Inicial</th>
+                </tr>
+                <tr>
+                    <td>💰 Dinheiro</td>
+                    <td>F$ 1,5 mi</td>
+                </tr>
+                <tr>
+                    <td>📍 Posição</td>
+                    <td>0 (Partida)</td>
+                </tr>
+                <tr>
+                    <td>🏢 Propriedades</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td>🚢 Rebocadores</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td>🎓 Certificados</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td>🏦 Empréstimos</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td>📈 Ações</td>
+                    <td>0</td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- JOGABILIDADE -->
+        <section id="jogabilidade">
+            <h2><span class="icon">🎮</span> Jogabilidade</h2>
+
+            <h3>🔄 Estrutura do Turno</h3>
+            <div class="card">
+                <h4>Cada turno consiste em:</h4>
+                <ol>
+                    <li><strong>Início do Turno</strong>
+                        <ul>
+                            <li>Pagamento de dividendos (se tiver propriedades)</li>
+                            <li>Verificação de docagem (rebocadores retornam após 3 turnos)</li>
+                            <li>Verificação de skip turn (eventos oceânicos)</li>
+                        </ul>
+                    </li>
+                    <li><strong>Rolar os Dados</strong>
+                        <ul>
+                            <li>Clique em "Rolar Dados"</li>
+                            <li>Soma dos 2 dados = movimento (2-12 casas)</li>
+                        </ul>
+                    </li>
+                    <li><strong>Movimento</strong>
+                        <ul>
+                            <li>Avance o número de casas indicado</li>
+                            <li>Se passar pela PARTIDA: receba F$ 200 mil</li>
+                        </ul>
+                    </li>
+                    <li><strong>Ação da Casa</strong>
+                        <ul>
+                            <li>Execute a ação obrigatória (aluguel, taxa)</li>
+                            <li>OU escolha uma ação opcional (comprar, treinar)</li>
+                        </ul>
+                    </li>
+                    <li><strong>Fim do Turno</strong>
+                        <ul>
+                            <li>Clique em "Finalizar Turno"</li>
+                            <li>Passa para o próximo jogador</li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+
+            <h3>🏠 Tipos de Casas</h3>
+            <div class="grid">
+                <div class="card">
+                    <h4>🏢 PROPRIEDADES</h4>
+                    <p><span class="badge">Portos</span> <span class="badge">Oficinas</span></p>
+                    <ul>
+                        <li><strong>Sem dono:</strong> Pode comprar</li>
+                        <li><strong>Seu dono:</strong> Nenhuma ação</li>
+                        <li><strong>Outro dono:</strong> Paga aluguel</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h4>🚢 REBOCADORES</h4>
+                    <p><span class="badge success">Porto</span> <span class="badge warning">Oceânico</span> <span class="badge danger">TugLord</span></p>
+                    <ul>
+                        <li>Compre rebocadores</li>
+                        <li>Aumentam aluguéis</li>
+                        <li>Podem ser docados</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h4>🎓 TREINAMENTO</h4>
+                    <p><span class="badge">4 certificados</span></p>
+                    <ul>
+                        <li>Faça exames (F$ 100 mil)</li>
+                        <li>2 questões por tipo</li>
+                        <li>Necessário para TugLord</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h4>🏦 BANCO</h4>
+                    <p><span class="badge">Empréstimos</span></p>
+                    <ul>
+                        <li>Pegue empréstimos</li>
+                        <li>Pague dívidas</li>
+                        <li>Liquide ativos</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h4>📈 BOLSA DE VALORES</h4>
+                    <p><span class="badge">Ações</span></p>
+                    <ul>
+                        <li>Compre ações (30% do preço)</li>
+                        <li>Receba dividendos</li>
+                        <li>Renda passiva</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h4>🌊 EVENTOS OCEÂNICOS</h4>
+                    <p><span class="badge warning">10 eventos</span></p>
+                    <ul>
+                        <li>Eventos aleatórios</li>
+                        <li>Riscos e recompensas</li>
+                        <li>Escolhas estratégicas</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h4>🍀 SORTE</h4>
+                    <p><span class="badge">14 cartas</span></p>
+                    <ul>
+                        <li>Cartas aleatórias</li>
+                        <li>Dinheiro e movimento</li>
+                        <li>Rolar de novo</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h4>🏗️ ESTALEIRO</h4>
+                    <p><span class="badge danger">Docagem</span></p>
+                    <ul>
+                        <li>Docagem OBRIGATÓRIA</li>
+                        <li>F$ 75 mil ao dono/banco</li>
+                        <li>3 turnos parados</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h4>⚓ ZONA DE MANOBRA</h4>
+                    <p><span class="badge">Penalidade</span></p>
+                    <ul>
+                        <li>F$ 100 mil por adversário</li>
+                        <li>Com rebocadores</li>
+                        <li>Isento se não tem tugs</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>🎲 Movimento Especial</h3>
+            <div class="example">
+                <h4>📍 Passando pela PARTIDA</h4>
+                <p><strong>Ao passar ou parar na casa PARTIDA:</strong></p>
+                <ul>
+                    <li>Receba <span class="highlight">F$ 200 mil</span> (salário)</li>
+                    <li>Creditado automaticamente</li>
+                    <li>Pode passar múltiplas vezes por jogo</li>
+                </ul>
+                
+                <p><strong>Exemplo:</strong></p>
+                <code>
+                    Posição 34 + Rola 8 = Posição 6<br>
+                    Passou pela Partida (pos 0) → +F$ 200 mil
+                </code>
+            </div>
+        </section>
+
+        <!-- PROPRIEDADES -->
+        <section id="propriedades">
+            <h2><span class="icon">🏢</span> Sistema de Propriedades</h2>
+
+            <h3>🏪 Tipos de Propriedades</h3>
+            
+            <div class="card">
+                <h4>⚓ PORTOS (16 propriedades)</h4>
+                <p>Propriedades principais que geram aluguel baseado em rebocadores</p>
+                
+                <table>
+                    <tr>
+                        <th>Grupo</th>
+                        <th>Cor</th>
+                        <th>Propriedades</th>
+                        <th>Preço</th>
+                        <th>Aluguel Base</th>
+                    </tr>
+                    <tr>
+                        <td>Costa Norte</td>
+                        <td style="background: #8b5cf6;">🟣 Roxo</td>
+                        <td>Fortaleza, Belém</td>
+                        <td>F$ 60 mil-80 mil</td>
+                        <td>F$ 2 mil-4 mil</td>
+                    </tr>
+                    <tr>
+                        <td>Nordeste</td>
+                        <td style="background: #06b6d4;">🔵 Ciano</td>
+                        <td>Recife, Maceió, Salvador</td>
+                        <td>F$ 100 mil-140 mil</td>
+                        <td>F$ 6 mil-10 mil</td>
+                    </tr>
+                    <tr>
+                        <td>Sudeste</td>
+                        <td style="background: #ef4444;">🔴 Vermelho</td>
+                        <td>Vitória, Rio de Janeiro, Santos</td>
+                        <td>F$ 180 mil-340 mil</td>
+                        <td>F$ 14 mil-34 mil</td>
+                    </tr>
+                    <tr>
+                        <td>Sul</td>
+                        <td style="background: #f59e0b;">🟠 Laranja</td>
+                        <td>Paranaguá, Itajaí, Rio Grande</td>
+                        <td>F$ 300 mil-400 mil</td>
+                        <td>F$ 26 mil-50 mil</td>
+                    </tr>
+                    <tr>
+                        <td>Premium</td>
+                        <td style="background: #10b981;">🟢 Verde</td>
+                        <td>Suape, Itaguaí, Imbituba</td>
+                        <td>F$ 180 mil-700 mil</td>
+                        <td>F$ 18 mil-70 mil</td>
+                    </tr>
+                    <tr>
+                        <td>Elite</td>
+                        <td style="background: #fbbf24;">🟡 Amarelo</td>
+                        <td>Açu, Itapoá</td>
+                        <td>F$ 1 mi-1,1 mi</td>
+                        <td>F$ 90 mil-100 mil</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="card">
+                <h4>🔧 OFICINAS (4 propriedades)</h4>
+                <p>Propriedades especializadas com aluguel fixo alto</p>
+                
+                <ul>
+                    <li><strong>Oficina de Fortaleza:</strong> F$ 150 mil (aluguel F$ 50 mil)</li>
+                    <li><strong>Oficina do Recife:</strong> F$ 150 mil (aluguel F$ 50 mil)</li>
+                    <li><strong>Oficina de Santos:</strong> F$ 200 mil (aluguel F$ 100 mil)</li>
+                    <li><strong>Oficina de Itajaí:</strong> F$ 200 mil (aluguel F$ 100 mil)</li>
+                </ul>
+                
+                <div class="info">
+                    <strong>📝 Nota:</strong> Oficinas têm aluguel FIXO que NÃO aumenta com rebocadores
+                </div>
+            </div>
+
+            <h3>💰 Sistema de Aluguéis</h3>
+            
+            <div class="card">
+                <h4>📊 Níveis de Aluguel (Portos)</h4>
+                <p>O aluguel aumenta baseado nos rebocadores do dono:</p>
+                
+                <table>
+                    <tr>
+                        <th>Nível</th>
+                        <th>Condição</th>
+                        <th>Multiplicador</th>
+                        <th>Exemplo (base F$ 10 mil)</th>
+                    </tr>
+                    <tr>
+                        <td>0</td>
+                        <td>Sem rebocadores</td>
+                        <td>rent[0]</td>
+                        <td>F$ 10 mil</td>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td>1 rebocador porto</td>
+                        <td>rent[1]</td>
+                        <td>F$ 30 mil</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>2+ rebocadores porto</td>
+                        <td>rent[2]</td>
+                        <td>F$ 90 mil</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>+ Rebocador oceânico</td>
+                        <td>rent[3]</td>
+                        <td>F$ 270 mil</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>+ TugLord</td>
+                        <td>rent[4]</td>
+                        <td>F$ 600 mil</td>
+                    </tr>
+                </table>
+
+                <div class="example">
+                    <h4>💡 Exemplo Prático: Porto de Santos</h4>
+                    <code>
+                        Preço: F$ 340 mil<br>
+                        Aluguel base: F$ 34 mil<br>
+                        <br>
+                        Sem rebocadores: F$ 34 mil<br>
+                        1 porto: F$ 100 mil<br>
+                        2 portos: F$ 300 mil<br>
+                        2 portos + oceânico: F$ 900 mil<br>
+                        2 portos + oceânico + TugLord: F$ 2 mi 🔥
+                    </code>
+                </div>
+            </div>
+
+            <h3>🏪 Comprando Propriedades</h3>
+            <div class="card">
+                <h4>Regras de Compra:</h4>
+                <ol>
+                    <li><strong>Disponibilidade:</strong> Propriedade deve estar sem dono</li>
+                    <li><strong>Dinheiro:</strong> Você deve ter o valor total</li>
+                    <li><strong>Momento:</strong> Apenas quando cair na casa</li>
+                    <li><strong>Pagamento:</strong> Débito imediato ao banco</li>
+                    <li><strong>Propriedade:</strong> Registrada no seu nome</li>
+                </ol>
+
+                <div class="info">
+                    <strong>💡 Estratégia:</strong> Compre propriedades do mesmo grupo/cor para maximizar sinergias!
+                </div>
+            </div>
+
+            <h3>📈 Bolsa de Valores</h3>
+            <div class="card">
+                <h4>Comprando Ações de Propriedades</h4>
+                <p>Na Bolsa de Valores (posição 2), você pode comprar ações de propriedades de OUTROS jogadores:</p>
+                
+                <ul>
+                    <li><strong>Preço da Ação:</strong> 30% do preço da propriedade</li>
+                    <li><strong>Limite:</strong> 5 ações por propriedade</li>
+                    <li><strong>Dividendo:</strong> 50% do aluguel base (rent[0])</li>
+                    <li><strong>Pagamento:</strong> Automático no início do turno do dono</li>
+                </ul>
+
+                <div class="example">
+                    <h4>📊 Exemplo: Ações do Porto de Suape</h4>
+                    <code>
+                        Preço propriedade: F$ 180 mil<br>
+                        Preço ação: F$ 54 mil (30%)<br>
+                        Aluguel base: F$ 18 mil<br>
+                        Dividendo: F$ 9 mil/turno (50%)<br>
+                        <br>
+                        Compra 2 ações = F$ 108 mil<br>
+                        Recebe F$ 18 mil/turno (2 × F$ 9 mil)<br>
+                        ROI: 6 turnos
+                    </code>
+                </div>
+            </div>
+        </section>
+
+        <!-- REBOCADORES -->
+        <section id="rebocadores">
+            <h2><span class="icon">🚢</span> Sistema de Rebocadores</h2>
+
+            <h3>🚢 Tipos de Rebocadores</h3>
+            
+            <div class="grid">
+                <div class="card">
+                    <h4>⚓ REBOCADOR DE PORTO</h4>
+                    <p><span class="badge success">Entrada</span></p>
+                    <ul>
+                        <li><strong>Preço:</strong> F$ 200 mil</li>
+                        <li><strong>Efeito:</strong> Aumenta aluguel para nível 1-2</li>
+                        <li><strong>Casas:</strong> Posições 5, 13, 17, 29</li>
+                        <li><strong>Limite:</strong> Ilimitado</li>
+                    </ul>
+                    <div class="info">
+                        <strong>Estratégia:</strong> Essencial para começar! 2 já ativam nível 2 (×3 aluguel)
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h4>🌊 REBOCADOR OCEÂNICO</h4>
+                    <p><span class="badge warning">Avançado</span></p>
+                    <ul>
+                        <li><strong>Preço:</strong> F$ 500 mil</li>
+                        <li><strong>Efeito:</strong> Aumenta aluguel para nível 3</li>
+                        <li><strong>Casas:</strong> Posições 22, 25</li>
+                        <li><strong>Limite:</strong> 1 por jogador</li>
+                    </ul>
+                    <div class="warning">
+                        <strong>Requisito:</strong> Precisa ter pelo menos 2 rebocadores de porto
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h4>⭐ TUGLORD</h4>
+                    <p><span class="badge danger">Elite</span></p>
+                    <ul>
+                        <li><strong>Preço:</strong> F$ 750 mil</li>
+                        <li><strong>Efeito:</strong> Aumenta aluguel para nível 4 (máximo!)</li>
+                        <li><strong>Casa:</strong> Posição 9</li>
+                        <li><strong>Limite:</strong> 1 por jogador</li>
+                    </ul>
+                    <div class="warning">
+                        <strong>Requisitos Múltiplos:</strong>
+                        <ul>
+                            <li>2+ rebocadores de porto</li>
+                            <li>1 rebocador oceânico</li>
+                            <li>4 certificados completos</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <h3>⚓ Sistema de Docagem</h3>
+            
+            <div class="card">
+                <h4>🏗️ Estaleiro (Posições 21, 32)</h4>
+                <p>Quando você cai no Estaleiro e possui rebocadores operacionais:</p>
+                
+                <ol>
+                    <li><strong>Docagem OBRIGATÓRIA</strong>
+                        <ul>
+                            <li>Você DEVE docar pelo menos 1 rebocador</li>
+                            <li>Escolha qual tipo docar</li>
+                            <li>Não pode recusar se tiver tugs</li>
+                        </ul>
+                    </li>
+                    <li><strong>Custo de Docagem</strong>
+                        <ul>
+                            <li>F$ 75 mil ao dono do estaleiro</li>
+                            <li>F$ 75 mil ao banco se sem dono</li>
+                        </ul>
+                    </li>
+                    <li><strong>Duração</strong>
+                        <ul>
+                            <li>3 turnos completos</li>
+                            <li>Countdown no painel do jogador</li>
+                        </ul>
+                    </li>
+                    <li><strong>Efeito nos Aluguéis</strong>
+                        <ul>
+                            <li>Rebocadores docados NÃO contam</li>
+                            <li>Aluguéis caem temporariamente</li>
+                            <li>Retornam após 3 turnos</li>
+                        </ul>
+                    </li>
+                </ol>
+
+                <div class="example">
+                    <h4>📋 Exemplo de Docagem</h4>
+                    <code>
+                        Jogador 1 tem: 2 portos + 1 oceânico + 1 TugLord<br>
+                        Aluguel atual: Nível 4 (máximo)<br>
+                        <br>
+                        Cai no Estaleiro:<br>
+                        ├─ [Escolhe docar 1 rebocador de porto]<br>
+                        ├─ Paga F$ 75 mil<br>
+                        ├─ turnsRemaining = 3<br>
+                        └─ Novo aluguel: Nível 3 (sem 1 porto)<br>
+                        <br>
+                        Após 3 turnos:<br>
+                        └─ Rebocador retorna! Volta ao nível 4
+                    </code>
+                </div>
+            </div>
+
+            <h3>📊 Progressão de Frota</h3>
+            
+            <div class="card">
+                <h4>🎯 Rota Recomendada:</h4>
+                <table>
+                    <tr>
+                        <th>Fase</th>
+                        <th>Investimento</th>
+                        <th>Efeito</th>
+                        <th>Custo Total</th>
+                    </tr>
+                    <tr>
+                        <td>1. Básico</td>
+                        <td>1 rebocador porto</td>
+                        <td>Aluguel nível 1</td>
+                        <td>F$ 200 mil</td>
+                    </tr>
+                    <tr>
+                        <td>2. Intermediário</td>
+                        <td>+1 rebocador porto</td>
+                        <td>Aluguel nível 2</td>
+                        <td>F$ 400 mil</td>
+                    </tr>
+                    <tr>
+                        <td>3. Avançado</td>
+                        <td>+1 rebocador oceânico</td>
+                        <td>Aluguel nível 3</td>
+                        <td>F$ 900 mil</td>
+                    </tr>
+                    <tr>
+                        <td>4. Elite</td>
+                        <td>+1 TugLord + 4 certs</td>
+                        <td>Aluguel nível 4</td>
+                        <td>F$ 2,05 mi+</td>
+                    </tr>
+                </table>
+            </div>
+        </section>
+
+        <!-- CERTIFICADOS -->
+        <section id="certificados">
+            <h2><span class="icon">🎓</span> Sistema de Certificados</h2>
+
+            <h3>📚 4 Tipos de Certificados</h3>
+            
+            <div class="grid">
+                <div class="card">
+                    <h4>🔥 COMBATE A INCÊNDIO</h4>
+                    <p><span class="badge danger">fire</span></p>
+                    <ul>
+                        <li><strong>Casa:</strong> Posição 6</li>
+                        <li><strong>Custo:</strong> F$ 100 mil</li>
+                        <li><strong>Perguntas:</strong> 2 (sorteio de 1)</li>
+                    </ul>
+                    <p><strong>Temas:</strong> Alarmes, classes de fogo, extintores</p>
+                </div>
+
+                <div class="card">
+                    <h4>🛟 HOMEM AO MAR</h4>
+                    <p><span class="badge">rescue</span></p>
+                    <ul>
+                        <li><strong>Casa:</strong> Posição 11</li>
+                        <li><strong>Custo:</strong> F$ 100 mil</li>
+                        <li><strong>Perguntas:</strong> 2 (sorteio de 1)</li>
+                    </ul>
+                    <p><strong>Temas:</strong> Manobras de resgate, equipamentos</p>
+                </div>
+
+                <div class="card">
+                    <h4>⚠️ PREVENÇÃO DE COLISÃO</h4>
+                    <p><span class="badge warning">collision</span></p>
+                    <ul>
+                        <li><strong>Casa:</strong> Posição 24</li>
+                        <li><strong>Custo:</strong> F$ 100 mil</li>
+                        <li><strong>Perguntas:</strong> 2 (sorteio de 1)</li>
+                    </ul>
+                    <p><strong>Temas:</strong> Regras de navegação, manobras</p>
+                </div>
+
+                <div class="card">
+                    <h4>🚨 ABANDONO DE EMBARCAÇÃO</h4>
+                    <p><span class="badge danger">abandon</span></p>
+                    <ul>
+                        <li><strong>Casa:</strong> Posição 30</li>
+                        <li><strong>Custo:</strong> F$ 100 mil</li>
+                        <li><strong>Perguntas:</strong> 2 (sorteio de 1)</li>
+                    </ul>
+                    <p><strong>Temas:</strong> Sinais, equipamentos de emergência</p>
+                </div>
+            </div>
+
+            <h3>📝 Sistema de Exames</h3>
+            
+            <div class="card">
+                <h4>Como Funciona:</h4>
+                <ol>
+                    <li><strong>Investimento:</strong> Você paga F$ 100 mil ANTES do exame</li>
+                    <li><strong>Sorteio:</strong> 1 pergunta aleatória dentre 2 opções</li>
+                    <li><strong>Respostas:</strong> 4 alternativas (embaralhadas)</li>
+                    <li><strong>Resultado:</strong>
+                        <ul>
+                            <li>✅ <strong>Aprovado:</strong> Ganha certificado</li>
+                            <li>❌ <strong>Reprovado:</strong> Perde o investimento (F$ 100 mil)</li>
+                        </ul>
+                    </li>
+                </ol>
+
+                <div class="warning">
+                    <strong>⚠️ Atenção:</strong> O dinheiro é debitado ANTES do exame! Se falhar, perde os F$ 100 mil!
+                </div>
+            </div>
+
+            <h3>🎓 Universidade do Mar</h3>
+            
+            <div class="card">
+                <h4>📍 Posição 15</h4>
+                <p>Segunda chance para obter certificados!</p>
+                
+                <ul>
+                    <li><strong>Custo:</strong> GRATUITO! 🎉</li>
+                    <li><strong>Elegibilidade:</strong> Apenas se falta pelo menos 1 certificado</li>
+                    <li><strong>Sorteio:</strong> Exame aleatório de certificado que você NÃO tem</li>
+                    <li><strong>Sem Risco:</strong> Se reprovar, não perde dinheiro</li>
+                </ul>
+
+                <div class="example">
+                    <h4>💡 Exemplo:</h4>
+                    <code>
+                        Certificados obtidos: [fire, rescue]<br>
+                        Certificados faltantes: [collision, abandon]<br>
+                        <br>
+                        Cai na Universidade:<br>
+                        └─ Sorteia: collision OU abandon<br>
+                           └─ Faz exame GRÁTIS!
+                    </code>
+                </div>
+            </div>
+
+            <h3>🎯 Importância dos Certificados</h3>
+            
+            <div class="info">
+                <h4>Por que obter certificados?</h4>
+                <ul>
+                    <li><strong>Requisito para TugLord:</strong> Precisa dos 4 certificados!</li>
+                    <li><strong>Certificação TugLord:</strong> Benefício extra se tiver todos</li>
+                    <li><strong>Inspeção de Segurança:</strong> Bônus F$ 200 mil vs multa F$ 150 mil</li>
+                    <li><strong>Progressão:</strong> Demonstra profissionalismo</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- BANCO -->
+        <section id="banco">
+            <h2><span class="icon">🏦</span> Sistema Bancário</h2>
+
+            <h3>💵 Terminal Bancário</h3>
+            <p>Acesse o terminal bancário na <strong>Posição 27</strong> com 3 abas:</p>
+
+            <div class="grid">
+                <div class="card">
+                    <h4>💰 ABA 1: EMPRÉSTIMOS</h4>
+                    <p>Pegue dinheiro emprestado com 10% de juros:</p>
+                    
+                    <table>
+                        <tr>
+                            <th>Empréstimo</th>
+                            <th>Juros (10%)</th>
+                            <th>Total a Pagar</th>
+                        </tr>
+                        <tr>
+                            <td>F$ 500 mil</td>
+                            <td>F$ 50 mil</td>
+                            <td>F$ 550 mil</td>
+                        </tr>
+                        <tr>
+                            <td>F$ 1 mi</td>
+                            <td>F$ 100 mil</td>
+                            <td>F$ 1,1 mi</td>
+                        </tr>
+                    </table>
+
+                    <div class="info">
+                        <strong>📝 Nota:</strong> Não há cobrança automática. Você decide quando pagar!
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h4>💳 ABA 2: PAGAMENTO</h4>
+                    <p>Pague seus empréstimos voluntariamente:</p>
+                    
+                    <ul>
+                        <li>Lista todos seus empréstimos ativos</li>
+                        <li>Mostra valor total a pagar (principal + juros)</li>
+                        <li>Clique para pagar e eliminar dívida</li>
+                    </ul>
+
+                    <div class="warning">
+                        <strong>⚠️ Estratégia:</strong> Empréstimos não vencem! Pague quando for conveniente
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h4>🔨 ABA 3: LIQUIDAÇÃO</h4>
+                    <p>Venda ativos por 50% do valor:</p>
+                    
+                    <ul>
+                        <li><strong>Propriedades:</strong> 50% do preço de compra</li>
+                        <li><strong>Rebocador Porto:</strong> F$ 100 mil (50% de F$ 200 mil)</li>
+                        <li><strong>Rebocador Oceânico:</strong> F$ 250 mil (50% de F$ 500 mil)</li>
+                        <li><strong>TugLord:</strong> F$ 375 mil (50% de F$ 750 mil)</li>
+                    </ul>
+
+                    <div class="example">
+                        <h4>📋 Exemplo:</h4>
+                        <code>
+                            Porto de Santos: comprou F$ 340 mil<br>
+                            Liquidação voluntária: recebe F$ 170 mil<br>
+                            <br>
+                            Propriedade retorna ao banco (sem dono)<br>
+                            Ações emitidas são zeradas
+                        </code>
+                    </div>
+                </div>
+            </div>
+
+            <h3>💡 Gestão de Dívidas</h3>
+            
+            <div class="card">
+                <h4>🎯 Quando pegar empréstimos?</h4>
+                <ul>
+                    <li><strong>Oportunidade de compra:</strong> Propriedade valiosa disponível</li>
+                    <li><strong>Investimento em rebocadores:</strong> Aumentar aluguéis rapidamente</li>
+                    <li><strong>Emergência:</strong> Evitar liquidação forçada</li>
+                    <li><strong>Estratégia agressiva:</strong> Expandir rapidamente</li>
+                </ul>
+
+                <h4>⚠️ Quando pagar empréstimos?</h4>
+                <ul>
+                    <li><strong>Boa situação financeira:</strong> Tem dinheiro sobrando</li>
+                    <li><strong>Reduzir passivos:</strong> Antes de possível arresto</li>
+                    <li><strong>Fim de jogo:</strong> Consolidar patrimônio líquido</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- BOLSA -->
+        <section id="bolsa">
+            <h2><span class="icon">📈</span> Bolsa de Valores</h2>
+
+            <h3>💹 Sistema de Ações</h3>
+            
+            <div class="card">
+                <h4>📍 Posição 2 - Bolsa de Valores</h4>
+                <p>Compre ações de propriedades de OUTROS jogadores para renda passiva:</p>
+
+                <table>
+                    <tr>
+                        <th>Aspecto</th>
+                        <th>Detalhes</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Preço da Ação</strong></td>
+                        <td>30% do preço da propriedade</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Limite por Propriedade</strong></td>
+                        <td>5 ações máximo</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Dividendo</strong></td>
+                        <td>50% do aluguel base (rent[0])</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Pagamento</strong></td>
+                        <td>Automático no início do turno do dono</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Quem Pode Comprar</strong></td>
+                        <td>Apenas de propriedades de OUTROS</td>
+                    </tr>
+                </table>
+            </div>
+
+            <h3>💰 Cálculo de Dividendos</h3>
+            
+            <div class="card">
+                <h4>Formula:</h4>
+                <code>
+                    Dividendo = (Aluguel Base × 0.5) × Quantidade de Ações
+                </code>
+
+                <div class="example">
+                    <h4>📊 Exemplos Práticos:</h4>
+                    
+                    <p><strong>1. Porto de Suape</strong></p>
+                    <code>
+                        Preço: F$ 180 mil<br>
+                        Aluguel base: F$ 18 mil<br>
+                        Preço ação: F$ 54 mil (30%)<br>
+                        Dividendo: F$ 9 mil/turno<br>
+                        <br>
+                        Compra 3 ações: F$ 162 mil<br>
+                        Recebe: F$ 27 mil/turno (3 × F$ 9 mil)<br>
+                        ROI: 6 turnos
+                    </code>
+
+                    <p><strong>2. Porto de Santos</strong></p>
+                    <code>
+                        Preço: F$ 340 mil<br>
+                        Aluguel base: F$ 34 mil<br>
+                        Preço ação: F$ 102 mil (30%)<br>
+                        Dividendo: F$ 17 mil/turno<br>
+                        <br>
+                        Compra 2 ações: F$ 204 mil<br>
+                        Recebe: F$ 34 mil/turno (2 × F$ 17 mil)<br>
+                        ROI: 6 turnos
+                    </code>
+
+                    <p><strong>3. Porto de Açu (Premium!)</strong></p>
+                    <code>
+                        Preço: F$ 1,1 mi<br>
+                        Aluguel base: F$ 100 mil<br>
+                        Preço ação: F$ 330 mil (30%)<br>
+                        Dividendo: F$ 50 mil/turno 🔥<br>
+                        <br>
+                        Compra 1 ação: F$ 330 mil<br>
+                        Recebe: F$ 50 mil/turno<br>
+                        ROI: 6.6 turnos
+                    </code>
+                </div>
+            </div>
+
+            <h3>🎯 Estratégia de Investimento</h3>
+            
+            <div class="card">
+                <h4>✅ Boas Propriedades para Ações:</h4>
+                <ul>
+                    <li><strong>Propriedades caras:</strong> Maior dividendo absoluto</li>
+                    <li><strong>Propriedades bem localizadas:</strong> Adversários passam frequentemente</li>
+                    <li><strong>Donos com muitos rebocadores:</strong> Eles vão pagar os dividendos!</li>
+                    <li><strong>Propriedades de líderes:</strong> Eles têm dinheiro para pagar</li>
+                </ul>
+
+                <h4>⚠️ Evite Ações de:</h4>
+                <ul>
+                    <li><strong>Propriedades baratas:</strong> Dividendos muito baixos</li>
+                    <li><strong>Jogadores endividados:</strong> Podem falir</li>
+                    <li><strong>Propriedades isoladas:</strong> Pouca visita = pouca ativação</li>
+                </ul>
+            </div>
+
+            <h3>💸 Fluxo de Dinheiro</h3>
+            
+            <div class="info">
+                <h4>🔄 Pagamento de Dividendos:</h4>
+                <p>No INÍCIO do turno do dono da propriedade:</p>
+                <code>
+                    Para cada jogador que possui ações:<br>
+                    ├─ Calcula: dividendo × quantidade<br>
+                    ├─ Débito do dono da propriedade<br>
+                    └─ Crédito do acionista<br>
+                    <br>
+                    Notificação exibida automaticamente
+                </code>
+
+                <p><strong>Importante:</strong> Dividendos NÃO dependem de alguém cair na propriedade! São pagos TODO turno do dono!</p>
+            </div>
+
+            <h3>🚨 Liquidação de Ações</h3>
+            
+            <div class="warning">
+                <h4>O que acontece quando propriedade é liquidada?</h4>
+                <ul>
+                    <li>Propriedade retorna ao banco (sem dono)</li>
+                    <li>Todas as ações emitidas são ZERADAS</li>
+                    <li>Acionistas PERDEM o investimento</li>
+                    <li>Não há reembolso parcial</li>
+                </ul>
+
+                <p><strong>Risco:</strong> Se o dono falir ou liquidar a propriedade, você perde tudo!</p>
+            </div>
+        </section>
+
+        <!-- EVENTOS OCEÂNICOS -->
+        <section id="eventos">
+            <h2><span class="icon">🌊</span> Eventos Oceânicos</h2>
+
+            <h3>🎲 Sistema de Eventos Aleatórios</h3>
+            
+            <div class="card">
+                <h4>📍 Posição 31 - Evento Oceânico</h4>
+                <p>Ao cair nesta casa, sorteia-se 1 de <strong>10 eventos aleatórios</strong> com diferentes efeitos:</p>
+            </div>
+
+            <h3>✅ EVENTOS POSITIVOS (4)</h3>
+            
+            <div class="grid">
+                <div class="card">
+                    <h4>⛵ 1. VENTO FAVORÁVEL</h4>
+                    <p><span class="badge success">Melhor Evento!</span></p>
+                    <p><strong>Efeito:</strong> Avance até a próxima propriedade SEM pagar aluguel</p>
+                    
+                    <div class="example">
+                        <code>
+                            Pode economizar até F$ 1,1 mi!<br>
+                            Ótimo quando há propriedade cara à frente
+                        </code>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h4>🐋 2. AVISTAMENTO DE BALEIAS</h4>
+                    <p><strong>Efeito:</strong> Receba F$ 300 mil (contrato científico)</p>
+                </div>
+
+                <div class="card">
+                    <h4>🌊 3. CORRENTE DO BRASIL</h4>
+                    <p><strong>Efeito:</strong> Avance 5 casas</p>
+                    <p><em>Pode passar pela Partida e ganhar F$ 200 mil extra!</em></p>
+                </div>
+
+                <div class="card">
+                    <h4>📡 4. CONTRATO DE EMERGÊNCIA</h4>
+                    <p><strong>Efeito:</strong> Receba F$ 500 mil</p>
+                    <p><span class="badge success">Maior ganho monetário!</span></p>
+                </div>
+            </div>
+
+            <h3>❌ EVENTOS NEGATIVOS (3)</h3>
+            
+            <div class="grid">
+                <div class="card">
+                    <h4>🌀 5. TEMPESTADE TROPICAL</h4>
+                    <p><span class="badge danger">Perigoso!</span></p>
+                    <p><strong>Efeito:</strong> Volte à última propriedade visitada</p>
+                    
+                    <div class="warning">
+                        Pode forçar você a pagar aluguel de novo em propriedade cara!
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h4>⚠️ 6. AVARIA NO MOTOR</h4>
+                    <p><strong>Efeito:</strong> Pague F$ 200 mil de reparo</p>
+                    <p><em>Se não tiver dinheiro: processo de arresto!</em></p>
+                </div>
+
+                <div class="card">
+                    <h4>🦈 7. ZONA DE RISCO</h4>
+                    <p><strong>Efeito:</strong> Perca o próximo turno</p>
+                    <p><em>Docagem emergencial preventiva</em></p>
+                </div>
+            </div>
+
+            <h3>⚖️ EVENTOS NEUTROS/MISTOS (3)</h3>
+            
+            <div class="grid">
+                <div class="card">
+                    <h4>🏴‍☠️ 8. INSPEÇÃO DE SEGURANÇA</h4>
+                    <p><strong>Efeito Condicional:</strong></p>
+                    <ul>
+                        <li>✅ 4 certificados completos: <span class="badge success">+F$ 200 mil</span></li>
+                        <li>❌ Certificados incompletos: <span class="badge danger">-F$ 150 mil</span></li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h4>🎣 9. OPORTUNIDADE DE SALVAMENTO</h4>
+                    <p><span class="badge warning">ESCOLHA!</span></p>
+                    <p><strong>Opção A:</strong> Aceitar (+F$ 400 mil, perde próximo turno)</p>
+                    <p><strong>Opção B:</strong> Recusar (sem efeito)</p>
+                    
+                    <div class="info">
+                        Trade-off: F$ 400 mil vale perder 1 turno?
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h4>🌅 10. ESCOLHA DE ROTA</h4>
+                    <p><span class="badge warning">ESCOLHA!</span></p>
+                    <p><strong>Rota Norte:</strong> Avance 3 casas</p>
+                    <p><strong>Rota Sul:</strong> Receba F$ 250 mil</p>
+                    
+                    <div class="info">
+                        Decisão estratégica baseada no tabuleiro!
+                    </div>
+                </div>
+            </div>
+
+            <h3>🎮 Mecânicas Especiais</h3>
+            
+            <div class="card">
+                <h4>⏸️ Skip Next Turn</h4>
+                <p>Alguns eventos fazem você perder o próximo turno:</p>
+                <ul>
+                    <li>🦈 Zona de Risco (automático)</li>
+                    <li>🎣 Salvamento (se aceitar)</li>
+                </ul>
+                
+                <p><strong>Efeito:</strong> No próximo turno, você não pode rolar os dados. O turno passa automaticamente.</p>
+            </div>
+
+            <div class="card">
+                <h4>⛵ Skip Next Rent</h4>
+                <p>Vento Favorável ativa esta mecânica:</p>
+                <ul>
+                    <li>Move você até a próxima propriedade</li>
+                    <li>Ativa flag "skipNextRent"</li>
+                    <li>Ao cair: "⛵ Vento Favorável! Aluguel dispensado"</li>
+                    <li>Aluguel = F$ 0 nessa propriedade</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- FALÊNCIA -->
+        <section id="falencia">
+            <h2><span class="icon">⚖️</span> Sistema de Falência</h2>
+
+            <h3>💸 Dívidas Obrigatórias</h3>
+            
+            <div class="card">
+                <p>Algumas despesas são OBRIGATÓRIAS e devem ser pagas imediatamente:</p>
+                <ul>
+                    <li>💰 Aluguéis (propriedades de outros)</li>
+                    <li>🔧 Aluguéis de Oficinas</li>
+                    <li>🏗️ Taxa de Docagem (F$ 75 mil)</li>
+                    <li>⚓ Zona de Manobra (F$ 100 mil por adversário)</li>
+                    <li>⚠️ Avaria no Motor (F$ 200 mil)</li>
+                    <li>🏴‍☠️ Multa de Inspeção (F$ 150 mil)</li>
+                </ul>
+
+                <div class="warning">
+                    <strong>⚠️ Se você não tiver dinheiro suficiente:</strong> Processo de ARRESTO iniciado!
+                </div>
+            </div>
+
+            <h3>⚖️ Processo de Arresto</h3>
+            
+            <div class="card">
+                <h4>Quando você não consegue pagar uma dívida obrigatória:</h4>
+                
+                <ol>
+                    <li><strong>CÁLCULO DE ATIVOS</strong>
+                        <ul>
+                            <li>Dinheiro em caixa</li>
+                            <li>Propriedades (50% do valor)</li>
+                            <li>Rebocadores (50% do valor)</li>
+                            <li>Total disponível calculado</li>
+                        </ul>
+                    </li>
+                    
+                    <li><strong>VERIFICAÇÃO</strong>
+                        <ul>
+                            <li>✅ Total ≥ Dívida: <strong>LIQUIDAÇÃO FORÇADA</strong></li>
+                            <li>❌ Total < Dívida: <strong>FALÊNCIA</strong></li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+
+            <h3>🔨 Liquidação Forçada</h3>
+            
+            <div class="card">
+                <h4>Quando TOTAL DE ATIVOS ≥ DÍVIDA:</h4>
+                
+                <ol>
+                    <li><strong>Usar dinheiro em caixa primeiro</strong></li>
+                    <li><strong>Liquidar ativos (50% valor) até cobrir dívida:</strong>
+                        <ul>
+                            <li>Ordem: Propriedades → Rebocadores</li>
+                            <li>Sistema escolhe automaticamente</li>
+                        </ul>
+                    </li>
+                    <li><strong>Pagar o credor</strong>
+                        <ul>
+                            <li>Dívida transferida ao dono/banco</li>
+                        </ul>
+                    </li>
+                    <li><strong>Retornar excedente ao jogador</strong>
+                        <ul>
+                            <li>Se liquidou F$ 500 mil para pagar F$ 400 mil</li>
+                            <li>Sobra F$ 100 mil volta para você</li>
+                        </ul>
+                    </li>
+                    <li><strong>Jogador continua no jogo!</strong>
+                        <ul>
+                            <li>bankruptcyStage = 0 (volta a solvente)</li>
+                            <li>Pode reconstruir império</li>
+                        </ul>
+                    </li>
+                </ol>
+
+                <div class="example">
+                    <h4>📋 Exemplo de Liquidação Forçada:</h4>
+                    <code>
+                        Dívida: F$ 700 mil (aluguel)<br>
+                        <br>
+                        Ativos:<br>
+                        ├─ Dinheiro: F$ 300 mil<br>
+                        ├─ Porto de Suape: F$ 90 mil (50% de F$ 180 mil)<br>
+                        ├─ 2 Rebocadores Porto: F$ 200 mil (2 × F$ 100 mil)<br>
+                        └─ Total: F$ 590 mil < F$ 700 mil ❌<br>
+                        <br>
+                        RESULTADO: FALÊNCIA<br>
+                        (não tem ativos suficientes)
+                    </code>
+
+                    <code>
+                        Dívida: F$ 500 mil (aluguel)<br>
+                        <br>
+                        Ativos:<br>
+                        ├─ Dinheiro: F$ 200 mil<br>
+                        ├─ Porto de Santos: F$ 170 mil (50% de F$ 340 mil)<br>
+                        ├─ 1 Rebocador Porto: F$ 100 mil<br>
+                        └─ Total: F$ 470 mil < F$ 500 mil ❌<br>
+                        <br>
+                        Opa! Vamos recalcular:<br>
+                        ├─ Dinheiro: F$ 200 mil<br>
+                        ├─ Porto de Santos: F$ 170 mil<br>
+                        ├─ 2 Rebocadores: F$ 200 mil<br>
+                        └─ Total: F$ 570 mil ✅<br>
+                        <br>
+                        LIQUIDAÇÃO FORÇADA:<br>
+                        ├─ Usa F$ 200 mil dinheiro → Falta F$ 300 mil<br>
+                        ├─ Liquida Porto Santos (+F$ 170 mil) → Falta F$ 130 mil<br>
+                        ├─ Liquida 2 Rebocadores (+F$ 200 mil) → Sobra F$ 70 mil<br>
+                        ├─ Paga F$ 500 mil ao credor<br>
+                        └─ Recebe F$ 70 mil de volta<br>
+                        <br>
+                        Jogador continua com F$ 70 mil! ✅
+                    </code>
+                </div>
+            </div>
+
+            <h3>💔 Falência (Bankruptcy)</h3>
+            
+            <div class="card">
+                <h4>Quando TOTAL DE ATIVOS < DÍVIDA:</h4>
+                
+                <ol>
+                    <li><strong>bankruptcyStage = 2</strong></li>
+                    <li><strong>isEliminated = true</strong></li>
+                    <li><strong>Liquidação TOTAL:</strong>
+                        <ul>
+                            <li>Todo dinheiro transferido</li>
+                            <li>Todas propriedades liquidadas (50%)</li>
+                            <li>Todos rebocadores liquidados (50%)</li>
+                            <li>Total transferido ao credor</li>
+                        </ul>
+                    </li>
+                    <li><strong>Zeragem do Jogador:</strong>
+                        <ul>
+                            <li>money = 0</li>
+                            <li>properties = []</li>
+                            <li>portTugs = 0</li>
+                            <li>hasOceanTug = false</li>
+                            <li>hasTuglord = false</li>
+                            <li>stocks = {}</li>
+                        </ul>
+                    </li>
+                    <li><strong>Verificação de Vitória</strong>
+                        <ul>
+                            <li>Se apenas 1 jogador ativo restante</li>
+                            <li>VITÓRIA declarada!</li>
+                        </ul>
+                    </li>
+                </ol>
+
+                <div class="warning">
+                    <h4>🚨 JOGADOR ELIMINADO DO JOGO!</h4>
+                    <p>Não pode mais jogar. Token permanece no tabuleiro em grayscale.</p>
+                </div>
+            </div>
+
+            <h3>🏆 Condição de Vitória</h3>
+            
+            <div class="card">
+                <h4>O jogo termina quando:</h4>
+                <p><strong>Apenas 1 jogador ativo permanece</strong></p>
+                
+                <p>Esse jogador é declarado <span class="highlight">VENCEDOR!</span></p>
+
+                <div class="example">
+                    <code>
+                        Jogadores:<br>
+                        ├─ Jogador 1: Ativo ✅<br>
+                        ├─ Jogador 2: Eliminado ❌<br>
+                        ├─ Jogador 3: Eliminado ❌<br>
+                        └─ Jogador 4: Eliminado ❌<br>
+                        <br>
+                        🏆 JOGADOR 1 VENCEU! 🎉
+                    </code>
+                </div>
+            </div>
+
+            <h3>💡 Evitando a Falência</h3>
+            
+            <div class="info">
+                <h4>Estratégias de Sobrevivência:</h4>
+                <ul>
+                    <li><strong>Mantenha reserva:</strong> Sempre tenha F$ 500 mil+ em caixa</li>
+                    <li><strong>Liquidação voluntária:</strong> Venda ativos ANTES do arresto (no Banco)</li>
+                    <li><strong>Empréstimos estratégicos:</strong> Pegue empréstimo para pagar dívida urgente</li>
+                    <li><strong>Evite propriedades caras:</strong> Se não tem capital suficiente</li>
+                    <li><strong>Diversifique ativos:</strong> Não coloque tudo em propriedades</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- ESTRATÉGIAS -->
+        <section id="estrategias">
+            <h2><span class="icon">💡</span> Estratégias e Dicas</h2>
+
+            <h3>🎯 Estratégias de Início de Jogo</h3>
+            
+            <div class="grid">
+                <div class="card">
+                    <h4>🚀 AGRESSIVA</h4>
+                    <p><span class="badge danger">Alto Risco</span></p>
+                    <ul>
+                        <li>Compre todas as propriedades possíveis</li>
+                        <li>Pegue empréstimos para investir</li>
+                        <li>Compre rebocadores rapidamente</li>
+                        <li>Objetivo: Dominar mercado rápido</li>
+                    </ul>
+                    <div class="warning">
+                        <strong>Risco:</strong> Pode falir se cair em propriedade cara
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h4>🛡️ CONSERVADORA</h4>
+                    <p><span class="badge success">Baixo Risco</span></p>
+                    <ul>
+                        <li>Mantenha sempre F$ 500 mil+ em caixa</li>
+                        <li>Compre apenas propriedades baratas</li>
+                        <li>Evite empréstimos no início</li>
+                        <li>Invista em ações (renda passiva)</li>
+                    </ul>
+                    <div class="info">
+                        <strong>Vantagem:</strong> Sobrevive mais tempo, cresce lentamente
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h4>⚖️ BALANCEADA</h4>
+                    <p><span class="badge">Médio Risco</span></p>
+                    <ul>
+                        <li>Compre 2-3 propriedades iniciais</li>
+                        <li>1 empréstimo para rebocadores</li>
+                        <li>Mantenha F$ 300 mil de reserva</li>
+                        <li>Ações em propriedades premium</li>
+                    </ul>
+                    <div class="info">
+                        <strong>Recomendada:</strong> Equilíbrio entre crescimento e segurança
+                    </div>
+                </div>
+            </div>
+
+            <h3>📈 Estratégias de Meio de Jogo</h3>
+            
+            <div class="card">
+                <h4>🎯 Prioridades:</h4>
+                <ol>
+                    <li><strong>Complete certificados:</strong> Necessário para TugLord</li>
+                    <li><strong>Atinja Nível 2 de rebocadores:</strong> 2 portos mínimo</li>
+                    <li><strong>Invista em ações:</strong> Renda passiva composta</li>
+                    <li><strong>Consolide propriedades:</strong> Foque em 1-2 grupos</li>
+                    <li><strong>Gerencie dívidas:</strong> Pague empréstimos quando possível</li>
+                </ol>
+            </div>
+
+            <h3>🏆 Estratégias de Fim de Jogo</h3>
+            
+            <div class="card">
+                <h4>💪 Posição de Liderança:</h4>
+                <ul>
+                    <li><strong>Maximize aluguéis:</strong> TugLord + Oceânico + 2 Portos</li>
+                    <li><strong>Proteja império:</strong> Mantenha F$ 1 mi+ reserva</li>
+                    <li><strong>Force adversários:</strong> Torne propriedades inacessíveis</li>
+                    <li><strong>Pague dividendos:</strong> Mantenha acionistas felizes</li>
+                </ul>
+
+                <h4>🔄 Posição de Recuperação:</h4>
+                <ul>
+                    <li><strong>Liquidação estratégica:</strong> Venda ativos fracos</li>
+                    <li><strong>Empréstimo tático:</strong> Para comprar propriedade chave</li>
+                    <li><strong>Ações agressivas:</strong> Invista em propriedades de líder</li>
+                    <li><strong>Eventos oceânicos:</strong> Torça por Vento Favorável!</li>
+                </ul>
+            </div>
+
+            <h3>💎 Dicas de Ouro</h3>
+            
+            <div class="info">
+                <h4>🌟 Segredos dos Campeões:</h4>
+                <ul>
+                    <li><strong>2 rebocadores porto:</strong> Melhor custo-benefício (F$ 400 mil → aluguel ×3)</li>
+                    <li><strong>Ações do líder:</strong> Ele vai pagar dividendos! Invista nele</li>
+                    <li><strong>Certificados cedo:</strong> Faça exames antes que fique caro pegar empréstimos</li>
+                    <li><strong>Universidade:</strong> Exame GRÁTIS! Sempre aproveite</li>
+                    <li><strong>Vento Favorável:</strong> Pode economizar F$ 1,1 mi em 1 turno!</li>
+                    <li><strong>Timing de docagem:</strong> Doce rebocadores quando tem dinheiro sobrando</li>
+                    <li><strong>Propriedades Premium:</strong> Açu e Itapoá (F$ 1 mi+) rendem MUITO</li>
+                    <li><strong>Evite Zona Manobra:</strong> Pode custar F$ 500 mil se há 5 adversários com tugs</li>
+                </ul>
+            </div>
+
+            <h3>⚠️ Erros Comuns</h3>
+            
+            <div class="warning">
+                <h4>❌ Não Faça Isso:</h4>
+                <ul>
+                    <li><strong>Gastar tudo:</strong> Sempre mantenha reserva para aluguéis</li>
+                    <li><strong>Comprar TugLord cedo:</strong> Muito caro sem retorno imediato</li>
+                    <li><strong>Ignorar certificados:</strong> Vai bloquear TugLord depois</li>
+                    <li><strong>Empréstimos sem plano:</strong> Só pegue se sabe como pagar</li>
+                    <li><strong>Ações de jogadores fracos:</strong> Eles podem falir</li>
+                    <li><strong>Propriedades isoladas:</strong> Melhor ter grupos completos</li>
+                    <li><strong>Ignorar eventos:</strong> Escolhas erradas custam caro</li>
+                </ul>
+            </div>
+
+            <h3>🎲 Probabilidades Importantes</h3>
+            
+            <div class="card">
+                <table>
+                    <tr>
+                        <th>Soma dos Dados</th>
+                        <th>Probabilidade</th>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td>16.7% (mais comum)</td>
+                    </tr>
+                    <tr>
+                        <td>6 ou 8</td>
+                        <td>13.9% cada</td>
+                    </tr>
+                    <tr>
+                        <td>5 ou 9</td>
+                        <td>11.1% cada</td>
+                    </tr>
+                    <tr>
+                        <td>2 ou 12</td>
+                        <td>2.8% (mais raro)</td>
+                    </tr>
+                </table>
+
+                <p><strong>📊 Insight:</strong> Propriedades 7 casas à frente são mais visitadas!</p>
+            </div>
+        </section>
+
+        <footer>
+            <p><strong>TUGLORDS v19.0</strong> - Manual do Jogo</p>
+            <p>Desenvolvido por TugLife Systems | Fortaleza, Brasil 🇧🇷</p>
+            <p style="margin-top: 0.5rem; color: #94a3b8;">Jogo independente, sem fins lucrativos. Nomes e marcas são fictícios; qualquer semelhança é coincidência.</p>
+            <p style="margin-top: 0.25rem; font-size: 0.75rem; color: #64748b;">Código sob licença MIT; manual, arte e músicas sob CC BY-SA 4.0.</p>
+            <p style="margin-top: 1rem; color: #64748b;">
+                "Dos mares calmos de Fortaleza às tempestades do Atlântico Sul,<br>
+                que a estratégia e a sorte guiem seu caminho para a vitória!" ⚓
+            </p>
+        </footer>
+    </div>
+</body>
+</html>

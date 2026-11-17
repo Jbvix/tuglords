@@ -1,0 +1,4269 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- 
+        Autor: Jossian Brito
+        Data: 2025-12-10
+        Versão: 15.0 - MOBILE FIRST EDITION
+        
+        Modificações Implementadas (v15.0 - Mobile First):
+        - REDESIGN COMPLETO: Layout mobile-first com sidebars como bottom sheets
+        - TOUCH-FRIENDLY: Controles maiores e otimizados para toque
+        - RESPONSIVE: Grid adaptativo que se expande para desktop
+        - UX MELHORADA: Navegação por abas e modais deslizantes
+    -->
+
+    <title>TUGLORDS v15.0 - Mobile First Edition</title>
+
+    <script>
+// Farolin (F$): mesma regra do TugLords TV (x1000, mil/mi/bi)
+function fmF(n){var v=Number(n||0)*1000,a=Math.abs(v),s,N='\u00a0';function q(x,d){try{return x.toLocaleString('pt-BR',{maximumFractionDigits:d});}catch(e){return String(Math.round(x*100)/100).replace('.',',');}}
+if(a>=1e9)s=q(a/1e9,2)+N+'bi';else if(a>=1e6)s=q(a/1e6,2)+N+'mi';else if(a>=1e3)s=q(a/1e3,1)+N+'mil';else s=q(a,0);return (v<0?'-':'')+'F$'+N+s;}
+</script>
+<script src="https://cdn-tailwindcss.vercel.app/"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root{ 
+            --dice-roll-ms: 1200ms; 
+            --notif-trans-ms: 500ms;
+            --primary-blue: #1e3c72;
+            --secondary-blue: #2a5298;
+            --accent-gold: #fbbf24;
+            --dark-panel: #1a2942;
+            --light-panel: #233a60;
+        }
+        
+        * {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue)); 
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            color: #e0e0e0;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* ===== MOBILE FIRST LAYOUT ===== */
+		
+		
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding-bottom: 70px; /* Espaço para bottom nav */
+        }
+
+        /* Header Mobile */
+        .mobile-header {
+            background: var(--dark-panel);
+            padding: 0.75rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .mobile-header h1 {
+            font-size: 1.25rem;
+            font-weight: 900;
+            margin: 0;
+            color: var(--accent-gold);
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            font-size: 0.75rem;
+        }
+
+        /* Main Game Board - ALINHADO INFERIOR */
+        .game-board-wrapper {
+            flex: 1;
+            padding: 0.3rem;
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end; /* ALINHAR NA PARTE INFERIOR */
+        }
+
+        .board-container {
+            background: rgba(255,255,255,0.05);
+            border-radius: 0.5rem;
+            padding: 0.3rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end; /* ALINHAR TABULEIRO NA LINHA INFERIOR */
+            overflow-y: auto;
+            min-height: auto;
+            width: 100%;
+            max-width: 100%;
+            gap: 0.5rem; /* ESPAÇAMENTO REDUZIDO */
+        }
+
+        /* Bottom Navigation - Mobile */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--dark-panel);
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0;
+            padding: 0.5rem 0.5rem calc(0.5rem + env(safe-area-inset-bottom));
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+            z-index: 100;
+        }
+
+        .nav-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.5rem;
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 0.5rem;
+        }
+
+        .nav-btn:active {
+            transform: scale(0.95);
+            background: rgba(255,255,255,0.1);
+        }
+
+        .nav-btn.active {
+            color: var(--accent-gold);
+            background: rgba(251, 191, 36, 0.1);
+        }
+
+        .nav-btn-icon {
+            font-size: 1.5rem;
+        }
+
+        /* Sliding Panels - Mobile */
+        .sliding-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--light-panel);
+            border-radius: 1.5rem 1.5rem 0 0;
+            max-height: 85vh;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 200;
+            overflow: hidden;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
+        }
+
+        .sliding-panel.active {
+            transform: translateY(0);
+        }
+
+        .panel-handle {
+            width: 40px;
+            height: 4px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 2px;
+            margin: 0.75rem auto;
+        }
+
+        .panel-content {
+            padding: 0 1.5rem 1.5rem;
+            overflow-y: auto;
+            max-height: calc(85vh - 100px);
+            scroll-behavior: smooth;
+        }
+
+        .panel-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: var(--light-panel);
+            z-index: 10;
+        }
+
+        .panel-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .panel-close {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #e0e0e0;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Overlay */
+        .panel-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            z-index: 150;
+        }
+
+        .panel-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* Touch-Friendly Buttons - REDUZIDOS */
+        .btn-primary {
+            background: var(--accent-gold);
+            color: #1a2942;
+            border: none;
+            padding: 0.6rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 700;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 36px; /* Reduzido de 44px */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.97);
+            background: #f59e0b;
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: #e0e0e0;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 0.875rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 44px;
+        }
+
+        .btn-secondary:active {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Player Cards - Mobile Optimized */
+        .player-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .player-card.active {
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+        }
+
+        .player-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .player-name {
+            font-size: 1.125rem;
+            font-weight: 700;
+        }
+
+        .player-money {
+            font-size: 1.25rem;
+            font-weight: 900;
+            color: var(--accent-gold);
+        }
+
+        /* Tabs Mobile */
+        .tabs-container {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+        }
+
+        .tab-btn {
+            padding: 0.5rem 1rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 0.5rem;
+            color: #94a3b8;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            min-height: 36px;
+        }
+
+        .tab-btn.active {
+            background: var(--accent-gold);
+            color: #1a2942;
+            border-color: var(--accent-gold);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Board Styles - Responsive */
+        .board-container {
+            background: rgba(255,255,255,0.05);
+            border-radius: 1rem;
+            padding: 1rem;
+            min-height: 400px;
+        }
+
+        /* ===== TABLET & DESKTOP (min-width: 768px) ===== */
+        @media (min-width: 768px) {
+            .game-container {
+                padding-bottom: 0;
+            }
+
+            .mobile-header {
+                padding: 1rem 2rem;
+            }
+
+            .mobile-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .bottom-nav {
+                position: relative;
+                grid-template-columns: repeat(4, 1fr);
+                max-width: 600px;
+                margin: 0 auto;
+                border-radius: 1rem;
+                bottom: auto;
+            }
+
+            .game-board-wrapper {
+                padding: 2rem;
+            }
+
+            .sliding-panel {
+                max-width: 480px;
+                left: auto;
+                right: 0;
+                max-height: 100vh;
+                border-radius: 1rem 0 0 1rem;
+            }
+
+            .panel-content {
+                max-height: calc(100vh - 140px);
+            }
+        }
+
+        /* ===== DESKTOP (min-width: 1024px) ===== */
+        @media (min-width: 1024px) {
+            .game-container {
+                display: grid;
+                grid-template-columns: 360px 1fr 360px;
+                gap: 1.5rem;
+                padding: 1.5rem;
+                max-width: 1800px;
+                margin: 0 auto;
+            }
+
+            .mobile-header {
+                display: none;
+            }
+
+            .bottom-nav {
+                display: none;
+            }
+
+            .game-board-wrapper {
+                order: 2;
+                padding: 0;
+            }
+
+            .sliding-panel {
+                position: relative;
+                transform: translateY(0) !important;
+                max-height: calc(100vh - 3rem);
+                border-radius: 1rem;
+                max-width: none;
+                right: auto;
+            }
+
+            .sliding-panel.panel-left {
+                order: 1;
+            }
+
+            .sliding-panel.panel-right {
+                order: 3;
+            }
+
+            .panel-handle {
+                display: none;
+            }
+
+            .panel-overlay {
+                display: none;
+            }
+
+            .panel-close {
+                display: none;
+            }
+        }
+
+        /* Badge Styles */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        /* Progress Indicators */
+        .progress-bar {
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-gold);
+            transition: width 0.3s;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* ===== SETUP SCREEN STYLES ===== */
+        .setup-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .setup-container {
+            background: var(--light-panel);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+        }
+
+        .setup-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .setup-header h1 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--accent-gold);
+            margin: 0 0 0.5rem 0;
+        }
+
+        .setup-header p {
+            color: #94a3b8;
+            margin: 0;
+        }
+
+        .player-setup-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .player-setup-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border-left: 4px solid;
+            transition: all 0.2s;
+        }
+
+        .player-setup-card:hover {
+            background: rgba(255,255,255,0.08);
+        }
+
+        .player-name-input {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            color: #e0e0e0;
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            flex: 1;
+            min-height: 40px;
+        }
+
+        .player-name-input:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            background: rgba(255,255,255,0.15);
+        }
+
+        .player-roll-result {
+            font-size: 1.5rem;
+            font-weight: 700;
+            min-width: 60px;
+            text-align: center;
+            color: var(--accent-gold);
+        }
+
+        .btn-remove {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            width: 36px;
+            height: 36px;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .btn-remove:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        .setup-actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-direction: column;
+        }
+
+        .setup-actions .btn-primary,
+        .setup-actions .btn-secondary {
+            width: 100%;
+        }
+
+        .order-results {
+            background: rgba(255,255,255,0.05);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .order-results h3 {
+            text-align: center;
+            margin: 0 0 1rem 0;
+            font-size: 1.25rem;
+            color: var(--accent-gold);
+        }
+
+        .order-item {
+            background: rgba(255,255,255,0.05);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border-left: 4px solid;
+        }
+
+        .order-item:last-child {
+            margin-bottom: 1.5rem;
+        }
+
+        .game-screen {
+            width: 100%;
+        }
+
+        @media (min-width: 768px) {
+            .setup-container {
+                padding: 3rem;
+            }
+
+            .setup-header h1 {
+                font-size: 3rem;
+            }
+
+            .setup-actions {
+                flex-direction: row;
+            }
+        }
+
+        /* ===== BOARD STYLES ===== */
+        .board-game {
+            width: 100%;
+            max-width: 100%;
+            aspect-ratio: 9 / 7;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.05);
+            border-radius: 0.3rem;
+            padding: 0.3rem;
+            position: relative;
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            grid-template-rows: repeat(7, 1fr);
+            gap: 0.2rem; /* AUMENTADO PARA MELHOR DISTRIBUIÇÃO GEOMÉTRICA */
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            align-self: center; /* CENTRALIZAR NO CONTAINER */
+            margin-bottom: 0.25rem; /* PEQUENO ESPAÇO ANTES DOS CONTROLES */
+        }
+
+        .board-corner {
+            background: linear-gradient(135deg, var(--accent-gold), #f59e0b);
+            border-radius: 0.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: #1a2942;
+            position: relative;
+            padding: 0.2rem;
+            min-height: auto;
+            aspect-ratio: 1;
+            flex-direction: column;
+        }
+
+        .board-corner-label {
+            display: none;
+        }
+
+        .board-side {
+            display: flex;
+            gap: 0.3rem;
+        }
+
+        .board-side.top,
+        .board-side.bottom {
+            flex-direction: row;
+        }
+
+        .board-side.left,
+        .board-side.right {
+            flex-direction: column;
+        }
+
+        .board-house {
+            flex: 1;
+            background: rgba(255,255,255,0.1);
+            border-radius: 0.2rem;
+            padding: 0.25rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.1rem;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            min-height: auto;
+            overflow: hidden;
+        }
+
+        .board-house:hover {
+            background: rgba(255,255,255,0.15);
+            border-color: rgba(251, 191, 36, 0.3);
+        }
+
+        .board-house.active {
+            background: rgba(251, 191, 36, 0.2);
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
+            animation: pulseHouse 0.5s ease-in-out;
+        }
+
+        @keyframes pulseHouse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .house-icon {
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .house-name {
+            display: none;
+        }
+
+        .house-price {
+            display: none;
+        }
+
+        .house-players {
+            display: flex;
+            gap: 0.125rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            position: absolute;
+            bottom: 0.25rem;
+        }
+
+        .player-pawn {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            border: 0.5px solid rgba(255,255,255,0.6);
+            font-size: 0.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .board-center {
+            background: rgba(0,0,0,0.3);
+            border-radius: 0.2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 0.4rem;
+            grid-column: 3 / 8;
+            grid-row: 4 / 6; /* CORRIGIDO PARA 4/6 */
+            gap: 0.2rem;
+        }
+
+        .board-center h3 {
+            font-size: 0.8rem;
+            font-weight: 900;
+            margin: 0;
+            color: var(--accent-gold);
+            line-height: 1;
+        }
+
+        .board-center-icon {
+            font-size: 1.4rem;
+            margin: 0;
+        }
+
+        /* Board corners positioning */
+        .board-corner[style*="grid-column: 3"][style*="grid-row: 3"] {
+            grid-column: 8;
+            grid-row: 8;
+        }
+
+        .board-corner[style*="grid-column: 1"][style*="grid-row: 3"] {
+            grid-column: 1;
+            grid-row: 8;
+        }
+
+        .board-corner[style*="grid-column: 1"][style*="grid-row: 1"] {
+            grid-column: 1;
+            grid-row: 1;
+        }
+
+        .board-corner[style*="grid-column: 3"][style*="grid-row: 1"] {
+            grid-column: 8;
+            grid-row: 1;
+        }
+
+        @media (min-width: 480px) {
+            .board-game {
+                max-width: 100%;
+                padding: 0.6rem;
+                gap: 0.2rem;
+            }
+
+            .board-corner {
+                font-size: 1.4rem;
+            }
+
+            .board-corner-label {
+                display: block;
+                font-size: 0.5rem;
+            }
+
+            .house-icon {
+                font-size: 1.2rem;
+            }
+
+            .house-name {
+                display: block;
+                font-size: 0.5rem;
+                font-weight: 600;
+                text-align: center;
+                line-height: 1;
+                color: #e0e0e0;
+                word-break: break-word;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                line-clamp: 2;
+                -webkit-box-orient: vertical;
+            }
+
+            .house-price {
+                display: block;
+                font-size: 0.4rem;
+                color: var(--accent-gold);
+                font-weight: 700;
+                line-height: 1;
+            }
+
+            .player-pawn {
+                width: 10px;
+                height: 10px;
+            }
+
+            .board-center h3 {
+                font-size: 1.2rem;
+            }
+
+            .board-center-icon {
+                font-size: 2.2rem;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .board-game {
+                max-width: 100%;
+                padding: 0.8rem;
+                gap: 0.25rem;
+            }
+
+            .board-corner {
+                font-size: 1.6rem;
+            }
+
+            .board-corner-label {
+                font-size: 0.55rem;
+            }
+
+            .board-house {
+                padding: 0.3rem;
+            }
+
+            .house-icon {
+                font-size: 1.5rem;
+            }
+
+            .house-name {
+                font-size: 0.6rem;
+            }
+
+            .house-price {
+                font-size: 0.5rem;
+            }
+
+            .player-pawn {
+                width: 11px;
+                height: 11px;
+                font-size: 0.4rem;
+            }
+
+            .board-center {
+                padding: 0.5rem;
+            }
+
+            .board-center h3 {
+                font-size: 1.4rem;
+            }
+
+            .board-center-icon {
+                font-size: 2.6rem;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .board-game {
+                max-width: 750px;
+                padding: 1rem;
+                gap: 0.35rem;
+            }
+
+            .board-corner {
+                font-size: 1.8rem;
+            }
+
+            .board-corner-label {
+                font-size: 0.6rem;
+            }
+
+            .board-house {
+                padding: 0.4rem;
+            }
+
+            .house-icon {
+                font-size: 1.75rem;
+            }
+
+            .house-name {
+                font-size: 0.65rem;
+            }
+
+            .house-price {
+                font-size: 0.55rem;
+            }
+
+            .player-pawn {
+                width: 13px;
+                height: 13px;
+                font-size: 0.45rem;
+            }
+
+            .board-center {
+                padding: 0.8rem;
+                gap: 0.3rem;
+            }
+
+            .board-center h3 {
+                font-size: 1.6rem;
+            }
+
+            .board-center-icon {
+                font-size: 3rem;
+            }
+        }
+
+        /* ===== TABLET & DESKTOP RESPONSIVENESS ===== */
+        @media (min-width: 768px) {
+            .game-container {
+                padding-bottom: 0;
+            }
+
+            .game-board-wrapper {
+                padding: 1.5rem;
+            }
+
+            .board-container {
+                padding: 1rem;
+            }
+
+            .mobile-header {
+                padding: 1rem 2rem;
+            }
+
+            .mobile-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .bottom-nav {
+                position: relative;
+                grid-template-columns: repeat(4, 1fr);
+                max-width: 600px;
+                margin: 0 auto;
+                border-radius: 1rem;
+                bottom: auto;
+                padding: 1rem;
+            }
+
+            .sliding-panel {
+                max-width: 480px;
+                left: auto;
+                right: 0;
+                max-height: 100vh;
+                border-radius: 1rem 0 0 1rem;
+            }
+
+            .panel-content {
+                max-height: calc(100vh - 140px);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .game-container {
+                display: grid;
+                grid-template-columns: 360px 1fr 360px;
+                gap: 1.5rem;
+                padding: 1.5rem;
+                max-width: 1800px;
+                margin: 0 auto;
+                min-height: 100vh;
+            }
+
+            .mobile-header {
+                display: none;
+            }
+
+            .bottom-nav {
+                display: none;
+            }
+
+            .game-board-wrapper {
+                order: 2;
+                padding: 0;
+            }
+
+            .sliding-panel {
+                position: relative;
+                transform: translateY(0) !important;
+                max-height: calc(100vh - 3rem);
+                border-radius: 1rem;
+                max-width: none;
+                right: auto;
+            }
+
+            .sliding-panel.panel-left {
+                order: 1;
+            }
+
+            .sliding-panel.panel-right {
+                order: 3;
+            }
+
+            .panel-handle {
+                display: none;
+            }
+
+            .panel-overlay {
+                display: none;
+            }
+
+            .panel-close {
+                display: none;
+            }
+
+            .board-container {
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ========== TELA INICIAL - SELEÇÃO DE ORDEM ========== -->
+    <div id="setupScreen" class="setup-screen">
+        <div class="setup-container">
+            <div class="setup-header">
+                <h1>⚓ TUGLORDS</h1>
+                <p>Quem começa? Role os dados para decidir!</p>
+            </div>
+
+            <div id="playerSetupList" class="player-setup-list">
+                <!-- Players serão gerados aqui -->
+            </div>
+
+            <div class="setup-actions">
+                <button class="btn-primary" onclick="addPlayer()">➕ Adicionar Jogador</button>
+                <button class="btn-secondary" id="startOrderBtn" onclick="startOrderRolls()" disabled>
+                    🎲 Iniciar Sorteio
+                </button>
+            </div>
+
+            <div id="orderResults" class="order-results" style="display: none;">
+                <h3>📋 Ordem dos Jogadores</h3>
+                <div id="orderList"></div>
+                <button class="btn-primary" onclick="startGame()">
+                    🚢 Começar Jogo!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== TELA DO JOGO ========== -->
+    <div id="gameScreen" class="game-screen" style="display: none;">
+        <!-- Mobile Header -->
+        <div class="mobile-header">
+            <h1>⚓ TUGLORDS</h1>
+            <div class="header-stats">
+                <span id="currentPlayerName">Jogador 1</span>
+                <span>|</span>
+                <span id="currentRound">Rodada 1</span>
+            </div>
+        </div>
+
+        <!-- Main Container -->
+        <div class="game-container">
+            
+            <!-- Left Panel - Players -->
+            <div class="sliding-panel panel-left" id="panelPlayers">
+                <div class="panel-handle"></div>
+                <div class="panel-header">
+                    <h2 class="panel-title">👥 Jogadores</h2>
+                    <button class="panel-close" onclick="closePanel('panelPlayers')">✕</button>
+                </div>
+                <div class="panel-content">
+                    <div id="playersContainer">
+                        <!-- Player cards serão gerados dinamicamente -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center - Game Board -->
+            <div class="game-board-wrapper">
+                <div class="board-container">
+                    <!-- Visual Board - CENTRALIZADO -->
+                    <div id="visualBoard" style="width: 100%; display: flex; justify-content: center;"></div>
+
+                    <!-- Game Controls - COMPACTO -->
+                    <div style="text-align: center; padding: 0.5rem; width: 100%; margin-top: 0;">
+                        <h2 style="font-size: 1.25rem; font-weight: 900; margin-bottom: 0.5rem; text-align: center;">
+                            🎲 Turno de <span id="currentTurnPlayer">Jogador</span>
+                        </h2>
+                        
+                        <!-- Dice Display - CENTRALIZADO -->
+                        <div id="diceDisplay" style="font-size: 2.5rem; margin: 0.5rem 0; display: flex; justify-content: center; align-items: center; gap: 0.5rem;">
+                            ⚀ ⚀
+                        </div>
+
+                        <!-- Dice Button - CENTRALIZADO HORIZONTALMENTE -->
+                        <div style="margin-bottom: 0.75rem; display: flex; justify-content: center; align-items: center;">
+                            <button id="rollDiceBtn" class="btn-primary" onclick="rollDice()" style="font-size: 0.875rem; margin: 0 auto;">
+                                🎲 Jogar Dados
+                            </button>
+                        </div>
+
+                        <!-- Current Position Info - REDUZIDO -->
+                        <div id="positionInfo" style="background: rgba(255,255,255,0.1); border-radius: 0.5rem; padding: 0.75rem; margin-bottom: 0.75rem;">
+                            <p id="currentHouseName" style="font-size: 1rem; color: var(--accent-gold); margin: 0; font-weight: 700;">
+                                Casa Inicial
+                            </p>
+                        </div>
+
+                        <!-- Contextual Actions (aparecem baseado na casa) - CENTRALIZADO -->
+                        <div id="contextualActions" style="display: none; justify-content: center;">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; max-width: 400px;">
+                                <!-- Botões serão adicionados dinamicamente -->
+                            </div>
+                        </div>
+
+                        <!-- End Turn Button - CENTRALIZADO -->
+                        <div style="margin-top: 0.5rem; display: flex; justify-content: center;">
+                            <button id="endTurnBtn" class="btn-secondary" onclick="endTurn()" style="max-width: 220px; font-size: 0.875rem;">
+                                ➡️ Finalizar Turno
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Bank & Info -->
+            <div class="sliding-panel panel-right" id="panelBank">
+                <div class="panel-handle"></div>
+                <div class="panel-header">
+                    <h2 class="panel-title">🏦 Terminal Bancário</h2>
+                    <button class="panel-close" onclick="closePanel('panelBank')">✕</button>
+                </div>
+                <div class="panel-content">
+                    <div style="background: rgba(255,255,255,0.05); border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 1rem;">
+                        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem;">💳 Empréstimos</h3>
+                        <div style="display: grid; gap: 0.75rem;">
+                            <button class="btn-secondary" style="justify-content: space-between;">
+                                <span>F$ 5 mi</span>
+                                <span style="font-size: 0.875rem; opacity: 0.7;">Juros: 10%</span>
+                            </button>
+                            <button class="btn-secondary" style="justify-content: space-between;">
+                                <span>F$ 10 mi</span>
+                                <span style="font-size: 0.875rem; opacity: 0.7;">Juros: 15%</span>
+                            </button>
+                            <button class="btn-secondary" style="justify-content: space-between;">
+                                <span>F$ 20 mi</span>
+                                <span style="font-size: 0.875rem; opacity: 0.7;">Juros: 20%</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(255,255,255,0.05); border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 1rem;">
+                        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem;">📊 Mercado de Ações</h3>
+                        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                            <div style="display: flex; justify-content: space-between; padding: 0.75rem; background: rgba(16, 185, 129, 0.1); border-radius: 0.5rem;">
+                                <span>TUGLIFE</span>
+                                <span style="color: #10b981;">+5.2%</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 0.75rem; background: rgba(239, 68, 68, 0.1); border-radius: 0.5rem;">
+                                <span>OCEANIC</span>
+                                <span style="color: #ef4444;">-2.8%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(255,255,255,0.05); border-radius: 0.75rem; padding: 1.5rem;">
+                        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem;">📜 Regras Rápidas</h3>
+                        <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.875rem; line-height: 1.6; color: #94a3b8;">
+                            <li style="margin-bottom: 0.5rem;">🎯 Objetivo: Dominar o mercado de rebocadores</li>
+                            <li style="margin-bottom: 0.5rem;">🎲 Role os dados para mover</li>
+                            <li style="margin-bottom: 0.5rem;">⚓ Compre portos e rebocadores</li>
+                            <li style="margin-bottom: 0.5rem;">💰 Gerencie suas finanças</li>
+                            <li>🏆 Seja o primeiro a completar todos objetivos</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation - Mobile -->
+        <nav class="bottom-nav">
+            <button class="nav-btn active" onclick="openPanel('panelPlayers', this)">
+                <span class="nav-btn-icon">👥</span>
+                <span>Jogadores</span>
+            </button>
+            <button class="nav-btn" onclick="toggleBoard(this)">
+                <span class="nav-btn-icon">🎲</span>
+                <span>Tabuleiro</span>
+            </button>
+            <button class="nav-btn" onclick="openPanel('panelBank', this)">
+                <span class="nav-btn-icon">🏦</span>
+                <span>Banco</span>
+            </button>
+            <button class="nav-btn" onclick="openPanel('panelMenu', this)">
+                <span class="nav-btn-icon">⚙️</span>
+                <span>Menu</span>
+            </button>
+        </nav>
+
+        <!-- Overlay -->
+        <div class="panel-overlay" id="panelOverlay" onclick="closeAllPanels()"></div>
+
+        <!-- Menu Panel -->
+        <div class="sliding-panel" id="panelMenu">
+            <div class="panel-handle"></div>
+            <div class="panel-header">
+                <h2 class="panel-title">⚙️ Menu</h2>
+                <button class="panel-close" onclick="closePanel('panelMenu')">✕</button>
+            </div>
+            <div class="panel-content">
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    <button class="btn-primary">📖 Manual do Jogo</button>
+                    <button class="btn-primary">🏆 Vitória Épica</button>
+                    <button class="btn-secondary">⚙️ Configurações</button>
+                    <button class="btn-secondary">📊 Estatísticas</button>
+                    <button class="btn-secondary">💾 Salvar Jogo</button>
+                    <button class="btn-secondary">📤 Carregar Jogo</button>
+                    <button class="btn-secondary" style="color: #ef4444;">🚪 Sair</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== GAME STATE ==========
+        const gameState = {
+            players: [],
+            currentPlayerIndex: 0,
+            currentRound: 1,
+            phase: 'setup', // setup, playing
+            playerOrder: [],
+            diceRolled: false,
+            houses: [
+                { name: 'Casa Inicial', type: 'start', actions: [] },
+                { name: 'Porto de Fortaleza', type: 'port', price: 5000, actions: ['buy'] },
+                { name: 'Evento Oceânico', type: 'event', actions: [] },
+                { name: 'Porto de Santos', type: 'port', price: 7000, actions: ['buy'] },
+                { name: 'Posto de Combustível', type: 'fuel', price: 3000, actions: ['buy'] },
+                { name: 'Banco', type: 'bank', actions: ['loan'] },
+                { name: 'Porto do Rio', type: 'port', price: 8000, actions: ['buy'] },
+                { name: 'Carta Surpresa', type: 'surprise', actions: [] },
+                { name: 'Oficina Naval', type: 'workshop', price: 4000, actions: ['buy'] },
+                { name: 'Porto de Salvador', type: 'port', price: 6000, actions: ['buy'] }
+            ]
+        };
+
+        // ========== SISTEMA DE EXAMES: PERGUNTAS DOS TREINAMENTOS ==========
+        const TRAINING_QUESTIONS = {
+            fire: [
+                {
+                    question: "Qual é a primeira ação ao descobrir um incêndio a bordo?",
+                    options: [
+                        "Abandonar o navio imediatamente",
+                        "Tentar apagar com água do mar",
+                        "Soar o alarme geral",
+                        "Contactar o armador"
+                    ],
+                    correct: "Soar o alarme geral"
+                },
+                {
+                    question: "Qual classe de incêndio envolve líquidos inflamáveis?",
+                    options: [
+                        "Classe A",
+                        "Classe B",
+                        "Classe C",
+                        "Classe D"
+                    ],
+                    correct: "Classe B"
+                }
+            ],
+            rescue: [
+                {
+                    question: "Qual manobra é usada para resgatar homem ao mar?",
+                    options: [
+                        "Manobra de Scharnow",
+                        "Manobra de Williamson",
+                        "Manobra de Anderson",
+                        "Manobra de Boutakov"
+                    ],
+                    correct: "Manobra de Williamson"
+                },
+                {
+                    question: "Qual equipamento deve ser lançado primeiro para homem ao mar?",
+                    options: [
+                        "Colete salva-vidas",
+                        "Boia circular",
+                        "Corda com nó",
+                        "Escada de embarque"
+                    ],
+                    correct: "Boia circular"
+                }
+            ],
+            collision: [
+                {
+                    question: "Qual é a regra de ouro para evitar colisões no mar?",
+                    options: [
+                        "Máquinas sempre prontas",
+                        "Vigília constante",
+                        "Velocidade reduzida",
+                        "Sinais sonoros contínuos"
+                    ],
+                    correct: "Vigília constante"
+                },
+                {
+                    question: "Em situação de risco de colisão, qual embarcação deve manobrar?",
+                    options: [
+                        "A menor embarcação",
+                        "A que avista primeiro",
+                        "A que tem o outro por bombordo",
+                        "A que tem o outro por boreste"
+                    ],
+                    correct: "A que tem o outro por boreste"
+                }
+            ],
+            abandon: [
+                {
+                    question: "Qual sinal sonoro indica abandono de navio?",
+                    options: [
+                        "Um apito longo",
+                        "Três apitos curtos",
+                        "Sete apitos curtos e um longo",
+                        "Dois apitos longos"
+                    ],
+                    correct: "Sete apitos curtos e um longo"
+                },
+                {
+                    question: "O que é EPIRB?",
+                    options: [
+                        "Equipamento de primeiros socorros",
+                        "Radiobaliza de localização de sinistros",
+                        "Equipamento de proteção individual",
+                        "Extintor portátil de incêndio"
+                    ],
+                    correct: "Radiobaliza de localização de sinistros"
+                }
+            ]
+        };
+
+        // ========== EVENTOS OCEÂNICOS ==========
+        const OCEAN_EVENTS = [
+            // EVENTOS POSITIVOS (4)
+            {
+                id: 1,
+                name: 'Vento Favorável',
+                icon: '⛵',
+                description: 'As correntes estão a seu favor!',
+                effect: 'Avance até a próxima propriedade sem pagar aluguel',
+                type: 'advance_to_property',
+                skipRent: true
+            },
+            {
+                id: 2,
+                name: 'Avistamento de Baleias',
+                icon: '🐋',
+                description: 'Contrato de pesquisa oceanográfica!',
+                effect: 'Receba F$ 300 mil de contrato científico',
+                type: 'money',
+                amount: 300
+            },
+            {
+                id: 3,
+                name: 'Corrente do Brasil',
+                icon: '🌊',
+                description: 'Corrente oceânica acelera sua navegação!',
+                effect: 'Avance 5 casas',
+                type: 'move',
+                spaces: 5
+            },
+            {
+                id: 4,
+                name: 'Contrato de Emergência',
+                icon: '📡',
+                description: 'Reboque emergencial bem remunerado!',
+                effect: 'Receba F$ 500 mil imediatamente',
+                type: 'money',
+                amount: 500
+            },
+            
+            // EVENTOS NEGATIVOS (3)
+            {
+                id: 5,
+                name: 'Tempestade Tropical',
+                icon: '🌀',
+                description: 'Condições adversas forçam retorno!',
+                effect: 'Volte à última propriedade visitada',
+                type: 'return_to_last_property'
+            },
+            {
+                id: 6,
+                name: 'Avaria no Motor',
+                icon: '⚠️',
+                description: 'Reparo emergencial necessário!',
+                effect: 'Pague F$ 200 mil de manutenção',
+                type: 'money',
+                amount: -200
+            },
+            {
+                id: 7,
+                name: 'Zona de Risco',
+                icon: '🦈',
+                description: 'Navegação perigosa! Docagem preventiva.',
+                effect: 'Perca o próximo turno',
+                type: 'skip_turn'
+            },
+            
+            // EVENTOS NEUTROS/MISTOS (3)
+            {
+                id: 8,
+                name: 'Inspeção de Segurança',
+                icon: '🏴‍☠️',
+                description: 'Fiscalização de segurança marítima',
+                effect: 'Certificados completos = F$ 200 mil | Incompleto = F$ 150 mil multa',
+                type: 'inspection'
+            },
+            {
+                id: 9,
+                name: 'Oportunidade de Salvamento',
+                icon: '🎣',
+                description: 'Embarcação em perigo solicita auxílio',
+                effect: 'Aceitar: +F$ 400 mil mas perca turno | Recusar: continue',
+                type: 'choice_salvage'
+            },
+            {
+                id: 10,
+                name: 'Escolha de Rota',
+                icon: '🌅',
+                description: 'Duas rotas disponíveis para seu destino',
+                effect: 'Rota Norte: +3 casas | Rota Sul: +F$ 250 mil',
+                type: 'choice_route'
+            }
+        ];
+
+        const playerColors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+        const playerIcons = ['⚓', '🚢', '⛵', '🛟', '🎣', '🏴‍☠️'];
+
+        // ========== SETUP FUNCTIONS ==========
+        function addPlayer() {
+            const playerNum = gameState.players.length + 1;
+            if (playerNum > 6) {
+                showNotification('Máximo de 6 jogadores!');
+                return;
+            }
+
+            const player = {
+                id: playerNum,
+                name: `Jogador ${playerNum}`,
+                icon: playerIcons[playerNum - 1],
+                color: playerColors[playerNum - 1],
+                money: 1500, // F$ 1,5 mi inicial
+                position: 0,
+                properties: [],
+                rolled: false,
+                rollValue: 0,
+                // ===== SISTEMA DE REBOCADORES =====
+                portTugs: 0,                    // Quantidade de rebocadores portuários
+                hasOceanTug: false,             // Tem rebocador oceânico?
+                hasTuglord: false,              // Tem classe TugLord?
+                // ===== SISTEMA DE DOCAGEM =====
+                dockedTugs: {
+                    port: 0,                    // Portuários docados
+                    ocean: false,               // Oceânico docado?
+                    tuglord: false,             // TugLord docado?
+                    turnsRemaining: 0           // Turnos restantes de docagem
+                },
+                // ===== SISTEMA DE CERTIFICADOS =====
+                certificates: [],               // Lista de certificados obtidos
+                // ===== SISTEMA BANCÁRIO =====
+                loans: [],                      // Array de empréstimos [{amount, interest, turns}]
+                // ===== BOLSA DE VALORES =====
+                stocks: {},                     // Ações por propriedade {propertyName: quantity}
+                // ===== SISTEMA DE FALÊNCIA =====
+                bankruptcyStage: 0,             // 0=solvente, 1=arresto, 2=falido
+                isEliminated: false,            // Eliminado do jogo?
+                // ===== EVENTOS OCEÂNICOS =====
+                skipNextTurn: false,            // Pular próximo turno?
+                skipNextRent: false             // Não pagar próximo aluguel?
+            };
+
+            gameState.players.push(player);
+            renderPlayerSetupList();
+            
+            // Enable start button if at least 2 players
+            if (gameState.players.length >= 2) {
+                document.getElementById('startOrderBtn').disabled = false;
+            }
+        }
+
+        function renderPlayerSetupList() {
+            const container = document.getElementById('playerSetupList');
+            container.innerHTML = gameState.players.map(player => `
+                <div class="player-setup-card" style="border-left: 4px solid ${player.color};">
+                    <div style="display: flex; align-items: center; gap: 1rem; flex: 1;">
+                        <span style="font-size: 2rem;">${player.icon}</span>
+                        <input 
+                            type="text" 
+                            value="${player.name}" 
+                            onchange="updatePlayerName(${player.id}, this.value)"
+                            class="player-name-input"
+                            placeholder="Nome do jogador"
+                        />
+                    </div>
+                    <div id="roll-${player.id}" class="player-roll-result">
+                        ${player.rolled ? `🎲 ${player.rollValue}` : ''}
+                    </div>
+                    <button class="btn-remove" onclick="removePlayer(${player.id})">✕</button>
+                </div>
+            `).join('');
+        }
+
+        function updatePlayerName(playerId, newName) {
+            const player = gameState.players.find(p => p.id === playerId);
+            if (player) {
+                player.name = newName || `Jogador ${playerId}`;
+            }
+        }
+
+        function removePlayer(playerId) {
+            gameState.players = gameState.players.filter(p => p.id !== playerId);
+            renderPlayerSetupList();
+            
+            if (gameState.players.length < 2) {
+                document.getElementById('startOrderBtn').disabled = true;
+            }
+        }
+
+        function startOrderRolls() {
+            let currentPlayerIndex = 0;
+            const rollInterval = setInterval(() => {
+                if (currentPlayerIndex >= gameState.players.length) {
+                    clearInterval(rollInterval);
+                    determineOrder();
+                    return;
+                }
+
+                const player = gameState.players[currentPlayerIndex];
+                const rollValue = Math.floor(Math.random() * 6) + 1 + Math.floor(Math.random() * 6) + 1;
+                player.rolled = true;
+                player.rollValue = rollValue;
+
+                // Animate dice
+                const rollElement = document.getElementById(`roll-${player.id}`);
+                let animCount = 0;
+                const animInterval = setInterval(() => {
+                    const rand = Math.floor(Math.random() * 6) + 1 + Math.floor(Math.random() * 6) + 1;
+                    rollElement.textContent = `🎲 ${rand}`;
+                    animCount++;
+                    
+                    if (animCount > 10) {
+                        clearInterval(animInterval);
+                        rollElement.textContent = `🎲 ${rollValue}`;
+                        rollElement.style.animation = 'pulse 0.5s';
+                    }
+                }, 100);
+
+                currentPlayerIndex++;
+            }, 1500);
+        }
+
+        function determineOrder() {
+            // Sort by roll value (highest first)
+            gameState.playerOrder = [...gameState.players].sort((a, b) => b.rollValue - a.rollValue);
+            
+            // Show results
+            const orderList = document.getElementById('orderList');
+            orderList.innerHTML = gameState.playerOrder.map((player, index) => `
+                <div class="order-item" style="border-left: 4px solid ${player.color};">
+                    <span style="font-size: 1.5rem; width: 40px;">${index + 1}º</span>
+                    <span style="font-size: 1.5rem;">${player.icon}</span>
+                    <span style="flex: 1; font-weight: 600;">${player.name}</span>
+                    <span style="font-weight: 700; color: var(--accent-gold);">🎲 ${player.rollValue}</span>
+                </div>
+            `).join('');
+
+            document.getElementById('orderResults').style.display = 'block';
+            document.querySelector('.setup-actions').style.display = 'none';
+        }
+
+        function startGame() {
+            // Reorganize players array based on order
+            gameState.players = gameState.playerOrder;
+            gameState.phase = 'playing';
+            gameState.currentPlayerIndex = 0;
+
+            // Hide setup, show game
+            document.getElementById('setupScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+
+            // Render game UI
+            renderBoard();
+            renderPlayersPanel();
+            updateTurnDisplay();
+            
+            showNotification(`${gameState.players[0].icon} ${gameState.players[0].name} começa!`);
+        }
+
+        // ========== BOARD RENDERING ==========
+        function renderBoard() {
+            const boardDiv = document.getElementById('visualBoard');
+            
+            // Definir layout do tabuleiro (36 casas ORIGINAIS TUGLORDS VALIDADAS) - SENTIDO HORÁRIO CORRETO
+            // Todas as casas validadas contra o arquivo original v14.0
+            const boardLayout = [
+                // Posição 0: Canto inferior direito (PARTIDA)
+                { pos: 0, name: 'Partida', icon: '🏁', type: 'corner', price: null, owner: undefined },
+                
+                // Posições 1-8: Lado INFERIOR (da direita para ESQUERDA) - HORÁRIO
+                { pos: 1, name: 'Porto de Suape', icon: '⚓', type: 'property', price: 180, rent: [2, 10, 30, 90, 160, 250], owner: undefined, stocks: 0 },
+                { pos: 2, name: 'Bolsa de Valores', icon: '📈', type: 'stock_exchange', price: null, owner: undefined },
+                { pos: 3, name: 'Porto de Itaqui', icon: '⚓', type: 'property', price: 260, rent: [4, 20, 60, 180, 320, 450], owner: undefined, stocks: 0 },
+                { pos: 4, name: 'Oficina KATEC', icon: '🔧', type: 'workshop', price: 150, serviceFee: 60, certificate: 'cert_katec', owner: undefined },
+                { pos: 5, name: 'Treinamento: Combate a Incêndio', icon: '🔥', type: 'training', price: 50, certificate: 'fire' },
+                { pos: 6, name: 'Porto de Paranaguá', icon: '🚢', type: 'property', price: 200, rent: [6, 30, 90, 270, 400, 550], owner: undefined, stocks: 0 },
+                { pos: 7, name: 'Comprar Rebocador Portuário', icon: '⚓+', type: 'tug_purchase', price: 200, tugType: 'port' },
+                { pos: 8, name: 'Imposto', icon: '💸', type: 'tax', price: 200 },
+                
+                // Posição 9: Canto inferior esquerdo (SORTE) - NÃO É CORNER, É LUCK!
+                { pos: 9, name: 'Sorte', icon: '🍀', type: 'luck', price: null },
+                
+                // Posições 10-17: Lado ESQUERDO (de baixo para CIMA) - HORÁRIO
+                { pos: 10, name: 'Porto do Rio Grande', icon: '🚢', type: 'property', price: 100, rent: [6, 30, 90, 270, 400, 550], owner: undefined, stocks: 0 },
+                { pos: 11, name: 'Treinamento: Homem ao Mar', icon: '🏊', type: 'training', price: 50, certificate: 'rescue' },
+                { pos: 12, name: 'Serviços de Combustível', icon: '⛽', type: 'service', price: 150, owner: undefined },
+                { pos: 13, name: 'Oficina MDU', icon: '⚙️', type: 'workshop', price: 150, serviceFee: 50, certificate: 'cert_mtu', owner: undefined },
+                { pos: 14, name: 'Porto de Itaguaí', icon: '🚢', type: 'property', price: 220, rent: [8, 40, 100, 300, 450, 600], owner: undefined, stocks: 0 },
+                { pos: 15, name: 'Universidade do Mar', icon: '🎓', type: 'university', price: null },
+                { pos: 16, name: 'Porto de Santos', icon: '🏗️', type: 'property', price: 340, rent: [10, 50, 150, 450, 625, 750], owner: undefined, stocks: 0 },
+                { pos: 17, name: 'Sorte', icon: '🍀', type: 'luck', price: null },
+                
+                // Posição 18: Canto superior esquerdo (CERTIFICADO TUGLORD)
+                { pos: 18, name: 'Certificado TugLord', icon: '🎖️', type: 'tuglord_certificate', price: null },
+                
+                // Posições 19-26: Lado SUPERIOR (da esquerda para DIREITA) - HORÁRIO
+                { pos: 19, name: 'Porto de Vitória', icon: '🏗️', type: 'property', price: 140, rent: [10, 50, 150, 450, 625, 750], owner: undefined, stocks: 0 },
+                { pos: 20, name: 'Treinamento: Colisão', icon: '💥', type: 'training', price: 75, certificate: 'collision' },
+                { pos: 21, name: 'Porto de Manaus', icon: '🏗️', type: 'property', price: 160, rent: [12, 60, 180, 500, 700, 900], owner: undefined, stocks: 0 },
+                { pos: 22, name: 'Oficina SCHOTTEK Propulsores', icon: '🔩', type: 'workshop', price: 150, serviceFee: 40, certificate: 'cert_schottek', owner: undefined },
+                { pos: 23, name: 'Porto Central', icon: '📜', type: 'contract', price: 1000 },
+                { pos: 24, name: 'Estaleiro', icon: '🏭', type: 'service', price: 150, repairCost: 75, tuglordBuildCost: 750, owner: undefined },
+                { pos: 25, name: 'Sorte', icon: '🍀', type: 'luck', price: null },
+                { pos: 26, name: 'Comprar Rebocador Oceânico', icon: 'ρυ', type: 'tug_purchase', price: 500, tugType: 'ocean' },
+                
+                // Posição 27: Canto superior direito (BANCO) - NÃO É CORNER, É BANK!
+                { pos: 27, name: 'Banco', icon: '🏛️', type: 'bank', price: null },
+                
+                // Posições 28-35: Lado DIREITO (de cima para BAIXO) - HORÁRIO
+                { pos: 28, name: 'Porto de Aratu', icon: '🌊', type: 'property', price: 180, rent: [14, 70, 200, 550, 750, 950], owner: undefined, stocks: 0 },
+                { pos: 29, name: 'Treinamento: Abandono de Navio', icon: '🏃‍♂️', type: 'training', price: 75, certificate: 'abandon' },
+                { pos: 30, name: 'Porto do Açu', icon: '🌊', type: 'property', price: 200, rent: [16, 80, 220, 600, 800, 1000], owner: undefined, stocks: 0 },
+                { pos: 31, name: 'Evento Oceânico', icon: '🌊', type: 'ocean_event', price: null },
+                { pos: 32, name: 'Sorte', icon: '🍀', type: 'luck', price: null },
+                { pos: 33, name: 'Zona de Manobra Portuária', icon: '🔄', type: 'maneuver', price: null },
+                { pos: 34, name: 'Porto de Itapoá', icon: '📦', type: 'property', price: 220, rent: [18, 90, 250, 700, 875, 1050], owner: undefined, stocks: 0 },
+                { pos: 35, name: 'Porto de Imbituba', icon: '📦', type: 'property', price: 240, rent: [20, 100, 300, 750, 925, 1100], owner: undefined, stocks: 0 },
+            ];
+
+            // Update gameState houses with full board
+            gameState.houses = boardLayout;
+
+            // Create board HTML - LAYOUT RETANGULAR MONOPOLY
+            let boardHTML = '<div class="board-game">';
+            
+            // Canto inferior direito (PARTIDA - posição 0)
+            boardHTML += '<div class="board-corner" style="grid-column: 9; grid-row: 7;"><span>🏁</span></div>';
+            
+            // Canto inferior direito (PARTIDA - posição 0)
+            boardHTML += '<div class="board-corner" style="grid-column: 9; grid-row: 7;"><span>🏁</span></div>';
+            
+            // Lado INFERIOR (posições 1-8) - grid-row: 7, colunas 1-8
+            for (let i = 8; i >= 1; i--) {
+                const house = boardLayout[i];
+                const col = 9 - i; // Colunas 1, 2, 3, 4, 5, 6, 7, 8
+                boardHTML += `<div class="board-house" data-position="${house.pos}" style="grid-column: ${col}; grid-row: 7;" onclick="selectHouse(${house.pos})">`;
+                boardHTML += `<div class="house-icon">${house.icon}</div>`;
+                boardHTML += `<div class="house-name">${house.name}</div>`;
+                if (house.price) boardHTML += `<div class="house-price">${fmF(house.price)}</div>`;
+                boardHTML += '<div class="house-players"></div></div>';
+            }
+            
+            // Canto inferior esquerdo (SORTE - posição 9)
+            boardHTML += '<div class="board-corner" style="grid-column: 1; grid-row: 7;"><span>🍀</span></div>';
+            
+            // Lado ESQUERDO (posições 10-17) - grid-column: 1, linhas 7-2
+            for (let i = 10; i <= 16; i++) { // Apenas posições 10-16 (pula 17 que tem grid-row: 0)
+                const house = boardLayout[i];
+                const row = 8 - (i - 9); // Linhas 7, 6, 5, 4, 3, 2, 1
+                boardHTML += `<div class="board-house" data-position="${house.pos}" style="grid-column: 1; grid-row: ${row};" onclick="selectHouse(${house.pos})">`;
+                boardHTML += `<div class="house-icon">${house.icon}</div>`;
+                boardHTML += `<div class="house-name">${house.name}</div>`;
+                if (house.price) boardHTML += `<div class="house-price">${fmF(house.price)}</div>`;
+                boardHTML += '<div class="house-players"></div></div>';
+            }
+            
+            // Canto superior esquerdo (CERTIFICADO TUGLORD - posição 18)
+            boardHTML += '<div class="board-corner" style="grid-column: 1; grid-row: 1;"><span>🎖️</span></div>';
+            
+            // Lado SUPERIOR (posições 19-26) - grid-row: 1, colunas 2-8
+            for (let i = 19; i <= 26; i++) {
+                const house = boardLayout[i];
+                const col = i - 17; // Colunas 2, 3, 4, 5, 6, 7, 8, 9
+                boardHTML += `<div class="board-house" data-position="${house.pos}" style="grid-column: ${col}; grid-row: 1;" onclick="selectHouse(${house.pos})">`;
+                boardHTML += `<div class="house-icon">${house.icon}</div>`;
+                boardHTML += `<div class="house-name">${house.name}</div>`;
+                if (house.price) boardHTML += `<div class="house-price">${fmF(house.price)}</div>`;
+                boardHTML += '<div class="house-players"></div></div>';
+            }
+            
+            // Canto superior direito (BANCO - posição 27)
+            boardHTML += '<div class="board-corner" style="grid-column: 9; grid-row: 1;"><span>🏛️</span></div>';
+            
+            // Lado DIREITO (posições 28-35) - grid-column: 9, linhas 2-8
+            for (let i = 28; i <= 35; i++) {
+                const house = boardLayout[i];
+                const row = i - 26; // Linhas 2, 3, 4, 5, 6, 7, 8
+                boardHTML += `<div class="board-house" data-position="${house.pos}" style="grid-column: 9; grid-row: ${row};" onclick="selectHouse(${house.pos})">`;
+                boardHTML += `<div class="house-icon">${house.icon}</div>`;
+                boardHTML += `<div class="house-name">${house.name}</div>`;
+                if (house.price) boardHTML += `<div class="house-price">${fmF(house.price)}</div>`;
+                boardHTML += '<div class="house-players"></div></div>';
+            }
+            
+            // Centro - Branding (CORREÇÃO: grid-row 4/6)
+            boardHTML += '<div class="board-center" style="grid-column: 3 / 8; grid-row: 4 / 6;">';
+            boardHTML += '<div class="board-center-icon">⚓</div>';
+            boardHTML += '<h3>TUGLORDS</h3>';
+            boardHTML += '<p style="font-size: 0.7rem; color: #94a3b8; margin: 0.5rem 0 0 0;">Domínio Portuário</p>';
+            boardHTML += '</div>';
+            
+            boardHTML += '</div>';
+            
+            boardDiv.innerHTML = boardHTML;
+            
+            // Update player positions
+            updatePlayerPositions();
+        }
+
+        function updatePlayerPositions() {
+            // Clear all player pawns
+            document.querySelectorAll('.house-players').forEach(el => el.innerHTML = '');
+            
+            // Remove active class from all houses
+            document.querySelectorAll('.board-house').forEach(house => house.classList.remove('active'));
+            document.querySelectorAll('.board-corner').forEach(corner => corner.classList.remove('active'));
+            
+            // ========== ADICIONAR INDICADORES DE OWNERSHIP ==========
+            document.querySelectorAll('.board-house').forEach(houseEl => {
+                const position = parseInt(houseEl.getAttribute('data-position'));
+                const house = gameState.houses[position];
+                
+                // Remover ownership anterior
+                const oldOwnerBar = houseEl.querySelector('.owner-bar');
+                if (oldOwnerBar) oldOwnerBar.remove();
+                
+                // Se tem dono, adicionar indicador
+                if (house && house.owner !== undefined) {
+                    const owner = gameState.players.find(p => p.id === house.owner);
+                    if (owner) {
+                        const ownerBar = document.createElement('div');
+                        ownerBar.className = 'owner-bar';
+                        ownerBar.style.cssText = `
+                            position: absolute;
+                            top: 0;
+                            left: 0;
+                            right: 0;
+                            height: 4px;
+                            background: ${owner.color};
+                            box-shadow: 0 0 8px ${owner.color};
+                        `;
+                        ownerBar.title = `Dono: ${owner.name}`;
+                        houseEl.style.position = 'relative';
+                        houseEl.insertBefore(ownerBar, houseEl.firstChild);
+                    }
+                }
+            });
+            
+            // Place players on their positions
+            gameState.players.forEach(player => {
+                // Buscar elemento por data-position OU pelo .house-players direto nos corners
+                let houseEl = document.querySelector(`[data-position="${player.position}"] .house-players`);
+                
+                // Se não encontrou (é um corner especial), buscar no corner
+                if (!houseEl) {
+                    // Para posições 9, 18, 27 que são corners com .house-players
+                    const allHousePlayers = document.querySelectorAll('.house-players');
+                    allHousePlayers.forEach(el => {
+                        const parent = el.closest('.board-corner');
+                        if (parent) {
+                            // Detectar qual corner é baseado na posição do grid
+                            const gridCol = parent.style.gridColumn;
+                            const gridRow = parent.style.gridRow;
+                            
+                            // Posição 9: grid-column: 1; grid-row: 3
+                            if (gridCol === '1' && gridRow === '3' && player.position === 9) {
+                                houseEl = el;
+                            }
+                            // Posição 18: grid-column: 1; grid-row: 1
+                            if (gridCol === '1' && gridRow === '1' && player.position === 18) {
+                                houseEl = el;
+                            }
+                            // Posição 27: grid-column: 3; grid-row: 1
+                            if (gridCol === '3' && gridRow === '1' && player.position === 27) {
+                                houseEl = el;
+                            }
+                        }
+                    });
+                }
+                
+                if (houseEl) {
+                    const pawn = document.createElement('div');
+                    pawn.className = 'player-pawn';
+                    pawn.style.background = player.color;
+                    pawn.textContent = player.icon;
+                    pawn.title = player.name;
+                    houseEl.appendChild(pawn);
+                }
+                
+                // Highlight current player's position
+                if (player === gameState.players[gameState.currentPlayerIndex]) {
+                    const currentHouse = document.querySelector(`[data-position="${player.position}"]`);
+                    if (currentHouse) {
+                        currentHouse.classList.add('active');
+                    } else {
+                        // É um corner especial, adicionar active no corner
+                        const allCorners = document.querySelectorAll('.board-corner');
+                        allCorners.forEach(corner => {
+                            const gridCol = corner.style.gridColumn;
+                            const gridRow = corner.style.gridRow;
+                            if ((gridCol === '1' && gridRow === '3' && player.position === 9) ||
+                                (gridCol === '1' && gridRow === '1' && player.position === 18) ||
+                                (gridCol === '3' && gridRow === '1' && player.position === 27)) {
+                                corner.classList.add('active');
+                            }
+                        });
+                    }
+                }
+            });
+        }
+
+        function selectHouse(position) {
+            const house = gameState.houses[position];
+            if (house) {
+                showNotification(`📍 ${house.name}`);
+            }
+        }
+
+        // ========== GAME FUNCTIONS ==========
+        function renderPlayersPanel() {
+            const container = document.getElementById('playersContainer');
+            container.innerHTML = gameState.players.map((player, index) => {
+                // Calcular frota operacional
+                const portTugsOperational = player.portTugs - player.dockedTugs.port;
+                const oceanTugOperational = player.hasOceanTug && !player.dockedTugs.ocean;
+                const tuglordOperational = player.hasTuglord && !player.dockedTugs.tuglord;
+                
+                // Lista de ativos
+                let assetsList = '';
+                if (player.properties.length > 0) {
+                    assetsList += `<p class="text-sm text-slate-300" style="margin: 0.5rem 0;">
+                        📦 <strong>Propriedades (${player.properties.length}):</strong><br>
+                        <span style="color: #94a3b8; font-size: 0.85rem;">${player.properties.join(', ')}</span>
+                    </p>`;
+                }
+                
+                // Frota
+                let fleetInfo = '';
+                if (player.portTugs > 0 || player.hasOceanTug || player.hasTuglord) {
+                    fleetInfo += `<p class="text-sm text-slate-300" style="margin: 0.5rem 0;">
+                        ⚓ <strong>Frota:</strong><br>`;
+                    
+                    if (player.portTugs > 0) {
+                        fleetInfo += `<span style="color: ${portTugsOperational > 0 ? '#22c55e' : '#ef4444'}; font-size: 0.85rem;">
+                            • Portuários: ${portTugsOperational}/${player.portTugs} operacionais
+                        </span><br>`;
+                    }
+                    
+                    if (player.hasOceanTug) {
+                        fleetInfo += `<span style="color: ${oceanTugOperational ? '#22c55e' : '#ef4444'}; font-size: 0.85rem;">
+                            • Oceânico: ${oceanTugOperational ? 'Operacional' : 'Docado'}
+                        </span><br>`;
+                    }
+                    
+                    if (player.hasTuglord) {
+                        fleetInfo += `<span style="color: ${tuglordOperational ? '#fbbf24' : '#ef4444'}; font-size: 0.85rem;">
+                            • Classe TugLord: ${tuglordOperational ? 'Operacional' : 'Docado'}
+                        </span>`;
+                    }
+                    
+                    fleetInfo += `</p>`;
+                }
+                
+                // Certificados
+                let certsInfo = '';
+                if (player.certificates.length > 0) {
+                    certsInfo += `<p class="text-sm text-slate-300" style="margin: 0.5rem 0;">
+                        🎓 <strong>Certificados (${player.certificates.length}):</strong><br>
+                        <span style="color: #94a3b8; font-size: 0.85rem;">${player.certificates.join(', ')}</span>
+                    </p>`;
+                }
+                
+                const assetsContent = assetsList || fleetInfo || certsInfo 
+                    ? assetsList + fleetInfo + certsInfo 
+                    : '<p class="text-sm text-slate-400">Nenhum ativo ainda</p>';
+                
+                return `
+                <div class="player-card ${index === gameState.currentPlayerIndex ? 'active' : ''}" 
+                     style="border-left: 4px solid ${player.color};">
+                    <div class="player-header">
+                        <span class="player-name">${player.icon} ${player.name}</span>
+                        <span class="player-money">${fmF(player.money)}</span>
+                    </div>
+                    <div class="tabs-container">
+                        <button class="tab-btn active" onclick="switchTab(this, 'fin-${player.id}')">Finanças</button>
+                        <button class="tab-btn" onclick="switchTab(this, 'assets-${player.id}')">Ativos</button>
+                    </div>
+                    <div class="tab-content active" id="fin-${player.id}">
+                        <div class="badge">
+                            <span class="dot" style="background: ${player.color};"></span>
+                            <span>Posição: ${player.position}</span>
+                        </div>
+                    </div>
+                    <div class="tab-content" id="assets-${player.id}">
+                        ${assetsContent}
+                    </div>
+                </div>
+            `;
+            }).join('');
+        }
+
+        function updateTurnDisplay() {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            document.getElementById('currentPlayerName').textContent = `${currentPlayer.icon} ${currentPlayer.name}`;
+            document.getElementById('currentTurnPlayer').textContent = currentPlayer.name;
+            document.getElementById('currentRound').textContent = `Rodada ${gameState.currentRound}`;
+            
+            // Reset dice display
+            document.getElementById('diceDisplay').innerHTML = '⚀ ⚀';
+            
+            // Reset dice button
+            gameState.diceRolled = false;
+            document.getElementById('rollDiceBtn').disabled = false;
+            document.getElementById('rollDiceBtn').style.opacity = '1';
+            document.getElementById('endTurnBtn').disabled = false;
+        }
+
+        function rollDice() {
+            if (gameState.diceRolled) return;
+
+            const diceDisplay = document.getElementById('diceDisplay');
+            const dice = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+            
+            let rolls = 0;
+            const interval = setInterval(() => {
+                const rand1 = Math.floor(Math.random() * 6);
+                const rand2 = Math.floor(Math.random() * 6);
+                diceDisplay.innerHTML = `${dice[rand1]} ${dice[rand2]}`;
+                rolls++;
+                
+                if (rolls > 12) {
+                    clearInterval(interval);
+                    const final1 = Math.floor(Math.random() * 6) + 1;
+                    const final2 = Math.floor(Math.random() * 6) + 1;
+                    const total = final1 + final2;
+                    
+                    diceDisplay.innerHTML = `
+                        <div style="display: flex; gap: 0.5rem; align-items: center; justify-content: center; flex-wrap: wrap;">
+                            <span>${dice[final1-1]}</span>
+                            <span>${dice[final2-1]}</span>
+                            <span style="font-size: 2rem; color: var(--accent-gold);">= ${total}</span>
+                        </div>
+                    `;
+                    
+                    console.log(`🎲 Dados: ${final1} + ${final2} = ${total}`);
+                    
+                    // Move player
+                    movePlayer(total);
+                    
+                    gameState.diceRolled = true;
+                    document.getElementById('rollDiceBtn').disabled = true;
+                    document.getElementById('rollDiceBtn').style.opacity = '0.5';
+                }
+            }, 100);
+        }
+
+        function movePlayer(spaces) {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            const startPosition = currentPlayer.position;
+            let currentStep = 0;
+            
+            // Log inicial do movimento
+            console.log(`🎲 === MOVIMENTO DO JOGADOR ${currentPlayer.name} ===`);
+            console.log(`   Dados rolados: ${spaces}`);
+            console.log(`   Posição inicial: ${startPosition} (${gameState.houses[startPosition].name})`);
+            console.log(`   Trajetória:`);
+            
+            // Desabilitar botões durante animação
+            document.getElementById('rollDiceBtn').disabled = true;
+            document.getElementById('endTurnBtn').disabled = true;
+            
+            // Mostrar contador de movimento
+            showNotification(`🎲 Movendo ${spaces} casas...`);
+            
+            // Animar movimento casa por casa
+            const moveInterval = setInterval(() => {
+                if (currentStep >= spaces) {
+                    clearInterval(moveInterval);
+                    
+                    // Movimento completo
+                    const finalPosition = currentPlayer.position;
+                    const house = gameState.houses[finalPosition];
+                    
+                    // Verificação: confirmar que moveu exatamente o número de casas
+                    const actualMoves = (finalPosition - startPosition + gameState.houses.length) % gameState.houses.length;
+                    
+                    console.log(`   Posição final: ${finalPosition} (${house.name})`);
+                    console.log(`   ✓ VERIFICAÇÃO: Moveu ${actualMoves} casas (esperado: ${spaces})`);
+                    if (actualMoves === spaces) {
+                        console.log(`   ✅ Movimento correto!`);
+                    } else {
+                        console.log(`   ❌ ERRO: Movimento incorreto!`);
+                    }
+                    console.log(`🎲 === FIM DO MOVIMENTO ===\n`);
+                    
+                    // Update position display
+                    document.getElementById('currentHouseName').textContent = house.name;
+                    
+                    showNotification(`✅ ${currentPlayer.icon} chegou em ${house.name}!`);
+                    
+                    // Reabilitar botão de fim de turno
+                    document.getElementById('endTurnBtn').disabled = false;
+                    
+                    // Show contextual actions
+                    setTimeout(() => showContextualActions(house), 500);
+                    
+                    return;
+                }
+                
+                // Move one house
+                currentStep++;
+                currentPlayer.position = (startPosition + currentStep) % gameState.houses.length;
+                
+                // Log cada passo
+                const stepHouse = gameState.houses[currentPlayer.position];
+                console.log(`   Passo ${currentStep}: Casa ${currentPlayer.position} (${stepHouse.name})`);
+                
+                // ========== PASSAGEM PELA PARTIDA ==========
+                // Se passou pela Partida (casa 0) E não é a casa final
+                if (currentPlayer.position === 0 && currentStep < spaces) {
+                    currentPlayer.money += 200;
+                    console.log(`   💰 PARTIDA: ${currentPlayer.name} recebeu F$ 200 mil!`);
+                    showNotification(`🏁 ${currentPlayer.name} passou pela Partida! +F$ 200 mil`);
+                    
+                    // Update players panel to show new money
+                    renderPlayersPanel();
+                }
+                
+                // Update visual
+                updatePlayerPositions();
+                
+                // Show house name during movement
+                document.getElementById('currentHouseName').textContent = `→ ${stepHouse.name}`;
+                
+            }, 300); // 300ms por casa
+            
+            // Update players panel after movement
+            setTimeout(() => {
+                renderPlayersPanel();
+            }, spaces * 300 + 500);
+        }
+
+        function showContextualActions(house) {
+            const actionsDiv = document.getElementById('contextualActions');
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            
+            let buttonsHTML = '';
+            let autoAction = false; // Se true, executa ação automaticamente
+            
+            // ========== PROPERTY (Porto) ==========
+            if (house.type === 'property' && house.price) {
+                const owner = house.owner !== undefined ? gameState.players.find(p => p.id === house.owner) : null;
+                
+                if (!owner) {
+                    // Propriedade SEM DONO - Pode comprar
+                    buttonsHTML += `
+                        <button class="btn-primary" onclick="buyProperty(gameState.houses[${house.pos}])">
+                            🏪 Comprar Porto<br><small>${fmF(house.price)}</small>
+                        </button>
+                    `;
+                } else if (owner.id === currentPlayer.id) {
+                    // Propriedade PRÓPRIA - Sem ação
+                    buttonsHTML += `<p style="color: #22c55e; font-weight: bold;">✅ Você é o dono deste porto!</p>`;
+                } else {
+                    // Propriedade DE OUTRO - Pagar aluguel
+                    
+                    // Verificar se deve pular aluguel (Evento Oceânico)
+                    if (currentPlayer.skipNextRent) {
+                        buttonsHTML += `
+                            <p style="color: #10b981; font-weight: bold;">
+                                ⛵ Vento Favorável!<br>
+                                <span style="font-size: 1.2rem;">Aluguel dispensado</span>
+                            </p>
+                        `;
+                        currentPlayer.skipNextRent = false; // Reset flag
+                        console.log(`   ⛵ Aluguel PULADO devido a Evento Oceânico!`);
+                        showNotification(`⛵ ${currentPlayer.name} não paga aluguel! (Vento Favorável)`);
+                    } else {
+                        // Pagar aluguel normalmente
+                        const rent = calculateRent(house, owner);
+                        buttonsHTML += `
+                            <p style="color: #ef4444; font-weight: bold;">
+                                💸 Pagar Aluguel para ${owner.name}<br>
+                                <span style="font-size: 1.5rem;">${fmF(rent)}</span>
+                            </p>
+                        `;
+                        
+                        // Auto-executar pagamento
+                        autoAction = true;
+                        setTimeout(() => {
+                            handleMandatoryPayment(currentPlayer, rent, `Aluguel (${house.name})`, owner);
+                            document.getElementById('contextualActions').style.display = 'none';
+                        }, 1500);
+                    }
+                }
+            }
+            
+            // ========== WORKSHOP (Oficina) ==========
+            if (house.type === 'workshop' && house.price) {
+                const owner = house.owner !== undefined ? gameState.players.find(p => p.id === house.owner) : null;
+                
+                if (!owner) {
+                    // Oficina SEM DONO - Pode comprar
+                    buttonsHTML += `
+                        <button class="btn-primary" onclick="buyProperty(gameState.houses[${house.pos}])">
+                            🔧 Comprar Oficina<br><small>${fmF(house.price)}</small>
+                        </button>
+                    `;
+                } else if (owner.id === currentPlayer.id) {
+                    // Oficina PRÓPRIA - Receber certificado grátis se não tem
+                    if (!currentPlayer.certificates.includes(house.certificate)) {
+                        buttonsHTML += `
+                            <button class="btn-primary" onclick="receiveCertificate('${house.certificate}', '${house.name}')">
+                                🎓 Receber Certificado Grátis
+                            </button>
+                        `;
+                    } else {
+                        buttonsHTML += `<p style="color: #22c55e; font-weight: bold;">✅ Sua oficina! Certificado já obtido.</p>`;
+                    }
+                } else {
+                    // Oficina DE OUTRO - Pagar taxa de serviço
+                    const serviceFee = house.serviceFee;
+                    buttonsHTML += `
+                        <p style="color: #ef4444; font-weight: bold;">
+                            💸 Taxa de Serviço para ${owner.name}<br>
+                            <span style="font-size: 1.5rem;">${fmF(serviceFee)}</span>
+                        </p>
+                    `;
+                    
+                    // Auto-executar pagamento
+                    autoAction = true;
+                    setTimeout(() => {
+                        handleMandatoryPayment(currentPlayer, serviceFee, `Taxa (${house.name})`, owner);
+                        document.getElementById('contextualActions').style.display = 'none';
+                    }, 1500);
+                }
+            }
+            
+            // ========== SERVICE (Combustível/Estaleiro) ==========
+            if (house.type === 'service' && house.price) {
+                const owner = house.owner !== undefined ? gameState.players.find(p => p.id === house.owner) : null;
+                
+                if (!owner) {
+                    // Serviço SEM DONO - Pode comprar
+                    buttonsHTML += `
+                        <button class="btn-primary" onclick="buyProperty(gameState.houses[${house.pos}])">
+                            🏪 Comprar Serviço<br><small>${fmF(house.price)}</small>
+                        </button>
+                    `;
+                } else if (owner.id === currentPlayer.id) {
+                    // Serviço PRÓPRIO
+                    buttonsHTML += `<p style="color: #22c55e; font-weight: bold;">✅ Você é o dono deste serviço!</p>`;
+                    
+                    // Se é estaleiro E dono E não tem TugLord: pode comissionar
+                    if (house.name.includes('Estaleiro') && !currentPlayer.hasTuglord && currentPlayer.money >= house.tuglordBuildCost) {
+                        buttonsHTML += `
+                            <button class="btn-primary" onclick="commissionTugLord(${house.tuglordBuildCost})">
+                                ⭐ Comissionar Classe TugLord<br><small>${fmF(house.tuglordBuildCost)}</small>
+                            </button>
+                        `;
+                    }
+                } else {
+                    // Serviço DE OUTRO - Sem taxa adicional (só ownership)
+                    buttonsHTML += `<p style="color: #94a3b8;">Propriedade de ${owner.name}</p>`;
+                }
+                
+                // ===== VERIFICAR DOCAGEM OBRIGATÓRIA (ESTALEIRO) =====
+                if (house.name.includes('Estaleiro')) {
+                    const operationalPortTugs = currentPlayer.portTugs - currentPlayer.dockedTugs.port;
+                    const operationalOceanTug = currentPlayer.hasOceanTug && !currentPlayer.dockedTugs.ocean;
+                    const operationalTuglord = currentPlayer.hasTuglord && !currentPlayer.dockedTugs.tuglord;
+                    const hasOperationalTugs = operationalPortTugs > 0 || operationalOceanTug || operationalTuglord;
+                    
+                    if (hasOperationalTugs) {
+                        // Docagem obrigatória - executar após delay
+                        autoAction = true;
+                        setTimeout(() => {
+                            handleShipyard(house);
+                        }, 1500);
+                    }
+                }
+            }
+            
+            // ========== TRAINING (Treinamento) ==========
+            if (house.type === 'training' && house.price) {
+                if (!currentPlayer.certificates.includes(house.certificate)) {
+                    buttonsHTML += `
+                        <button class="btn-primary" onclick="buyTraining('${house.name}', ${house.price}, '${house.certificate}')">
+                            🎓 Fazer Treinamento<br><small>${fmF(house.price)}</small>
+                        </button>
+                    `;
+                } else {
+                    buttonsHTML += `<p style="color: #22c55e; font-weight: bold;">✅ Certificado já obtido!</p>`;
+                }
+            }
+            
+            // ========== TUG PURCHASE (Comprar Rebocador) ==========
+            if (house.type === 'tug_purchase' && house.price) {
+                const tugTypeName = house.tugType === 'port' ? 'Portuário' : 'Oceânico';
+                buttonsHTML += `
+                    <button class="btn-primary" onclick="buyTug(gameState.houses[${house.pos}])">
+                        ⚓ Comprar Rebocador ${tugTypeName}<br><small>${fmF(house.price)}</small>
+                    </button>
+                `;
+            }
+            
+            // ========== CONTRACTS ==========
+            if (house.type === 'contract' && house.price) {
+                buttonsHTML += `
+                    <button class="btn-primary" onclick="executeContract('${house.name}', ${house.price})">
+                        📜 Executar Contrato<br><small>Receba ${fmF(house.price)}</small>
+                    </button>
+                `;
+            }
+            
+            if (house.type === 'ocean_contract' && house.reward) {
+                buttonsHTML += `
+                    <button class="btn-primary" onclick="executeContract('${house.name}', ${house.reward})">
+                        📝 Executar Contrato Oceânico<br><small>Receba ${fmF(house.reward)}</small>
+                    </button>
+                `;
+            }
+            
+            // ========== OUTRAS CASAS (mantém como estava) ==========
+            
+            if (house.type === 'stock_exchange') {
+                buttonsHTML += `
+                    <button class="btn-primary" onclick="openStockExchange()">
+                        📈 Negociar Ações
+                    </button>
+                `;
+            }
+            
+            if (house.type === 'university') {
+                buttonsHTML += `
+                    <button class="btn-primary" onclick="visitUniversity()">
+                        🎓 Acessar Universidade
+                    </button>
+                `;
+            }
+            
+            if (house.type === 'bank') {
+                buttonsHTML += `
+                    <button class="btn-primary" onclick="showLoanOptions()">
+                        💰 Terminal Bancário
+                    </button>
+                `;
+                setTimeout(() => {
+                    openPanel('panelBank');
+                }, 500);
+            }
+            
+            if (house.type === 'tuglord_certificate') {
+                buttonsHTML += `
+                    <button class="btn-primary" onclick="checkTugLordCertificate()">
+                        🎖️ Verificar Certificação
+                    </button>
+                `;
+            }
+            
+            if (house.type === 'luck') {
+                buttonsHTML += `
+                    <button class="btn-primary" onclick="drawCard('luck')">
+                        🍀 Pegar Carta Sorte
+                    </button>
+                `;
+            }
+            
+            if (house.type === 'tax' && house.price) {
+                buttonsHTML += `
+                    <button class="btn-primary" onclick="payTax(${house.price})">
+                        💸 Pagar Imposto<br><small>${fmF(house.price)}</small>
+                    </button>
+                `;
+            }
+            
+            if (house.type === 'maneuver') {
+                buttonsHTML += `
+                    <button class="btn-primary" onclick="performManeuver()">
+                        🔄 Executar Manobra
+                    </button>
+                `;
+            }
+            
+            // ========== BANK (Banco) ==========
+            if (house.type === 'bank') {
+                buttonsHTML += `
+                    <button class="btn-primary" onclick="openBankTerminal()">
+                        🏦 Acessar Terminal Bancário
+                    </button>
+                `;
+            }
+            
+            // ========== STOCK EXCHANGE (Bolsa de Valores) ==========
+            if (house.type === 'stock_exchange') {
+                buttonsHTML += `
+                    <button class="btn-primary" onclick="openStockExchange()">
+                        📈 Acessar Bolsa de Valores
+                    </button>
+                `;
+            }
+            
+            // ========== OCEAN EVENT (Evento Oceânico) ==========
+            if (house.type === 'ocean_event') {
+                buttonsHTML += `
+                    <button class="btn-primary" onclick="triggerOceanEvent()">
+                        🌊 Enfrentar Evento Oceânico
+                    </button>
+                `;
+            }
+            
+            // Exibir ações
+            if (buttonsHTML && !autoAction) {
+                actionsDiv.innerHTML = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem;">' + buttonsHTML + '</div>';
+                actionsDiv.style.display = 'block';
+            } else if (autoAction) {
+                actionsDiv.innerHTML = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem;">' + buttonsHTML + '</div>';
+                actionsDiv.style.display = 'block';
+            } else {
+                actionsDiv.style.display = 'none';
+            }
+        }
+
+        // Action handlers
+        function buyTraining(name, price, certificate) {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            
+            console.log(`🎓 === COMPRA DE TREINAMENTO ===`);
+            console.log(`   Jogador: ${currentPlayer.name}`);
+            console.log(`   Treinamento: ${name}`);
+            console.log(`   Preço: ${fmF(price)}`);
+            console.log(`   Certificado: ${certificate}`);
+            
+            if (currentPlayer.money < price) {
+                showNotification('❌ Saldo insuficiente!');
+                console.log(`   ❌ Compra CANCELADA: saldo insuficiente`);
+                return;
+            }
+            
+            // Debitar dinheiro ANTES do exame
+            currentPlayer.money -= price;
+            renderPlayersPanel();
+            
+            console.log(`   💰 Investimento de ${fmF(price)} realizado`);
+            console.log(`   🎓 Iniciando exame...`);
+            
+            // Esconder ações contextuais
+            document.getElementById('contextualActions').style.display = 'none';
+            
+            // Apresentar exame
+            presentExam(certificate, name, false);
+        }
+        
+        function presentExam(certificate, trainingName, isFree = false) {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            
+            console.log(`📝 === APRESENTANDO EXAME ===`);
+            console.log(`   Certificado: ${certificate}`);
+            console.log(`   Gratuito: ${isFree}`);
+            
+            // Buscar perguntas do certificado
+            const questions = TRAINING_QUESTIONS[certificate];
+            if (!questions || questions.length === 0) {
+                console.log(`   ❌ ERRO: Sem perguntas para ${certificate}`);
+                showNotification('⚠️ Exame indisponível!');
+                return;
+            }
+            
+            // Selecionar pergunta aleatória
+            const exam = questions[Math.floor(Math.random() * questions.length)];
+            
+            // Embaralhar opções
+            const shuffledOptions = [...exam.options].sort(() => Math.random() - 0.5);
+            
+            console.log(`   Pergunta: ${exam.question}`);
+            console.log(`   Resposta correta: ${exam.correct}`);
+            
+            // Criar modal de exame
+            const modalTitle = isFree 
+                ? `🎓 Exame Grátis - Universidade do Mar` 
+                : `🎓 Exame de ${trainingName}`;
+            
+            const modalBody = `
+                <div style="background: rgba(59, 130, 246, 0.1); padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+                    <p style="color: #94a3b8; font-size: 0.85rem; margin: 0;">
+                        ${isFree ? '✨ Exame oferecido gratuitamente pela Universidade do Mar!' : '⚠️ Se errar, o investimento será perdido!'}
+                    </p>
+                </div>
+                
+                <div style="background: rgba(255, 255, 255, 0.05); padding: 1.5rem; border-radius: 0.75rem; border-left: 4px solid #3b82f6; margin-bottom: 1.5rem;">
+                    <p style="font-size: 1.1rem; font-weight: 600; color: #e0e0e0; margin: 0; line-height: 1.6;">
+                        ${exam.question}
+                    </p>
+                </div>
+                
+                <div style="display: grid; gap: 0.75rem;">
+                    ${shuffledOptions.map((option, index) => `
+                        <button class="btn-secondary" 
+                                onclick="handleExamAnswer('${option.replace(/'/g, "\\'")}', '${exam.correct.replace(/'/g, "\\'")}', '${certificate}', '${trainingName}', ${isFree})"
+                                style="text-align: left; padding: 1rem; font-size: 0.95rem; transition: all 0.2s;">
+                            <strong>${String.fromCharCode(65 + index)})</strong> ${option}
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+            
+            showModal(modalTitle, modalBody, [], false); // Sem botões de fechar
+        }
+        
+        function handleExamAnswer(submittedAnswer, correctAnswer, certificate, certName, isFree) {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            
+            console.log(`✅ === AVALIAÇÃO DO EXAME ===`);
+            console.log(`   Resposta submetida: ${submittedAnswer}`);
+            console.log(`   Resposta correta: ${correctAnswer}`);
+            
+            // Fechar modal
+            closeModal();
+            
+            if (submittedAnswer === correctAnswer) {
+                // ACERTOU!
+                currentPlayer.certificates.push(certificate);
+                
+                console.log(`   ✅ APROVADO! Certificado ${certificate} obtido.`);
+                console.log(`🎓 === FIM DO EXAME ===\n`);
+                
+                showNotification(`✅ Parabéns! Certificado de ${certName} obtido!`);
+                
+                // Efeito visual de sucesso
+                setTimeout(() => {
+                    showNotification(`🎖️ ${currentPlayer.name} está mais qualificado!`);
+                }, 1500);
+            } else {
+                // ERROU!
+                console.log(`   ❌ REPROVADO! Certificado NÃO obtido.`);
+                
+                if (isFree) {
+                    console.log(`   ℹ️ Exame era gratuito, sem perdas financeiras.`);
+                    showNotification(`❌ Resposta incorreta! Tente novamente mais tarde.`);
+                } else {
+                    console.log(`   💸 Investimento perdido!`);
+                    showNotification(`❌ Resposta incorreta! Investimento perdido.`);
+                }
+                
+                console.log(`🎓 === FIM DO EXAME ===\n`);
+            }
+            
+            renderPlayersPanel();
+        }
+        
+        function receiveCertificate(certificate, officeName) {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            
+            console.log(`🎓 Recebendo certificado grátis: ${certificate} de ${officeName}`);
+            
+            if (!currentPlayer.certificates.includes(certificate)) {
+                currentPlayer.certificates.push(certificate);
+                showNotification(`✅ Certificado ${certificate} recebido gratuitamente!`);
+                renderPlayersPanel();
+            } else {
+                showNotification('⚠️ Você já possui este certificado!');
+            }
+            
+            document.getElementById('contextualActions').style.display = 'none';
+        }
+        
+        function commissionTugLord(cost) {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            
+            console.log(`⭐ === COMISSIONAMENTO TUGLORD ===`);
+            console.log(`   Jogador: ${currentPlayer.name}`);
+            console.log(`   Custo: ${fmF(cost)}`);
+            
+            if (currentPlayer.money < cost) {
+                showNotification('❌ Saldo insuficiente!');
+                console.log(`   ❌ Comissionamento CANCELADO: saldo insuficiente`);
+                return;
+            }
+            
+            if (currentPlayer.hasTuglord) {
+                showNotification('⚠️ Você já possui um Classe TugLord!');
+                console.log(`   ❌ Comissionamento CANCELADO: já possui TugLord`);
+                return;
+            }
+            
+            // Debitar dinheiro
+            currentPlayer.money -= cost;
+            
+            // Comissionar TugLord
+            currentPlayer.hasTuglord = true;
+            
+            console.log(`   ✅ Classe TugLord comissionado!`);
+            console.log(`   Novo saldo: ${fmF(currentPlayer.money)}`);
+            console.log(`⭐ === FIM DO COMISSIONAMENTO ===\n`);
+            
+            showNotification(`⭐ Classe TugLord comissionado com sucesso!`);
+            renderPlayersPanel();
+            document.getElementById('contextualActions').style.display = 'none';
+        }
+
+        function executeContract(name, amount) {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            
+            console.log(`📜 === EXECUÇÃO DE CONTRATO ===`);
+            console.log(`   Jogador: ${currentPlayer.name}`);
+            console.log(`   Contrato: ${name}`);
+            console.log(`   Recompensa: ${fmF(amount)}`);
+            
+            currentPlayer.money += amount;
+            
+            console.log(`   ✅ Contrato executado!`);
+            console.log(`   Novo saldo: ${fmF(currentPlayer.money)}`);
+            console.log(`📜 === FIM DO CONTRATO ===\n`);
+            
+            showNotification(`✅ ${name} executado! +${fmF(amount)}`);
+            renderPlayersPanel();
+            document.getElementById('contextualActions').style.display = 'none';
+        }
+
+        function openStockExchange() {
+            showNotification('📈 Bolsa de Valores - Sprint 3');
+            document.getElementById('contextualActions').style.display = 'none';
+        }
+
+        function visitUniversity() {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            
+            console.log(`🏫 === UNIVERSIDADE DO MAR ===`);
+            console.log(`   Jogador: ${currentPlayer.name}`);
+            console.log(`   Certificados atuais: ${currentPlayer.certificates.join(', ') || 'Nenhum'}`);
+            
+            // Certificados de treinamento disponíveis
+            const trainingCerts = ['fire', 'rescue', 'collision', 'abandon'];
+            
+            // Identificar certificados faltantes
+            const missingCerts = trainingCerts.filter(cert => !currentPlayer.certificates.includes(cert));
+            
+            console.log(`   Certificados faltantes: ${missingCerts.join(', ') || 'Nenhum'}`);
+            
+            if (missingCerts.length === 0) {
+                console.log(`   ✅ Jogador já possui todos os certificados de treinamento!`);
+                console.log(`🏫 === FIM DA UNIVERSIDADE ===\n`);
+                
+                showNotification('✨ Parabéns! Você já possui todos os certificados de treinamento!');
+                document.getElementById('contextualActions').style.display = 'none';
+                return;
+            }
+            
+            // Selecionar certificado faltante aleatoriamente
+            const selectedCert = missingCerts[Math.floor(Math.random() * missingCerts.length)];
+            
+            // Mapear certificado para nome do treinamento
+            const certNames = {
+                fire: 'Combate a Incêndio',
+                rescue: 'Homem ao Mar',
+                collision: 'Colisão',
+                abandon: 'Abandono de Navio'
+            };
+            
+            const trainingName = certNames[selectedCert];
+            
+            console.log(`   🎯 Certificado selecionado: ${selectedCert} (${trainingName})`);
+            console.log(`   🎓 Oferecendo exame grátis...`);
+            console.log(`🏫 === INICIANDO EXAME ===\n`);
+            
+            // Esconder ações contextuais
+            document.getElementById('contextualActions').style.display = 'none';
+            
+            // Apresentar exame GRÁTIS
+            presentExam(selectedCert, trainingName, true);
+        }
+
+        function checkTugLordCertificate() {
+            showNotification('🎖️ Certificado TugLord - Sprint 4');
+            document.getElementById('contextualActions').style.display = 'none';
+        }
+
+        function payTax(amount) {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            
+            console.log(`💸 === PAGAMENTO DE IMPOSTO ===`);
+            console.log(`   Jogador: ${currentPlayer.name}`);
+            console.log(`   Valor: ${fmF(amount)}`);
+            
+            handleMandatoryPayment(currentPlayer, amount, "Imposto");
+            
+            console.log(`💸 === FIM DO IMPOSTO ===\n`);
+            
+            document.getElementById('contextualActions').style.display = 'none';
+        }
+
+        function performManeuver() {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            
+            console.log(`🔄 === ZONA DE MANOBRA PORTUÁRIA ===`);
+            console.log(`   Jogador: ${currentPlayer.name}`);
+            
+            // Calcular rebocadores operacionais do jogador atual
+            const playerPortTugs = currentPlayer.portTugs - currentPlayer.dockedTugs.port;
+            const playerOceanTug = currentPlayer.hasOceanTug && !currentPlayer.dockedTugs.ocean;
+            const playerTuglord = currentPlayer.hasTuglord && !currentPlayer.dockedTugs.tuglord;
+            const playerTotalTugs = playerPortTugs + (playerOceanTug ? 1 : 0) + (playerTuglord ? 1 : 0);
+            
+            console.log(`   Rebocadores do jogador: ${playerTotalTugs}`);
+            
+            if (playerTotalTugs === 0) {
+                // SEM REBOCADORES = SEM PENALIDADE
+                console.log(`   ✅ Sem rebocadores, sem penalidade!`);
+                console.log(`🔄 === FIM DA ZONA DE MANOBRA ===\n`);
+                
+                showNotification('✅ Sem rebocadores, sem penalidade de manobra!');
+                document.getElementById('contextualActions').style.display = 'none';
+                return;
+            }
+            
+            // Contar ADVERSÁRIOS com rebocadores operacionais
+            const opponentsWithTugs = gameState.players.filter(opponent => {
+                if (opponent.id === currentPlayer.id) return false; // Excluir próprio jogador
+                
+                const oppPortTugs = opponent.portTugs - opponent.dockedTugs.port;
+                const oppOceanTug = opponent.hasOceanTug && !opponent.dockedTugs.ocean;
+                const oppTuglord = opponent.hasTuglord && !opponent.dockedTugs.tuglord;
+                const oppTotalTugs = oppPortTugs + (oppOceanTug ? 1 : 0) + (oppTuglord ? 1 : 0);
+                
+                return oppTotalTugs > 0;
+            });
+            
+            const opponentsCount = opponentsWithTugs.length;
+            const penalty = opponentsCount * 100;
+            
+            console.log(`   Adversários com rebocadores: ${opponentsCount}`);
+            console.log(`   Penalidade: ${fmF(penalty)}`);
+            
+            if (opponentsCount === 0) {
+                console.log(`   ✅ Nenhum adversário com rebocadores!`);
+                console.log(`🔄 === FIM DA ZONA DE MANOBRA ===\n`);
+                
+                showNotification('✅ Nenhum adversário com rebocadores. Sem penalidade!');
+                document.getElementById('contextualActions').style.display = 'none';
+                return;
+            }
+            
+            // APLICAR PENALIDADE
+            console.log(`   💸 Aplicando penalidade de arrendamento...`);
+            
+            handleMandatoryPayment(currentPlayer, penalty, "Arrendamento (Zona de Manobra)");
+            
+            console.log(`🔄 === FIM DA ZONA DE MANOBRA ===\n`);
+            
+            showNotification(`🔄 Penalidade de manobra: ${fmF(penalty)} (${opponentsCount} adversário${opponentsCount > 1 ? 's' : ''} com rebocadores)`);
+            
+            document.getElementById('contextualActions').style.display = 'none';
+        }
+
+        // ========== BOLSA DE VALORES ==========
+        function openStockExchange() {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            
+            console.log(`📈 === BOLSA DE VALORES ===`);
+            console.log(`   Jogador: ${currentPlayer.name}`);
+            console.log(`   Saldo: ${fmF(currentPlayer.money)}`);
+            
+            // Listar propriedades disponíveis para comprar ações
+            const availableProperties = gameState.houses.filter(h => 
+                h.type === 'property' && 
+                h.owner !== undefined && 
+                h.owner !== currentPlayer.id &&
+                h.stocks < 5 // Máximo 5 ações por propriedade
+            );
+            
+            // Listar ações do jogador
+            const playerStocksList = Object.keys(currentPlayer.stocks).map(propName => {
+                const quantity = currentPlayer.stocks[propName];
+                const property = gameState.houses.find(h => h.name === propName);
+                const dividendValue = Math.floor(property.rent[0] * 0.5);
+                
+                return {
+                    name: propName,
+                    quantity: quantity,
+                    dividend: dividendValue,
+                    totalDividend: dividendValue * quantity
+                };
+            });
+            
+            const totalDividends = playerStocksList.reduce((sum, stock) => sum + stock.totalDividend, 0);
+            
+            console.log(`   Propriedades disponíveis: ${availableProperties.length}`);
+            console.log(`   Ações do jogador: ${playerStocksList.length}`);
+            console.log(`   Dividendos totais: ${fmF(totalDividends)}`);
+            
+            const modalBody = `
+                <div style="background: rgba(59, 130, 246, 0.1); padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; border-left: 4px solid #3b82f6;">
+                    <p style="color: #60a5fa; font-weight: 600; margin: 0;">
+                        💰 Saldo: ${fmF(currentPlayer.money)}
+                    </p>
+                    <p style="color: #94a3b8; font-size: 0.85rem; margin: 0.5rem 0 0 0;">
+                        Suas ações: ${playerStocksList.length} | Dividendos: ${fmF(totalDividends)}/turno
+                    </p>
+                </div>
+                
+                ${playerStocksList.length > 0 ? `
+                <!-- SUAS AÇÕES -->
+                <div style="background: rgba(34, 197, 94, 0.1); padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+                    <p style="color: #22c55e; font-weight: 600; margin: 0 0 0.75rem 0;">
+                        📊 Suas Ações (Dividendos por turno)
+                    </p>
+                    <div style="display: grid; gap: 0.5rem;">
+                        ${playerStocksList.map(stock => `
+                            <div style="background: rgba(255, 255, 255, 0.05); padding: 0.75rem; border-radius: 0.5rem;">
+                                <p style="color: #e0e0e0; margin: 0; font-size: 0.9rem;">
+                                    ${stock.name}
+                                </p>
+                                <p style="color: #94a3b8; margin: 0.25rem 0 0 0; font-size: 0.85rem;">
+                                    ${stock.quantity}× ações | ${fmF(stock.dividend)} cada = ${fmF(stock.totalDividend)}/turno
+                                </p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                ` : ''}
+                
+                ${availableProperties.length > 0 ? `
+                <!-- COMPRAR AÇÕES -->
+                <div style="background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+                    <p style="color: #e0e0e0; font-weight: 600; margin: 0 0 0.75rem 0;">
+                        🛒 Comprar Ações (30% do preço)
+                    </p>
+                    <div style="display: grid; gap: 0.5rem; max-height: 200px; overflow-y: auto;">
+                        ${availableProperties.map(prop => {
+                            const stockPrice = Math.floor(prop.price * 0.3);
+                            const owner = gameState.players.find(p => p.id === prop.owner);
+                            const stocksRemaining = 5 - prop.stocks;
+                            const dividend = Math.floor(prop.rent[0] * 0.5);
+                            
+                            return `
+                                <button class="btn-secondary" 
+                                        onclick="buyStock('${prop.name.replace(/'/g, "\\'")}', ${stockPrice})" 
+                                        style="text-align: left; padding: 0.75rem; font-size: 0.85rem;">
+                                    ${prop.name}<br>
+                                    <small style="color: #94a3b8;">
+                                        ${fmF(stockPrice)} | Dono: ${owner.name} | ${stocksRemaining} disponíveis | Div: ${fmF(dividend)}
+                                    </small>
+                                </button>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+                ` : `
+                <div style="background: rgba(239, 68, 68, 0.1); padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+                    <p style="color: #f87171; margin: 0; text-align: center;">
+                        📭 Nenhuma ação disponível para compra no momento.
+                    </p>
+                </div>
+                `}
+                
+                <div style="background: rgba(251, 191, 36, 0.1); padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+                    <p style="color: #fbbf24; font-size: 0.85rem; margin: 0;">
+                        ℹ️ Ações geram dividendos automáticos a cada turno do dono da propriedade.
+                    </p>
+                </div>
+                
+                <button class="btn-primary" onclick="closeModal()" style="width: 100%;">
+                    ✅ Fechar Bolsa
+                </button>
+            `;
+            
+            showModal('📈 Bolsa de Valores', modalBody, [], false);
+        }
+        
+        function buyStock(propertyName, stockPrice) {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            const property = gameState.houses.find(h => h.name === propertyName);
+            
+            console.log(`📊 === COMPRA DE AÇÃO ===`);
+            console.log(`   Jogador: ${currentPlayer.name}`);
+            console.log(`   Propriedade: ${propertyName}`);
+            console.log(`   Preço da ação: ${fmF(stockPrice)}`);
+            
+            // Verificações
+            if (currentPlayer.money < stockPrice) {
+                console.log(`   ❌ Saldo insuficiente!`);
+                showNotification('❌ Saldo insuficiente!');
+                return;
+            }
+            
+            if (property.stocks >= 5) {
+                console.log(`   ❌ Limite de ações atingido!`);
+                showNotification('❌ Esta propriedade já atingiu o limite de 5 ações!');
+                return;
+            }
+            
+            if (property.owner === currentPlayer.id) {
+                console.log(`   ❌ Não pode comprar ações da própria propriedade!`);
+                showNotification('❌ Você não pode comprar ações da sua própria propriedade!');
+                return;
+            }
+            
+            // Processar compra
+            currentPlayer.money -= stockPrice;
+            
+            // Adicionar ação ao jogador
+            if (!currentPlayer.stocks[propertyName]) {
+                currentPlayer.stocks[propertyName] = 0;
+            }
+            currentPlayer.stocks[propertyName]++;
+            
+            // Incrementar ações vendidas da propriedade
+            property.stocks++;
+            
+            // Dono da propriedade recebe o dinheiro
+            const owner = gameState.players.find(p => p.id === property.owner);
+            owner.money += stockPrice;
+            
+            const dividend = Math.floor(property.rent[0] * 0.5);
+            
+            console.log(`   ✅ Ação comprada!`);
+            console.log(`   ${fmF(stockPrice)} transferido para ${owner.name}`);
+            console.log(`   Dividendo: ${fmF(dividend)}/turno`);
+            console.log(`   Novo saldo: ${fmF(currentPlayer.money)}`);
+            console.log(`📊 === FIM DA COMPRA ===\n`);
+            
+            showNotification(`📊 Ação de ${propertyName} comprada! Dividendo: ${fmF(dividend)}/turno`);
+            
+            renderPlayersPanel();
+            closeModal();
+            
+            // Reabrir bolsa atualizada
+            setTimeout(() => openStockExchange(), 300);
+        }
+        
+        function payDividends(propertyOwner) {
+            console.log(`💰 === PAGAMENTO DE DIVIDENDOS ===`);
+            console.log(`   Dono da propriedade: ${propertyOwner.name}`);
+            
+            let totalPaid = 0;
+            
+            // Para cada acionista, pagar dividendos das propriedades do dono atual
+            gameState.players.forEach(player => {
+                if (player.id === propertyOwner.id) return; // Pular o próprio dono
+                if (player.isEliminated) return; // Pular eliminados
+                
+                // Verificar propriedades do dono atual que o jogador tem ações
+                propertyOwner.properties.forEach(propName => {
+                    if (player.stocks[propName]) {
+                        const quantity = player.stocks[propName];
+                        const property = gameState.houses.find(h => h.name === propName);
+                        const dividendPerStock = Math.floor(property.rent[0] * 0.5);
+                        const totalDividend = dividendPerStock * quantity;
+                        
+                        // Transferir dividendo
+                        propertyOwner.money -= totalDividend;
+                        player.money += totalDividend;
+                        
+                        totalPaid += totalDividend;
+                        
+                        console.log(`   💸 ${player.name} recebeu ${fmF(totalDividend)} (${quantity}× ações de ${propName})`);
+                    }
+                });
+            });
+            
+            if (totalPaid > 0) {
+                console.log(`   ✅ Total pago em dividendos: ${fmF(totalPaid)}`);
+                showNotification(`💰 ${propertyOwner.name} pagou ${fmF(totalPaid)} em dividendos!`);
+            }
+            
+            console.log(`💰 === FIM DOS DIVIDENDOS ===\n`);
+        }
+
+        // ========== SISTEMA BANCÁRIO ==========
+        function openBankTerminal() {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            
+            console.log(`🏦 === TERMINAL BANCÁRIO ===`);
+            console.log(`   Jogador: ${currentPlayer.name}`);
+            console.log(`   Saldo: ${fmF(currentPlayer.money)}`);
+            console.log(`   Empréstimos ativos: ${currentPlayer.loans.length}`);
+            
+            const modalBody = `
+                <div style="background: rgba(59, 130, 246, 0.1); padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; border-left: 4px solid #3b82f6;">
+                    <p style="color: #60a5fa; font-weight: 600; margin: 0;">
+                        💰 Saldo Atual: ${fmF(currentPlayer.money)}
+                    </p>
+                    <p style="color: #94a3b8; font-size: 0.85rem; margin: 0.5rem 0 0 0;">
+                        Empréstimos ativos: ${currentPlayer.loans.length}
+                    </p>
+                </div>
+                
+                <div style="display: grid; gap: 1rem; margin-bottom: 1.5rem;">
+                    <!-- EMPRÉSTIMOS -->
+                    <div style="background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 0.5rem;">
+                        <p style="color: #e0e0e0; font-weight: 600; margin: 0 0 0.75rem 0;">
+                            📋 Empréstimos Disponíveis
+                        </p>
+                        <div style="display: grid; gap: 0.5rem;">
+                            <button class="btn-secondary" onclick="takeLoan(500)" style="text-align: left; padding: 0.75rem;">
+                                💵 F$ 500 mil → Pagar F$ 550 mil (juros 10%)
+                            </button>
+                            <button class="btn-secondary" onclick="takeLoan(1000)" style="text-align: left; padding: 0.75rem;">
+                                💵 F$ 1 mi → Pagar F$ 1,1 mi (juros 10%)
+                            </button>
+                        </div>
+                    </div>
+                    
+                    ${currentPlayer.loans.length > 0 ? `
+                    <!-- PAGAR EMPRÉSTIMOS -->
+                    <div style="background: rgba(239, 68, 68, 0.1); padding: 1rem; border-radius: 0.5rem;">
+                        <p style="color: #f87171; font-weight: 600; margin: 0 0 0.75rem 0;">
+                            💳 Seus Empréstimos
+                        </p>
+                        <div style="display: grid; gap: 0.5rem;">
+                            ${currentPlayer.loans.map((loan, index) => `
+                                <button class="btn-secondary" onclick="payLoan(${index})" style="text-align: left; padding: 0.75rem;">
+                                    💸 Pagar ${fmF(loan.totalDue)} (${loan.turnsRemaining} turnos restantes)
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    ${(currentPlayer.properties.length > 0 || currentPlayer.portTugs > 0 || currentPlayer.hasOceanTug || currentPlayer.hasTuglord) ? `
+                    <!-- LIQUIDAÇÃO VOLUNTÁRIA -->
+                    <div style="background: rgba(251, 191, 36, 0.1); padding: 1rem; border-radius: 0.5rem;">
+                        <p style="color: #fbbf24; font-weight: 600; margin: 0 0 0.75rem 0;">
+                            🔨 Liquidação Voluntária (50% do valor)
+                        </p>
+                        <div style="display: grid; gap: 0.5rem;">
+                            ${currentPlayer.properties.map(propName => {
+                                const prop = gameState.houses.find(h => h.name === propName);
+                                const liquidationValue = Math.floor(prop.price * 0.5);
+                                return `
+                                    <button class="btn-secondary" onclick="liquidateAsset('property', '${propName.replace(/'/g, "\\'")}')" 
+                                            style="text-align: left; padding: 0.75rem;">
+                                        🏢 ${propName} → ${fmF(liquidationValue)}
+                                    </button>
+                                `;
+                            }).join('')}
+                            
+                            ${currentPlayer.portTugs > 0 ? `
+                                <button class="btn-secondary" onclick="liquidateAsset('port_tug', null)" 
+                                        style="text-align: left; padding: 0.75rem;">
+                                    ⚓ Rebocador Portuário → F$ 100 mil
+                                </button>
+                            ` : ''}
+                            
+                            ${currentPlayer.hasOceanTug ? `
+                                <button class="btn-secondary" onclick="liquidateAsset('ocean_tug', null)" 
+                                        style="text-align: left; padding: 0.75rem;">
+                                    ρυ Rebocador Oceânico → F$ 250 mil
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+                
+                <button class="btn-primary" onclick="closeModal()" style="width: 100%;">
+                    ✅ Fechar Terminal
+                </button>
+            `;
+            
+            showModal('🏦 Terminal Bancário', modalBody, [], false);
+        }
+        
+        function takeLoan(amount) {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            
+            console.log(`💰 === EMPRÉSTIMO BANCÁRIO ===`);
+            console.log(`   Jogador: ${currentPlayer.name}`);
+            console.log(`   Valor solicitado: ${fmF(amount)}`);
+            
+            const interest = Math.floor(amount * 0.1); // 10% de juros
+            const totalDue = amount + interest;
+            const turnsToRepay = 5; // 5 turnos para pagar
+            
+            const loan = {
+                principal: amount,
+                interest: interest,
+                totalDue: totalDue,
+                turnsRemaining: turnsToRepay
+            };
+            
+            currentPlayer.loans.push(loan);
+            currentPlayer.money += amount;
+            
+            console.log(`   ✅ Empréstimo aprovado!`);
+            console.log(`   Recebido: ${fmF(amount)}`);
+            console.log(`   Total a pagar: ${fmF(totalDue)}`);
+            console.log(`   Prazo: ${turnsToRepay} turnos`);
+            console.log(`   Novo saldo: ${fmF(currentPlayer.money)}`);
+            console.log(`💰 === FIM DO EMPRÉSTIMO ===\n`);
+            
+            showNotification(`✅ Empréstimo de ${fmF(amount)} aprovado! Pague ${fmF(totalDue)} em ${turnsToRepay} turnos.`);
+            
+            renderPlayersPanel();
+            closeModal();
+        }
+        
+        function payLoan(loanIndex) {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            const loan = currentPlayer.loans[loanIndex];
+            
+            console.log(`💳 === PAGAMENTO DE EMPRÉSTIMO ===`);
+            console.log(`   Jogador: ${currentPlayer.name}`);
+            console.log(`   Valor a pagar: ${fmF(loan.totalDue)}`);
+            console.log(`   Saldo atual: ${fmF(currentPlayer.money)}`);
+            
+            if (currentPlayer.money < loan.totalDue) {
+                console.log(`   ❌ Saldo insuficiente!`);
+                showNotification('❌ Saldo insuficiente para pagar empréstimo!');
+                return;
+            }
+            
+            currentPlayer.money -= loan.totalDue;
+            currentPlayer.loans.splice(loanIndex, 1); // Remove empréstimo
+            
+            console.log(`   ✅ Empréstimo quitado!`);
+            console.log(`   Novo saldo: ${fmF(currentPlayer.money)}`);
+            console.log(`💳 === FIM DO PAGAMENTO ===\n`);
+            
+            showNotification(`✅ Empréstimo quitado! ${fmF(loan.totalDue)} pagos.`);
+            
+            renderPlayersPanel();
+            closeModal();
+            
+            // Reabrir terminal atualizado
+            setTimeout(() => openBankTerminal(), 300);
+        }
+        
+        function liquidateAsset(assetType, assetId) {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            
+            console.log(`🔨 === LIQUIDAÇÃO VOLUNTÁRIA ===`);
+            console.log(`   Jogador: ${currentPlayer.name}`);
+            console.log(`   Tipo: ${assetType}`);
+            
+            let liquidationValue = 0;
+            let assetName = '';
+            
+            if (assetType === 'property') {
+                const property = gameState.houses.find(h => h.name === assetId);
+                liquidationValue = Math.floor(property.price * 0.5);
+                assetName = property.name;
+                
+                // Remover propriedade
+                property.owner = undefined;
+                property.stocks = 0; // Limpar ações também
+                currentPlayer.properties = currentPlayer.properties.filter(p => p !== assetId);
+                
+                // Remover ações que o jogador tinha desta propriedade
+                if (currentPlayer.stocks[assetId]) {
+                    delete currentPlayer.stocks[assetId];
+                }
+                
+            } else if (assetType === 'port_tug') {
+                liquidationValue = 100;
+                assetName = 'Rebocador Portuário';
+                currentPlayer.portTugs--;
+                
+            } else if (assetType === 'ocean_tug') {
+                liquidationValue = 250;
+                assetName = 'Rebocador Oceânico';
+                currentPlayer.hasOceanTug = false;
+            }
+            
+            currentPlayer.money += liquidationValue;
+            
+            console.log(`   ✅ ${assetName} liquidado!`);
+            console.log(`   Valor recebido: ${fmF(liquidationValue)}`);
+            console.log(`   Novo saldo: ${fmF(currentPlayer.money)}`);
+            console.log(`🔨 === FIM DA LIQUIDAÇÃO ===\n`);
+            
+            showNotification(`🔨 ${assetName} vendido por ${fmF(liquidationValue)}!`);
+            
+            updatePlayerPositions(); // Atualizar barra de dono
+            renderPlayersPanel();
+            closeModal();
+            
+            // Reabrir terminal atualizado
+            setTimeout(() => openBankTerminal(), 300);
+        }
+
+        function drawCard(type) {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            
+            console.log(`🍀 === CARTA SORTE ===`);
+            console.log(`   Jogador: ${currentPlayer.name}`);
+            
+            const luckCards = [
+                { text: '🎉 Você ganhou na loteria!', effect: 'Receba F$ 500 mil', money: 500 },
+                { text: '💰 Bônus de desempenho!', effect: 'Receba F$ 300 mil', money: 300 },
+                { text: '🎁 Presente do mar!', effect: 'Receba F$ 400 mil', money: 400 },
+                { text: '📈 Contrato especial!', effect: 'Receba F$ 600 mil', money: 600 },
+                { text: '🏆 Prêmio de excelência!', effect: 'Receba F$ 250 mil', money: 250 },
+                { text: '📉 Imposto retroativo', effect: 'Pague F$ 200 mil ao Banco', money: -200 },
+                { text: '⛵ Manutenção necessária', effect: 'Pague F$ 150 mil ao Banco', money: -150 },
+                { text: '💸 Multa ambiental', effect: 'Pague F$ 100 mil ao Banco', money: -100 },
+                { text: '🚀 Correntes favoráveis!', effect: 'Avance 3 casas', move: 3 },
+                { text: '⚓ Águas agitadas!', effect: 'Avance 2 casas', move: 2 },
+                { text: '⏪ Maré contrária', effect: 'Volte 2 casas', move: -2 },
+                { text: '🌊 Corrente inversa', effect: 'Volte 3 casas', move: -3 },
+                { text: '🌟 Dia de sorte!', effect: 'Jogue os dados novamente', extra: 'roll_again' },
+                { text: '🎯 Vento a favor!', effect: 'Jogue novamente após esta jogada', extra: 'roll_again' }
+            ];
+            
+            const card = luckCards[Math.floor(Math.random() * luckCards.length)];
+            
+            console.log(`   Carta sorteada: ${card.text}`);
+            console.log(`   Efeito: ${card.effect}`);
+            
+            // Modal com carta
+            const modalBody = `
+                <div style="background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(34, 197, 94, 0.1)); padding: 2rem; border-radius: 0.75rem; border: 2px solid #fbbf24; text-align: center; margin-bottom: 1rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">${card.text.split(' ')[0]}</div>
+                    <p style="color: #e0e0e0; font-size: 1.3rem; font-weight: 600; margin: 0 0 0.5rem 0;">
+                        ${card.text}
+                    </p>
+                    <p style="color: #94a3b8; font-size: 1rem; margin: 0;">
+                        ${card.effect}
+                    </p>
+                </div>
+                
+                <div style="background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 0.5rem;">
+                    <p style="color: #e0e0e0; margin: 0; text-align: center; font-size: 0.9rem;">
+                        ${currentPlayer.name} ${card.money ? (card.money > 0 ? `recebeu ${fmF(card.money)}!` : `pagou ${fmF(Math.abs(card.money))}!`) : ''}
+                        ${card.move ? `${card.move > 0 ? 'avançou' : 'voltou'} ${Math.abs(card.move)} casas!` : ''}
+                        ${card.extra === 'roll_again' ? 'pode jogar novamente!' : ''}
+                    </p>
+                </div>
+            `;
+            
+            showModal('🍀 Carta Sorte', modalBody, [
+                { text: '✅ Continuar', onClick: 'closeModal()' }
+            ]);
+            
+            // Apply card effects
+            if (card.money) {
+                if (card.money > 0) {
+                    currentPlayer.money += card.money;
+                    console.log(`   💰 +${fmF(card.money)}`);
+                } else {
+                    const amountToPay = Math.abs(card.money);
+                    handleMandatoryPayment(currentPlayer, amountToPay, "Carta Sorte");
+                    console.log(`   💸 -${fmF(amountToPay)}`);
+                }
+            }
+            
+            if (card.move) {
+                console.log(`   🚀 Movimento: ${card.move} casas`);
+                setTimeout(() => {
+                    closeModal();
+                    movePlayer(card.move);
+                }, 2000);
+            }
+            
+            if (card.extra === 'roll_again') {
+                console.log(`   🎲 Permissão para jogar novamente!`);
+                gameState.diceRolled = false; // Permite jogar de novo
+                document.getElementById('rollDiceBtn').disabled = false;
+                showNotification(`🎲 ${currentPlayer.name} pode jogar novamente!`);
+            }
+            
+            console.log(`   Novo saldo: ${fmF(currentPlayer.money)}`);
+            console.log(`🍀 === FIM DA CARTA ===\n`);
+            
+            renderPlayersPanel();
+            document.getElementById('contextualActions').style.display = 'none';
+        }
+
+        // ========== EVENTOS OCEÂNICOS ==========
+        function triggerOceanEvent() {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            
+            console.log(`🌊 === EVENTO OCEÂNICO ===`);
+            console.log(`   Jogador: ${currentPlayer.name}`);
+            
+            // Sortear evento aleatório
+            const event = OCEAN_EVENTS[Math.floor(Math.random() * OCEAN_EVENTS.length)];
+            
+            console.log(`   Evento sorteado: ${event.name}`);
+            console.log(`   Efeito: ${event.effect}`);
+            
+            // Criar modal visual
+            const modalBody = `
+                <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.1)); padding: 2rem; border-radius: 0.75rem; border: 2px solid #3b82f6; text-align: center; margin-bottom: 1rem;">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">${event.icon}</div>
+                    <p style="color: #3b82f6; font-size: 1.5rem; font-weight: 600; margin: 0 0 0.5rem 0;">
+                        ${event.name}
+                    </p>
+                    <p style="color: #94a3b8; font-size: 1rem; margin: 0 0 1rem 0;">
+                        ${event.description}
+                    </p>
+                    <div style="background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 0.5rem;">
+                        <p style="color: #e0e0e0; margin: 0; font-size: 0.95rem;">
+                            ${event.effect}
+                        </p>
+                    </div>
+                </div>
+            `;
+            
+            // Botões dependem do tipo de evento
+            let buttons = [];
+            
+            if (event.type === 'choice_salvage') {
+                buttons = [
+                    { text: '✅ Aceitar (+F$ 400 mil, perde turno)', onClick: `acceptSalvage()` },
+                    { text: '❌ Recusar', onClick: `closeModal()` }
+                ];
+            } else if (event.type === 'choice_route') {
+                buttons = [
+                    { text: '🧭 Rota Norte (+3 casas)', onClick: `chooseRoute('north')` },
+                    { text: '🧭 Rota Sul (+F$ 250 mil)', onClick: `chooseRoute('south')` }
+                ];
+            } else {
+                buttons = [
+                    { text: '✅ Continuar', onClick: `closeModal()` }
+                ];
+            }
+            
+            showModal('🌊 Evento Oceânico', modalBody, buttons);
+            
+            // Aplicar efeito (exceto para eventos com escolha)
+            if (event.type !== 'choice_salvage' && event.type !== 'choice_route') {
+                setTimeout(() => {
+                    applyOceanEventEffect(event);
+                }, 100);
+            }
+            
+            document.getElementById('contextualActions').style.display = 'none';
+        }
+        
+        function applyOceanEventEffect(event) {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            
+            console.log(`   Aplicando efeito: ${event.type}`);
+            
+            switch(event.type) {
+                case 'money':
+                    if (event.amount > 0) {
+                        currentPlayer.money += event.amount;
+                        console.log(`   💰 +${fmF(event.amount)}`);
+                        showNotification(`💰 ${currentPlayer.name} recebeu ${fmF(event.amount)}!`);
+                    } else {
+                        const amountToPay = Math.abs(event.amount);
+                        handleMandatoryPayment(currentPlayer, amountToPay, event.name);
+                        console.log(`   💸 -${fmF(amountToPay)}`);
+                    }
+                    break;
+                    
+                case 'move':
+                    console.log(`   🚀 Movimento: +${event.spaces} casas`);
+                    setTimeout(() => {
+                        closeModal();
+                        movePlayer(event.spaces);
+                    }, 1500);
+                    break;
+                    
+                case 'advance_to_property':
+                    console.log(`   ⛵ Avançando para próxima propriedade...`);
+                    setTimeout(() => {
+                        closeModal();
+                        advanceToNextProperty(event.skipRent);
+                    }, 1500);
+                    break;
+                    
+                case 'return_to_last_property':
+                    console.log(`   🌀 Retornando à última propriedade...`);
+                    setTimeout(() => {
+                        closeModal();
+                        returnToLastProperty();
+                    }, 1500);
+                    break;
+                    
+                case 'skip_turn':
+                    console.log(`   ⏸️ Próximo turno será pulado`);
+                    currentPlayer.skipNextTurn = true;
+                    showNotification(`⚠️ ${currentPlayer.name} perderá o próximo turno!`);
+                    break;
+                    
+                case 'inspection':
+                    const requiredCerts = ['fire', 'rescue', 'collision', 'abandon'];
+                    const hasAllCerts = requiredCerts.every(cert => 
+                        currentPlayer.certificates.includes(cert)
+                    );
+                    
+                    if (hasAllCerts) {
+                        currentPlayer.money += 200;
+                        console.log(`   ✅ Certificados completos: +F$ 200 mil`);
+                        showNotification(`✅ Inspeção aprovada! ${currentPlayer.name} recebeu F$ 200 mil!`);
+                    } else {
+                        handleMandatoryPayment(currentPlayer, 150, "Multa (Inspeção)");
+                        console.log(`   ❌ Certificados incompletos: -F$ 150 mil`);
+                    }
+                    break;
+            }
+            
+            console.log(`   Novo saldo: ${fmF(currentPlayer.money)}`);
+            console.log(`🌊 === FIM DO EVENTO ===\n`);
+            
+            renderPlayersPanel();
+        }
+        
+        // Funções auxiliares para eventos oceânicos
+        function advanceToNextProperty(skipRent) {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            let currentPos = currentPlayer.position;
+            let spacesToMove = 0;
+            
+            // Procurar próxima propriedade
+            for (let i = 1; i <= 36; i++) {
+                const checkPos = (currentPos + i) % 36;
+                const house = gameState.houses[checkPos];
+                
+                if (house.type === 'property') {
+                    spacesToMove = i;
+                    console.log(`   Próxima propriedade encontrada: ${house.name} (${i} casas)`);
+                    break;
+                }
+            }
+            
+            if (spacesToMove > 0) {
+                if (skipRent) {
+                    // Marcar para pular aluguel
+                    currentPlayer.skipNextRent = true;
+                    console.log(`   ⛵ Aluguel será PULADO nesta propriedade`);
+                }
+                
+                movePlayer(spacesToMove);
+            }
+        }
+        
+        function returnToLastProperty() {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            let currentPos = currentPlayer.position;
+            
+            // Procurar última propriedade (voltando)
+            for (let i = 1; i <= 36; i++) {
+                const checkPos = (currentPos - i + 36) % 36;
+                const house = gameState.houses[checkPos];
+                
+                if (house.type === 'property') {
+                    const spacesToMove = -i;
+                    console.log(`   Última propriedade encontrada: ${house.name} (${i} casas atrás)`);
+                    movePlayer(spacesToMove);
+                    break;
+                }
+            }
+        }
+        
+        function acceptSalvage() {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            
+            console.log(`🎣 === SALVAMENTO ACEITO ===`);
+            console.log(`   Jogador: ${currentPlayer.name}`);
+            
+            currentPlayer.money += 400;
+            currentPlayer.skipNextTurn = true;
+            
+            console.log(`   💰 +F$ 400 mil`);
+            console.log(`   ⏸️ Próximo turno pulado`);
+            console.log(`🎣 === FIM DO SALVAMENTO ===\n`);
+            
+            showNotification(`🎣 ${currentPlayer.name} recebeu F$ 400 mil mas perderá o próximo turno!`);
+            
+            renderPlayersPanel();
+            closeModal();
+        }
+        
+        function chooseRoute(route) {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            
+            console.log(`🌅 === ESCOLHA DE ROTA ===`);
+            console.log(`   Jogador: ${currentPlayer.name}`);
+            console.log(`   Rota escolhida: ${route}`);
+            
+            if (route === 'north') {
+                console.log(`   🧭 Rota Norte: +3 casas`);
+                closeModal();
+                setTimeout(() => {
+                    movePlayer(3);
+                }, 500);
+            } else {
+                currentPlayer.money += 250;
+                console.log(`   🧭 Rota Sul: +F$ 250 mil`);
+                showNotification(`🧭 ${currentPlayer.name} escolheu Rota Sul e recebeu F$ 250 mil!`);
+                renderPlayersPanel();
+                closeModal();
+            }
+            
+            console.log(`🌅 === FIM DA ESCOLHA ===\n`);
+        }
+
+        // ========== SISTEMA ECONÔMICO COMPLETO ==========
+        
+        function calculateRent(space, owner) {
+            if (!space.rent) return 0;
+            
+            let level = 0;
+            const portTugs = owner.portTugs - owner.dockedTugs.port;
+            const hasOcean = owner.hasOceanTug && !owner.dockedTugs.ocean;
+            const hasTuglord = owner.hasTuglord && !owner.dockedTugs.tuglord;
+            
+            if (portTugs >= 1) level = 1;
+            if (portTugs >= 2) level = 2;
+            if (portTugs >= 3) level = 3;
+            if (hasOcean) level = 4;
+            if (hasTuglord) level = 5;
+            
+            return space.rent[level];
+        }
+        
+        function handleMandatoryPayment(player, amount, reason, recipient = null) {
+            console.log(`💸 Pagamento obrigatório: ${player.name} deve pagar ${fmF(amount)} (${reason})`);
+            
+            if (player.money >= amount) {
+                player.money -= amount;
+                
+                if (recipient) {
+                    recipient.money += amount;
+                    console.log(`   ✅ ${fmF(amount)} transferido para ${recipient.name}`);
+                } else {
+                    console.log(`   ✅ ${fmF(amount)} pago ao Banco`);
+                }
+                
+                showNotification(`💸 ${player.name} pagou ${fmF(amount)} (${reason})`);
+                renderPlayersPanel();
+                return true;
+            } else {
+                console.log(`   ❌ ${player.name} não tem dinheiro! Saldo: ${fmF(player.money)}`);
+                console.log(`   ⚠️ INICIANDO PROCESSO DE ARRESTO...`);
+                
+                // INICIAR PROCESSO DE ARRESTO
+                initiateArrest(player, amount, reason, recipient);
+                return false;
+            }
+        }
+        
+        // ========== SISTEMA DE FALÊNCIA ==========
+        function initiateArrest(player, debtAmount, reason, creditor) {
+            console.log(`⚖️ === PROCESSO DE ARRESTO ===`);
+            console.log(`   Jogador: ${player.name}`);
+            console.log(`   Dívida: ${fmF(debtAmount)}`);
+            console.log(`   Motivo: ${reason}`);
+            console.log(`   Credor: ${creditor ? creditor.name : 'Banco'}`);
+            
+            player.bankruptcyStage = 1; // Arresto
+            
+            // Calcular valor total dos ativos (50% do preço)
+            let totalAssetValue = 0;
+            let assetsList = [];
+            
+            // Propriedades
+            player.properties.forEach(propName => {
+                const prop = gameState.houses.find(h => h.name === propName);
+                const liquidationValue = Math.floor(prop.price * 0.5);
+                totalAssetValue += liquidationValue;
+                assetsList.push({
+                    type: 'property',
+                    name: propName,
+                    value: liquidationValue,
+                    asset: prop
+                });
+            });
+            
+            // Rebocadores portuários
+            for (let i = 0; i < player.portTugs; i++) {
+                totalAssetValue += 100;
+                assetsList.push({
+                    type: 'port_tug',
+                    name: `Rebocador Portuário #${i + 1}`,
+                    value: 100
+                });
+            }
+            
+            // Rebocador oceânico
+            if (player.hasOceanTug) {
+                totalAssetValue += 250;
+                assetsList.push({
+                    type: 'ocean_tug',
+                    name: 'Rebocador Oceânico',
+                    value: 250
+                });
+            }
+            
+            // TugLord
+            if (player.hasTuglord) {
+                totalAssetValue += 375; // 50% de 750
+                assetsList.push({
+                    type: 'tuglord',
+                    name: 'Classe TugLord',
+                    value: 375
+                });
+            }
+            
+            console.log(`   Valor total dos ativos: ${fmF(totalAssetValue)}`);
+            console.log(`   Saldo em caixa: ${fmF(player.money)}`);
+            
+            const totalAvailable = player.money + totalAssetValue;
+            
+            console.log(`   Total disponível: ${fmF(totalAvailable)}`);
+            
+            if (totalAvailable >= debtAmount) {
+                // TEM ATIVOS SUFICIENTES - LIQUIDAÇÃO FORÇADA
+                console.log(`   ✅ Ativos suficientes para cobrir dívida`);
+                console.log(`   🔨 INICIANDO LIQUIDAÇÃO FORÇADA...`);
+                
+                forceLiquidation(player, debtAmount, assetsList, creditor);
+                
+            } else {
+                // NÃO TEM ATIVOS SUFICIENTES - FALÊNCIA
+                console.log(`   ❌ Ativos insuficientes para cobrir dívida`);
+                console.log(`   💔 DECLARANDO FALÊNCIA...`);
+                
+                declareBankruptcy(player, creditor);
+            }
+        }
+        
+        function forceLiquidation(player, debtAmount, assetsList, creditor) {
+            console.log(`🔨 === LIQUIDAÇÃO FORÇADA ===`);
+            
+            let amountRaised = player.money; // Começa com saldo atual
+            let liquidatedAssets = [];
+            
+            // Liquidar ativos até cobrir a dívida
+            for (let asset of assetsList) {
+                if (amountRaised >= debtAmount) break; // Já cobriu a dívida
+                
+                console.log(`   Liquidando: ${asset.name} → ${fmF(asset.value)}`);
+                
+                if (asset.type === 'property') {
+                    // Remover propriedade
+                    asset.asset.owner = undefined;
+                    asset.asset.stocks = 0;
+                    player.properties = player.properties.filter(p => p !== asset.name);
+                    
+                    // Limpar ações desta propriedade
+                    if (player.stocks[asset.name]) {
+                        delete player.stocks[asset.name];
+                    }
+                    
+                } else if (asset.type === 'port_tug') {
+                    player.portTugs--;
+                    
+                } else if (asset.type === 'ocean_tug') {
+                    player.hasOceanTug = false;
+                    
+                } else if (asset.type === 'tuglord') {
+                    player.hasTuglord = false;
+                }
+                
+                amountRaised += asset.value;
+                liquidatedAssets.push(asset.name);
+            }
+            
+            // Usar dinheiro do jogador primeiro
+            const cashUsed = Math.min(player.money, debtAmount);
+            player.money -= cashUsed;
+            
+            // Resto vem dos ativos
+            const fromAssets = Math.min(amountRaised - cashUsed, debtAmount - cashUsed);
+            
+            // Pagar credor
+            if (creditor) {
+                creditor.money += debtAmount;
+                console.log(`   ✅ ${fmF(debtAmount)} transferido para ${creditor.name}`);
+            }
+            
+            // Sobra vai para o jogador
+            const surplus = amountRaised - debtAmount;
+            if (surplus > 0) {
+                player.money += surplus;
+                console.log(`   💰 Sobra de ${fmF(surplus)} devolvida ao jogador`);
+            }
+            
+            player.bankruptcyStage = 0; // Volta a solvente
+            
+            console.log(`   ✅ Dívida quitada!`);
+            console.log(`   Ativos liquidados: ${liquidatedAssets.length}`);
+            console.log(`   Novo saldo: ${fmF(player.money)}`);
+            console.log(`🔨 === FIM DA LIQUIDAÇÃO ===\n`);
+            
+            showNotification(`🔨 ${player.name}: Ativos liquidados para quitar dívida de ${fmF(debtAmount)}!`);
+            
+            // Modal informativo
+            setTimeout(() => {
+                const modalBody = `
+                    <div style="background: rgba(239, 68, 68, 0.1); padding: 1.5rem; border-radius: 0.5rem; border-left: 4px solid #ef4444; margin-bottom: 1rem;">
+                        <p style="color: #f87171; font-weight: 600; margin: 0 0 0.5rem 0;">
+                            ⚖️ LIQUIDAÇÃO FORÇADA
+                        </p>
+                        <p style="color: #94a3b8; margin: 0;">
+                            Seus ativos foram liquidados para quitar a dívida de ${fmF(debtAmount)}.
+                        </p>
+                    </div>
+                    
+                    <div style="background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+                        <p style="color: #e0e0e0; font-weight: 600; margin: 0 0 0.5rem 0;">
+                            Ativos Liquidados:
+                        </p>
+                        ${liquidatedAssets.map(asset => `
+                            <p style="color: #94a3b8; margin: 0.25rem 0; font-size: 0.9rem;">
+                                • ${asset}
+                            </p>
+                        `).join('')}
+                    </div>
+                    
+                    <div style="background: rgba(34, 197, 94, 0.1); padding: 1rem; border-radius: 0.5rem;">
+                        <p style="color: #22c55e; margin: 0;">
+                            ✅ Dívida quitada. Saldo atual: ${fmF(player.money)}
+                        </p>
+                    </div>
+                `;
+                
+                showModal('⚖️ Liquidação Forçada', modalBody, [
+                    { text: 'Entendi', onClick: 'closeModal()' }
+                ]);
+            }, 1500);
+            
+            updatePlayerPositions();
+            renderPlayersPanel();
+        }
+        
+        function declareBankruptcy(player, creditor) {
+            console.log(`💔 === FALÊNCIA DECLARADA ===`);
+            console.log(`   Jogador: ${player.name}`);
+            
+            player.bankruptcyStage = 2; // Falido
+            player.isEliminated = true;
+            
+            // Transferir TODOS os ativos liquidados para o credor
+            let totalTransferred = player.money;
+            
+            // Liquidar todas as propriedades
+            player.properties.forEach(propName => {
+                const prop = gameState.houses.find(h => h.name === propName);
+                const liquidationValue = Math.floor(prop.price * 0.5);
+                totalTransferred += liquidationValue;
+                
+                // Limpar propriedade
+                prop.owner = undefined;
+                prop.stocks = 0;
+            });
+            
+            // Rebocadores
+            totalTransferred += player.portTugs * 100;
+            if (player.hasOceanTug) totalTransferred += 250;
+            if (player.hasTuglord) totalTransferred += 375;
+            
+            // Transferir ao credor (ou banco)
+            if (creditor) {
+                creditor.money += totalTransferred;
+                console.log(`   💰 ${fmF(totalTransferred)} transferido para ${creditor.name}`);
+            } else {
+                console.log(`   💰 ${fmF(totalTransferred)} confiscado pelo Banco`);
+            }
+            
+            // Zerar jogador
+            player.money = 0;
+            player.properties = [];
+            player.portTugs = 0;
+            player.hasOceanTug = false;
+            player.hasTuglord = false;
+            player.stocks = {};
+            
+            console.log(`   ❌ ${player.name} está FALIDO!`);
+            console.log(`💔 === FIM DA FALÊNCIA ===\n`);
+            
+            showNotification(`💔 ${player.name} declarou FALÊNCIA e foi eliminado do jogo!`);
+            
+            // Modal de falência
+            setTimeout(() => {
+                const modalBody = `
+                    <div style="background: rgba(239, 68, 68, 0.2); padding: 2rem; border-radius: 0.75rem; border: 2px solid #ef4444; text-align: center;">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">💔</div>
+                        <p style="color: #f87171; font-size: 1.5rem; font-weight: 700; margin: 0 0 1rem 0;">
+                            FALÊNCIA DECLARADA
+                        </p>
+                        <p style="color: #e0e0e0; font-size: 1.1rem; margin: 0 0 0.5rem 0;">
+                            ${player.name}
+                        </p>
+                        <p style="color: #94a3b8; margin: 0;">
+                            foi eliminado do jogo por insolvência.
+                        </p>
+                    </div>
+                    
+                    <div style="background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 0.5rem; margin-top: 1.5rem;">
+                        <p style="color: #94a3b8; margin: 0; text-align: center; font-size: 0.9rem;">
+                            Todos os ativos foram liquidados e transferidos ${creditor ? `para ${creditor.name}` : 'ao Banco'}.
+                        </p>
+                    </div>
+                `;
+                
+                showModal('💔 Game Over', modalBody, [
+                    { text: 'Continuar Jogo', onClick: 'closeModal()' }
+                ]);
+            }, 2000);
+            
+            updatePlayerPositions();
+            renderPlayersPanel();
+            
+            // Verificar se só resta 1 jogador (vitória)
+            const activePlayers = gameState.players.filter(p => !p.isEliminated);
+            if (activePlayers.length === 1) {
+                setTimeout(() => {
+                    declareWinner(activePlayers[0]);
+                }, 3000);
+            }
+        }
+        
+        function declareWinner(winner) {
+            console.log(`🏆 === VITÓRIA ===`);
+            console.log(`   Vencedor: ${winner.name}`);
+            
+            const modalBody = `
+                <div style="background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(34, 197, 94, 0.2)); padding: 3rem; border-radius: 1rem; border: 3px solid #fbbf24; text-align: center;">
+                    <div style="font-size: 5rem; margin-bottom: 1rem;">🏆</div>
+                    <p style="color: #fbbf24; font-size: 2rem; font-weight: 700; margin: 0 0 1rem 0; text-shadow: 0 0 20px rgba(251, 191, 36, 0.5);">
+                        VITÓRIA!
+                    </p>
+                    <p style="color: #e0e0e0; font-size: 1.5rem; font-weight: 600; margin: 0 0 0.5rem 0;">
+                        ${winner.icon} ${winner.name}
+                    </p>
+                    <p style="color: #22c55e; font-size: 1.2rem; margin: 0 0 1.5rem 0;">
+                        ${fmF(winner.money)}
+                    </p>
+                    <p style="color: #94a3b8; margin: 0;">
+                        Todos os adversários foram eliminados!<br>
+                        Você é o TugLord supremo dos mares brasileiros!
+                    </p>
+                </div>
+            `;
+            
+            showModal('🏆 Vitória por Eliminação!', modalBody, [
+                { text: '🎉 Nova Partida', onClick: 'location.reload()' }
+            ]);
+        }
+        
+        function buyProperty(space) {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            
+            console.log(`🏪 === COMPRA DE PROPRIEDADE ===`);
+            console.log(`   Jogador: ${currentPlayer.name}`);
+            console.log(`   Propriedade: ${space.name}`);
+            console.log(`   Preço: ${fmF(space.price)}`);
+            console.log(`   Saldo atual: ${fmF(currentPlayer.money)}`);
+            
+            // Verificar se tem dinheiro
+            if (currentPlayer.money < space.price) {
+                showNotification('❌ Saldo insuficiente!');
+                console.log(`   ❌ Compra CANCELADA: saldo insuficiente`);
+                return;
+            }
+            
+            // Debitar dinheiro
+            currentPlayer.money -= space.price;
+            
+            // Registrar ownership
+            space.owner = currentPlayer.id;
+            
+            // Adicionar à lista de propriedades
+            currentPlayer.properties.push(space.name);
+            
+            console.log(`   ✅ Compra APROVADA!`);
+            console.log(`   Novo saldo: ${fmF(currentPlayer.money)}`);
+            console.log(`   Owner ID: ${space.owner}`);
+            console.log(`🏪 === FIM DA COMPRA ===\n`);
+            
+            showNotification(`✅ ${space.name} adquirido!`);
+            renderPlayersPanel();
+            
+            document.getElementById('contextualActions').style.display = 'none';
+        }
+        
+        function buyTug(space) {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            const tugType = space.tugType; // 'port' ou 'ocean'
+            const price = space.price;
+            
+            console.log(`⚓ === COMPRA DE REBOCADOR ===`);
+            console.log(`   Jogador: ${currentPlayer.name}`);
+            console.log(`   Tipo: ${tugType === 'port' ? 'Portuário' : 'Oceânico'}`);
+            console.log(`   Preço: ${fmF(price)}`);
+            console.log(`   Saldo atual: ${fmF(currentPlayer.money)}`);
+            
+            // Verificar se tem dinheiro
+            if (currentPlayer.money < price) {
+                showNotification('❌ Saldo insuficiente!');
+                console.log(`   ❌ Compra CANCELADA: saldo insuficiente`);
+                return;
+            }
+            
+            // Verificar se já tem (para oceânico)
+            if (tugType === 'ocean' && currentPlayer.hasOceanTug) {
+                showNotification('⚠️ Você já possui um Rebocador Oceânico!');
+                console.log(`   ❌ Compra CANCELADA: já possui rebocador oceânico`);
+                return;
+            }
+            
+            // Debitar dinheiro
+            currentPlayer.money -= price;
+            
+            // Adicionar rebocador
+            if (tugType === 'port') {
+                currentPlayer.portTugs++;
+                console.log(`   ✅ Rebocador Portuário adquirido!`);
+                console.log(`   Total de portuários: ${currentPlayer.portTugs}`);
+                showNotification(`⚓ Rebocador Portuário adquirido! Total: ${currentPlayer.portTugs}`);
+            } else if (tugType === 'ocean') {
+                currentPlayer.hasOceanTug = true;
+                console.log(`   ✅ Rebocador Oceânico adquirido!`);
+                showNotification(`ρυ Rebocador Oceânico adquirido!`);
+            }
+            
+            console.log(`   Novo saldo: ${fmF(currentPlayer.money)}`);
+            console.log(`⚓ === FIM DA COMPRA ===\n`);
+            
+            renderPlayersPanel();
+            document.getElementById('contextualActions').style.display = 'none';
+        }
+
+
+        function showLoanOptions() {
+            openPanel('panelBank');
+            showNotification('💳 Escolha o valor do empréstimo');
+        }
+
+        function endTurn() {
+            if (!gameState.diceRolled) {
+                showNotification('⚠️ Role os dados primeiro!');
+                return;
+            }
+
+            gameState.currentPlayerIndex = (gameState.currentPlayerIndex + 1) % gameState.players.length;
+            
+            if (gameState.currentPlayerIndex === 0) {
+                gameState.currentRound++;
+            }
+            
+            document.getElementById('contextualActions').style.display = 'none';
+            
+            // ===== PAGAR DIVIDENDOS AO JOGADOR ATUAL =====
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            
+            // ===== VERIFICAR SKIP TURN (Evento Oceânico) =====
+            if (currentPlayer.skipNextTurn) {
+                console.log(`⏸️ ${currentPlayer.name} está PULANDO o turno!`);
+                currentPlayer.skipNextTurn = false; // Reset flag
+                gameState.diceRolled = true; // Marca como se já tivesse rolado
+                
+                showNotification(`⏸️ ${currentPlayer.name} perdeu o turno! (Evento Oceânico)`);
+                
+                // Pula para o próximo jogador
+                updateTurnDisplay();
+                updatePlayerPositions();
+                renderPlayersPanel();
+                return; // Sai da função sem permitir jogar
+            }
+            
+            if (currentPlayer.properties.length > 0 && !currentPlayer.isEliminated) {
+                payDividends(currentPlayer);
+            }
+            
+            // ===== VERIFICAR DOCAGEM NO INÍCIO DO TURNO =====
+            checkDockingStatus();
+            
+            updateTurnDisplay();
+            updatePlayerPositions();
+            renderPlayersPanel();
+        }
+        
+        // ========== SISTEMA DE DOCAGEM ==========
+        function checkDockingStatus() {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            
+            if (currentPlayer.dockedTugs.turnsRemaining > 0) {
+                currentPlayer.dockedTugs.turnsRemaining--;
+                
+                console.log(`⚓ Docagem de ${currentPlayer.name}: ${currentPlayer.dockedTugs.turnsRemaining} turnos restantes`);
+                
+                if (currentPlayer.dockedTugs.turnsRemaining === 0) {
+                    // LIBERAR REBOCADORES
+                    if (currentPlayer.dockedTugs.port > 0) {
+                        currentPlayer.dockedTugs.port = 0;
+                        console.log(`   ✅ Rebocadores portuários liberados!`);
+                    }
+                    if (currentPlayer.dockedTugs.ocean) {
+                        currentPlayer.dockedTugs.ocean = false;
+                        console.log(`   ✅ Rebocador oceânico liberado!`);
+                    }
+                    if (currentPlayer.dockedTugs.tuglord) {
+                        currentPlayer.dockedTugs.tuglord = false;
+                        console.log(`   ✅ Classe TugLord liberada!`);
+                    }
+                    
+                    showNotification(`✅ ${currentPlayer.name}: Rebocadores liberados da docagem!`);
+                } else {
+                    showNotification(`⚓ ${currentPlayer.name}: Rebocador(es) ainda em docagem (${currentPlayer.dockedTugs.turnsRemaining} turnos)`);
+                }
+            }
+        }
+        
+        function handleShipyard(space) {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            const owner = space.owner !== undefined ? gameState.players.find(p => p.id === space.owner) : null;
+            
+            console.log(`🏭 === ESTALEIRO ===`);
+            console.log(`   Jogador: ${currentPlayer.name}`);
+            console.log(`   Dono: ${owner ? owner.name : 'Sem dono'}`);
+            
+            // Contar rebocadores operacionais
+            const operationalPortTugs = currentPlayer.portTugs - currentPlayer.dockedTugs.port;
+            const operationalOceanTug = currentPlayer.hasOceanTug && !currentPlayer.dockedTugs.ocean;
+            const operationalTuglord = currentPlayer.hasTuglord && !currentPlayer.dockedTugs.tuglord;
+            
+            const hasOperationalTugs = operationalPortTugs > 0 || operationalOceanTug || operationalTuglord;
+            
+            console.log(`   Rebocadores operacionais: Port=${operationalPortTugs}, Ocean=${operationalOceanTug}, TugLord=${operationalTuglord}`);
+            
+            if (!hasOperationalTugs) {
+                console.log(`   ℹ️ Sem rebocadores operacionais, sem docagem necessária`);
+                console.log(`🏭 === FIM DO ESTALEIRO ===\n`);
+                return; // Sem rebocadores, sem docagem
+            }
+            
+            // TEM REBOCADORES = DOCAGEM OBRIGATÓRIA
+            const dockingCost = space.repairCost || 75;
+            
+            // Criar lista de rebocadores disponíveis para docar
+            let tugOptions = [];
+            
+            if (operationalPortTugs > 0) {
+                tugOptions.push({
+                    label: `⚓ Rebocador Portuário (${operationalPortTugs} operacional)`,
+                    value: 'port'
+                });
+            }
+            
+            if (operationalOceanTug) {
+                tugOptions.push({
+                    label: `ρυ Rebocador Oceânico`,
+                    value: 'ocean'
+                });
+            }
+            
+            if (operationalTuglord) {
+                tugOptions.push({
+                    label: `⭐ Classe TugLord`,
+                    value: 'tuglord'
+                });
+            }
+            
+            // Modal para escolher qual rebocador docar
+            const modalBody = `
+                <div style="background: rgba(239, 68, 68, 0.1); padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; border-left: 4px solid #ef4444;">
+                    <p style="color: #f87171; font-weight: 600; margin: 0;">
+                        ⚠️ DOCAGEM OBRIGATÓRIA
+                    </p>
+                    <p style="color: #94a3b8; font-size: 0.85rem; margin: 0.5rem 0 0 0;">
+                        Você possui rebocadores operacionais e deve docar um deles por 3 turnos.
+                    </p>
+                </div>
+                
+                <div style="background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+                    <p style="color: #e0e0e0; margin: 0;">
+                        💰 Custo da docagem: <strong style="color: #fbbf24;">${fmF(dockingCost)}</strong>
+                    </p>
+                    <p style="color: #94a3b8; font-size: 0.85rem; margin: 0.5rem 0 0 0;">
+                        ${owner ? `Pago para ${owner.name}` : 'Pago ao Banco'}
+                    </p>
+                </div>
+                
+                <p style="color: #e0e0e0; font-weight: 600; margin-bottom: 0.75rem;">
+                    Selecione qual rebocador docar:
+                </p>
+                
+                <div style="display: grid; gap: 0.75rem;">
+                    ${tugOptions.map(tug => `
+                        <button class="btn-secondary" 
+                                onclick="executeDocking('${tug.value}', ${dockingCost}, ${owner ? owner.id : 'null'})"
+                                style="text-align: left; padding: 1rem; font-size: 0.95rem;">
+                            ${tug.label}
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+            
+            showModal('🏭 Estaleiro - Docagem Obrigatória', modalBody, [], false);
+        }
+        
+        function executeDocking(tugType, cost, ownerId) {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            const owner = ownerId ? gameState.players.find(p => p.id === ownerId) : null;
+            
+            console.log(`⚓ === EXECUTANDO DOCAGEM ===`);
+            console.log(`   Jogador: ${currentPlayer.name}`);
+            console.log(`   Rebocador: ${tugType}`);
+            console.log(`   Custo: ${fmF(cost)}`);
+            
+            // Pagar custo de docagem
+            if (!handleMandatoryPayment(currentPlayer, cost, "Docagem", owner)) {
+                console.log(`   ❌ Pagamento falhou!`);
+                closeModal();
+                return;
+            }
+            
+            // Docar rebocador
+            if (tugType === 'port') {
+                currentPlayer.dockedTugs.port = 1; // Doca 1 portuário
+            } else if (tugType === 'ocean') {
+                currentPlayer.dockedTugs.ocean = true;
+            } else if (tugType === 'tuglord') {
+                currentPlayer.dockedTugs.tuglord = true;
+            }
+            
+            // Setar duração da docagem
+            currentPlayer.dockedTugs.turnsRemaining = 3;
+            
+            console.log(`   ✅ Docagem realizada! Duração: 3 turnos`);
+            console.log(`⚓ === FIM DA DOCAGEM ===\n`);
+            
+            showNotification(`⚓ Rebocador docado por 3 turnos!`);
+            
+            renderPlayersPanel();
+            closeModal();
+        }
+
+        // ========== UI FUNCTIONS ==========
+        function openPanel(panelId, button) {
+            closeAllPanels();
+            
+            const panel = document.getElementById(panelId);
+            if (panel) {
+                panel.classList.add('active');
+                document.getElementById('panelOverlay').classList.add('active');
+            }
+
+            if (button) {
+                document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+            }
+        }
+
+        function closePanel(panelId) {
+            const panel = document.getElementById(panelId);
+            if (panel) {
+                panel.classList.remove('active');
+            }
+            
+            const anyPanelOpen = document.querySelector('.sliding-panel.active');
+            if (!anyPanelOpen) {
+                document.getElementById('panelOverlay').classList.remove('active');
+            }
+        }
+
+        function closeAllPanels() {
+            document.querySelectorAll('.sliding-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            document.getElementById('panelOverlay').classList.remove('active');
+        }
+
+        function toggleBoard(button) {
+            // On mobile, board is already visible
+            // This could scroll to board or do nothing
+            closeAllPanels();
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+        }
+
+        function switchTab(button, tabId) {
+            const card = button.closest('.player-card');
+            
+            card.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            
+            card.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: ${gameState.phase === 'setup' ? '20px' : '80px'};
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(251, 191, 36, 0.95);
+                color: #1a2942;
+                padding: 1rem 1.5rem;
+                border-radius: 0.75rem;
+                font-weight: 700;
+                z-index: 1000;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                animation: slideDown 0.3s ease;
+                max-width: 90%;
+                text-align: center;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideUp 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 2000);
+        }
+
+        // ========== INITIALIZATION ==========
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('🚢 TUGLORDS v15.0 - Mobile First Edition loaded!');
+            
+            // Add default players
+            addPlayer();
+            addPlayer();
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeAllPanels();
+            }
+            if (gameState.phase === 'playing') {
+                if (e.key === ' ' || e.key === 'Enter') {
+                    if (!gameState.diceRolled) rollDice();
+                }
+                if (e.key === 'n' || e.key === 'N') {
+                    if (gameState.diceRolled) endTurn();
+                }
+            }
+        });
+
+        // Add animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideDown {
+                from { transform: translateX(-50%) translateY(-20px); opacity: 0; }
+                to { transform: translateX(-50%) translateY(0); opacity: 1; }
+            }
+            @keyframes slideUp {
+                from { transform: translateX(-50%) translateY(0); opacity: 1; }
+                to { transform: translateX(-50%) translateY(-20px); opacity: 0; }
+            }
+            @keyframes pulse {
+                0%, 100% { transform: scale(1); }
+                50% { transform: scale(1.1); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

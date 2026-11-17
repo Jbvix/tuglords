@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, initial-scale=1.0">
+
+    <!-- 
+        Autor: Jossian Brito
+        Refactored Version: 19.0
+    -->
+
+    <title>TUGLORDS TV</title>
+
+    <!-- Favicon inline (âncora) — evita o 404 de /favicon.ico -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚓</text></svg>">
+
+    <!-- PWA: app instalável e offline -->
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#1e3c72">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="TUGLORDS">
+
+    <script src="tv/vendor/Tone.js?v=202611021746"></script>
+    <link rel="stylesheet" href="tv/fonts/inter.css?v=202611021746">
+
+    <link rel="stylesheet" href="src/css/styles.css?v=202611021746">
+    <link rel="stylesheet" href="tv/tv.css?v=202611021746">
+</head>
+
+<body class="tv">
+    <!-- ========== SPLASH CINEMATOGRÁFICO ========== -->
+    <div id="splashScreen" class="splash" role="img" aria-label="Abertura TugLords">
+        <div class="splash-sea">
+            <div class="splash-wave w1"></div>
+            <div class="splash-wave w2"></div>
+            <div class="splash-wave w3"></div>
+        </div>
+        <div class="splash-stage">
+            <div class="splash-anchor">⚓</div>
+            <div class="splash-title">TUGLORDS</div>
+            <div class="splash-sub">Domínio Portuário</div>
+            <div class="splash-pawn" id="splashPawn"></div>
+        </div>
+        <button class="splash-skip" id="splashSkip" type="button">Pular ⏭</button>
+    </div>
+
+    <!-- ========== TELA DE APRESENTAÇÃO ========== -->
+    <div id="presentationScreen" class="setup-screen">
+        <div class="setup-container" style="text-align: center;">
+            <div class="setup-header">
+                <div class="floating-anchor">⚓</div>
+                <h1 style="font-size: 3.5rem; margin-bottom: 0.5rem; margin-top: 1rem;">TUGLORDS</h1>
+                <p style="font-size: 1.25rem; color: var(--accent-gold); margin-bottom: 2rem;">Domínio Portuário</p>
+                <p
+                    style="margin-bottom: 3rem; color: #cbd5e1; max-width: 500px; margin-left: auto; margin-right: auto; line-height: 1.6;">
+                    Domine a arte das negociações, conquiste competências de elite e navegue rumo ao sucesso supremo!
+                    <br><span style="font-size: 0.9em; opacity: 0.8;">O mar separa os capitães dos verdadeiros
+                        Lordes.</span>
+                </p>
+            </div>
+            <div class="setup-actions"
+                style="justify-content: center; flex-direction: column; gap: 1rem; max-width: 300px; margin: 0 auto;">
+                <button id="btnStartGame" class="btn-primary" style="font-size: 1.1rem; padding: 1rem;">
+                    🚀 Iniciar Jogo
+                </button>
+                <button id="btnOpenManual" class="btn-secondary" style="font-size: 1.1rem; padding: 1rem;">
+                    📖 Manual do Usuário
+                </button>
+                <button id="btnShareGame" class="btn-secondary" style="font-size: 1.1rem; padding: 1rem;" onclick="shareGame()">
+                    📤 Compartilhar
+                </button>
+                <button id="btnInstallPWA" class="btn-secondary" style="font-size: 1.1rem; padding: 1rem; display: none;" onclick="installPWA()">
+                    📲 Instalar App
+                </button>
+            </div>
+            <p style="margin-top: 3rem; font-size: 0.8rem; color: #64748b;">Versão 19.0 • Por Jossian Brito</p>
+            <p style="margin-top: 0.5rem; font-size: 0.75rem; color: #64748b;">Jogo independente, sem fins lucrativos. Nomes e marcas são fictícios; qualquer semelhança é coincidência.</p>
+            <p style="margin-top: 0.25rem; font-size: 0.75rem; color: #64748b;">Código sob licença MIT; manual, arte e músicas sob CC BY-SA 4.0.</p>
+        </div>
+    </div>
+
+    <!-- ========== TELA DE MANUAL ========== -->
+    <div id="manualScreen" class="setup-screen" style="display: none;">
+        <div class="setup-container" style="max-width: 800px;">
+            <div class="setup-header">
+                <h2>📖 Manual do Usuário</h2>
+                <p>Regras e Instruções</p>
+            </div>
+            <div class="manual-content"
+                style="max-height: 60vh; overflow-y: auto; padding-right: 1rem; margin-bottom: 2rem; text-align: left; line-height: 1.6; color: #e2e8f0;">
+                <h3 style="color: var(--accent-gold);">1. Objetivo</h3>
+                <p>O objetivo do TugLords é se tornar o jogador mais rico adquirindo portos, rebocadores e cobrando
+                    aluguel dos oponentes.</p>
+
+                <h3 style="color: var(--accent-gold); margin-top: 1.5rem;">2. Como Jogar</h3>
+                <ul style="padding-left: 1.5rem;">
+                    <li><strong>Início:</strong> Cada jogador começa com F$ 30 mi.</li>
+                    <li><strong>Movimentação:</strong> Jogue os dados para mover seu peão pelo tabuleiro.</li>
+                    <li><strong>Casas:</strong>
+                        <ul>
+                            <li><strong>Portos (Propriedades):</strong> Podem ser comprados. Se outro jogador cair no
+                                seu porto, ele paga aluguel.</li>
+                            <li><strong>Rebocadores:</strong> Aumentam o nível do aluguel dos seus portos.</li>
+                            <li><strong>Eventos Oceânicos:</strong> Cartas de sorte ou revés.</li>
+                            <li><strong>Oficinas:</strong> Oferecem certificações e reparos.</li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <h3 style="color: var(--accent-gold); margin-top: 1.5rem;">3. Frota e Certificações</h3>
+                <p>Adquira diferentes tipos de rebocadores (Portuário, Oceânico, TugLord) para maximizar seus lucros.
+                    Conquiste os <strong>certificados de segurança obrigatórios</strong> (Incêndio, Homem ao Mar, Colisão, Abandono) na Universidade do Mar, e os <strong>certificados técnicos</strong> opcionais (Propulsão Azimutal, Motores Diesel, etc.) aprovando exames nas oficinas. Todos exigem passar no quiz da área. <strong>Bônus:</strong> uma oficina cujo dono é certificado vira "certificada" e cobra um serviço <strong>+50% mais caro</strong>, rendendo mais a cada visita de adversário.</p>
+
+                <h3 style="color: var(--accent-gold); margin-top: 1.5rem;">4. Vitória e Derrota</h3>
+                <p>Se seu dinheiro acabar e você não tiver bens para liquidar, você declara falência. O último jogador
+                    restante é o vencedor, o Supremo TugLord!</p>
+            </div>
+            <div class="setup-actions">
+                <button id="btnCloseManual" class="btn-secondary"
+                    style="width: auto; padding: 0.75rem 2rem; margin: 0 auto;">
+                    🔙 Voltar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== TELA DE SETUP (SELEÇÃO DE ORDEM) ========== -->
+    <div id="setupScreen" class="setup-screen" style="display: none;">
+        <div class="setup-container">
+            <div class="setup-header">
+                <h1>⚓ TUGLORDS</h1>
+                <p>Quem começa? Role os dados para decidir!</p>
+            </div>
+
+            <div id="playerSetupList" class="player-setup-list">
+                <!-- Players serão gerados aqui -->
+            </div>
+
+            <div class="setup-actions">
+                <button class="btn-primary" onclick="addPlayer()">➕ Adicionar Jogador</button>
+                <button class="btn-secondary" id="startOrderBtn" onclick="startOrderRolls()" disabled>
+                    🎲 Iniciar Sorteio
+                </button>
+            </div>
+
+            <div id="orderResults" class="order-results" style="display: none;">
+                <h3>📋 Ordem dos Jogadores</h3>
+                <div id="orderList"></div>
+                <button class="btn-primary" onclick="startGame()">
+                    🚢 Começar Jogo!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== TELA DO JOGO ========== -->
+    <div id="gameScreen" class="game-screen" style="display: none;">
+        <!-- Mobile Header -->
+        <div class="mobile-header">
+            <h1>⚓ TUGLORDS</h1>
+            <div class="header-stats">
+                <span id="currentPlayerName">Jogador 1</span>
+                <span>|</span>
+                <span id="currentRound">Rodada 1</span>
+            </div>
+        </div>
+
+        <!-- Placar ao vivo (ranking por patrimônio) -->
+        <div id="standingsStrip" class="standings-strip" aria-label="Placar ao vivo"></div>
+
+        <!-- Narrador / comentarista do jogo -->
+        <div id="commentaryBanner" class="commentary-banner" aria-live="polite">
+            <span class="commentary-mic">🎙️</span>
+            <span id="commentaryText" class="commentary-text">Bem-vindos ao TugLords! Que comecem as manobras! ⚓</span>
+        </div>
+
+        <!-- Main Container -->
+        <div class="game-container">
+
+            <!-- Left Panel - Players -->
+            <div class="sliding-panel panel-left" id="panelPlayers">
+                <div class="panel-handle"></div>
+                <div class="panel-header">
+                    <h2 class="panel-title">👥 Jogadores</h2>
+                    <button class="panel-close" onclick="closePanel('panelPlayers')">✕</button>
+                </div>
+                <div class="panel-content">
+                    <div id="playersContainer">
+                        <!-- Player cards serão gerados dinamicamente -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center - Game Board -->
+            <div class="game-board-wrapper">
+                <div class="board-container">
+                    <!-- Tabuleiro (logo TUGLORDS no centro preservado) -->
+                    <div id="visualBoard" style="width: 100%; display: flex; justify-content: center;"></div>
+
+                    <!-- Controles ABAIXO do tabuleiro (dados 3D + botões) -->
+                    <div style="text-align: center; padding: 0.5rem; width: 100%;">
+                        <h2 style="font-size: 1.25rem; font-weight: 900; margin-bottom: 0.4rem;">
+                            🎲 Turno de <span id="currentTurnPlayer">Jogador</span>
+                        </h2>
+
+                        <!-- Dados 3D -->
+                        <div id="diceDisplay"
+                            style="margin: 0.4rem 0 0.6rem; display: flex; justify-content: center; align-items: center; gap: 0.6rem; min-height: 48px;">
+                            ⚀ ⚀
+                        </div>
+
+                        <div style="margin-bottom: 0.6rem; display: flex; justify-content: center;">
+                            <button id="rollDiceBtn" class="btn-primary" onclick="rollDice()" style="font-size: 0.875rem;">
+                                🎲 Jogar Dados
+                            </button>
+                        </div>
+
+                        <div id="positionInfo"
+                            style="background: rgba(255,255,255,0.1); border-radius: 0.5rem; padding: 0.6rem; margin-bottom: 0.6rem;">
+                            <p id="currentHouseName"
+                                style="font-size: 1rem; color: var(--accent-gold); margin: 0; font-weight: 700;">
+                                Casa Inicial
+                            </p>
+                        </div>
+
+                        <!-- Contextual Actions (aparecem baseado na casa) -->
+                        <div id="contextualActions" style="display: none; justify-content: center;">
+                            <div
+                                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; max-width: 400px;">
+                                <!-- Botões serão adicionados dinamicamente -->
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 0.3rem; display: flex; justify-content: center; gap: 0.5rem;">
+                            <button id="challengeBtn" class="btn-secondary" onclick="openChallenge()" style="font-size: 0.875rem;">
+                                <svg class="tv-ico" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" style="vertical-align:-5px"><path fill="currentColor" d="M4 3l7 7-2 2-7-7V3zm16 0v2l-7 7-2-2 7-7zM3 19l5-5 2 2-5 5H3zm18 0v2h-2l-5-5 2-2z"/></svg> Desafiar
+                            </button>
+                            <button id="endTurnBtn" class="btn-secondary" onclick="endTurn()"
+                                style="max-width: 220px; font-size: 0.875rem;">
+                                <svg class="tv-ico" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" style="vertical-align:-5px"><path fill="currentColor" d="M3 10.5h12.2l-4.6-4.6L12.7 4 21 12l-8.3 8-2.1-1.9 4.6-4.6H3z"/></svg> Finalizar Turno
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Bank & Info -->
+            <div class="sliding-panel panel-right" id="panelBank">
+                <div class="panel-handle"></div>
+                <div class="panel-header">
+                    <h2 class="panel-title">🏦 Terminal Bancário</h2>
+                    <button class="panel-close" onclick="closePanel('panelBank')">✕</button>
+                </div>
+                <div class="panel-content">
+                    <div id="bankLoanBox"
+                        style="background: rgba(255,255,255,0.05); border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 1rem;">
+                        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem;">💳 Empréstimos</h3>
+                        <div style="display: grid; gap: 0.75rem;">
+                            <button class="btn-secondary" style="justify-content: space-between;"
+                                onclick="takeLoan(5000, 0.10)">
+                                <span>F$ 5 mi</span>
+                                <span style="font-size: 0.875rem; opacity: 0.7;">Juros: 10%</span>
+                            </button>
+                            <button class="btn-secondary" style="justify-content: space-between;"
+                                onclick="takeLoan(10000, 0.15)">
+                                <span>F$ 10 mi</span>
+                                <span style="font-size: 0.875rem; opacity: 0.7;">Juros: 15%</span>
+                            </button>
+                            <button class="btn-secondary" style="justify-content: space-between;"
+                                onclick="takeLoan(20000, 0.20)">
+                                <span>F$ 20 mi</span>
+                                <span style="font-size: 0.875rem; opacity: 0.7;">Juros: 20%</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div
+                        style="background: rgba(255,255,255,0.05); border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 1rem;">
+                        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.75rem;">📈 Bolsa de Valores</h3>
+                        <p style="font-size: 0.85rem; color: #94a3b8; margin: 0 0 1rem;">Compre ações de portos dos
+                            adversários e receba dividendos por turno.</p>
+                        <button class="btn-primary" style="width: 100%;" onclick="openStockExchange()">
+                            📊 Abrir Bolsa de Valores
+                        </button>
+                    </div>
+
+                    <div style="background: rgba(255,255,255,0.05); border-radius: 0.75rem; padding: 1.5rem;">
+                        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem;">📜 Regras Rápidas</h3>
+                        <ul
+                            style="list-style: none; padding: 0; margin: 0; font-size: 0.875rem; line-height: 1.6; color: #94a3b8;">
+                            <li style="margin-bottom: 0.5rem;">🎯 Objetivo: Dominar o mercado de rebocadores</li>
+                            <li style="margin-bottom: 0.5rem;">🎲 Role os dados para mover</li>
+                            <li style="margin-bottom: 0.5rem;">⚓ Compre portos e rebocadores</li>
+                            <li style="margin-bottom: 0.5rem;">💰 Gerencie suas finanças</li>
+                            <li>🏆 Seja o primeiro a completar todos objetivos</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation - Mobile -->
+        <nav class="bottom-nav">
+            <button class="nav-btn active" onclick="openPanel('panelPlayers', this)">
+                <span class="nav-btn-icon">👥</span>
+                <span>Jogadores</span>
+            </button>
+            <button class="nav-btn" onclick="toggleBoard(this)">
+                <span class="nav-btn-icon">🎲</span>
+                <span>Tabuleiro</span>
+            </button>
+            <button class="nav-btn" onclick="openBankTerminal()">
+                <span class="nav-btn-icon">🏦</span>
+                <span>Banco</span>
+            </button>
+            <button class="nav-btn" onclick="openPanel('panelMenu', this)">
+                <span class="nav-btn-icon">⚙️</span>
+                <span>Menu</span>
+            </button>
+        </nav>
+
+        <!-- Overlay -->
+        <div class="panel-overlay" id="panelOverlay" onclick="closeAllPanels()"></div>
+
+        <!-- Menu Panel -->
+        <div class="sliding-panel" id="panelMenu">
+            <div class="panel-handle"></div>
+            <div class="panel-header">
+                <h2 class="panel-title">⚙️ Menu</h2>
+                <button class="panel-close" onclick="closePanel('panelMenu')">✕</button>
+            </div>
+            <div class="panel-content">
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    <button class="btn-primary" onclick="showVictoryInfo()">🏆 Como Vencer</button>
+                    <button class="btn-secondary" onclick="showStatistics()">📊 Estatísticas</button>
+                    <button class="btn-secondary" onclick="showManualModal()">📖 Manual do Jogo</button>
+                    <button class="btn-secondary" onclick="shareGame()">📤 Compartilhar</button>
+                    <button class="btn-secondary" id="btnToggleAudio" onclick="toggleAudio()">🔊 Áudio: Ligado</button>
+                    <button class="btn-secondary" onclick="saveGame()">💾 Salvar Jogo</button>
+                    <button class="btn-secondary" onclick="loadGame()">📤 Carregar Jogo</button>
+                    <button class="btn-secondary" style="color: #ef4444;" onclick="exitGame()">🚪 Sair</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP SCRIPT -->
+    <script src="tv/build/game.js?v=202611021746"></script>
+    <script src="tv/tv.js?v=20261111f"></script>
+</body>
+
+</html>

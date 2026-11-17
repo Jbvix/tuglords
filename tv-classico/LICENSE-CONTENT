@@ -1,0 +1,27 @@
+TugLords: licença do conteúdo
+
+Copyright (c) 2025-2026 Jossian Brito
+
+O CÓDIGO-FONTE do TugLords está sob a licença MIT (arquivo LICENSE).
+
+O CONTEÚDO do jogo está sob a licença Creative Commons Atribuição-CompartilhaIgual
+4.0 Internacional (CC BY-SA 4.0): https://creativecommons.org/licenses/by-sa/4.0/deed.pt-br
+
+Isso vale para:
+- o manual do jogo (TUGLORDS_MANUAL_DO_JOGO.html) e os textos do jogo
+  (perguntas, cartas e eventos);
+- a arte (ícones, telas e imagens em icons/);
+- as músicas e efeitos sonoros em tv/audio/ e tv/sfx/, de autoria do projeto.
+
+Você pode copiar, distribuir, adaptar e usar este conteúdo, inclusive
+comercialmente, desde que dê o crédito ("TugLords, por Jossian Brito"), indique
+se fez mudanças e distribua as adaptações sob a mesma licença CC BY-SA 4.0.
+
+Componentes de terceiros mantêm suas próprias licenças e NÃO estão sob a
+CC BY-SA 4.0 nem sob a MIT deste projeto:
+- Three.js (tv/vendor/three.min.js): MIT, Copyright 2010-2021 Three.js Authors;
+- Tone.js (tv/vendor/Tone.js): MIT, Yotam Mann;
+- fontes em tv/fonts/: licença original de cada fonte.
+
+Jogo independente, sem fins lucrativos. Nomes e marcas são fictícios;
+qualquer semelhança é coincidência.
